@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>CurlGenerator.Core</Title>
+    <PackageId>CurlGenerator.Core</PackageId>
+    <AssemblyName>CurlGenerator.Core</AssemblyName>
+    <RootNamespace>CurlGenerator.Core</RootNamespace>
+    <Product>CurlGenerator Core</Product>
+    <Description>Core Library used by the cURL Request Generator CLI tool for generating cURL requests from OpenAPI specifications</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="NSwag.CodeGeneration.CSharp" Version="13.20.0" />
+    <PackageReference Include="NSwag.Core.Yaml" Version="13.20.0" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.1" />
+  </ItemGroup>
+
+</Project>

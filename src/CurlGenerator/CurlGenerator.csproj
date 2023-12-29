@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <Title>cURL Request Generator</Title>
+        <PackageId>CurlGenerator</PackageId>
+        <AssemblyName>curlgenerator</AssemblyName>
+        <RootNamespace>CurlGenerator</RootNamespace>
+        <Product>cURL Request Generator</Product>
+        <Description>cURL Request Generator is a CLI tool for generating cURL requests from OpenAPI specifications</Description>
+        <PackAsTool>true</PackAsTool>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Exceptionless" Version="6.0.3" />
+        <PackageReference Include="Microsoft.OpenApi.OData" Version="1.5.0" />
+        <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.11" />
+        <PackageReference Include="Spectre.Console.Cli" Version="0.48.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CurlGenerator.Core\CurlGenerator.Core.csproj" />
+    </ItemGroup>
+
+</Project>
