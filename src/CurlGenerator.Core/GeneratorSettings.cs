@@ -3,7 +3,7 @@
 namespace CurlGenerator.Core;
 
 /// <summary>
-/// Provide settings for the .http file generator.
+/// Provide settings for the .cURL Request Generator.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public class GeneratorSettings

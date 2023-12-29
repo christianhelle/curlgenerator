@@ -32,7 +32,6 @@ public static class ScriptFileGenerator
         string baseUrl)
     {
         var code = new StringBuilder();
-        WriteFileHeaders(settings, code);
 
         foreach (var kv in document.Paths)
         {
@@ -49,19 +48,7 @@ public static class ScriptFileGenerator
         }
 
         return new GeneratorResult(
-            new[] { new HttpFile("Requests.ps1", code.ToString()) });
-    }
-
-    private static void WriteFileHeaders(GeneratorSettings settings, StringBuilder code)
-    {
-        code.AppendLine($"@contentType = {settings.ContentType}");
-
-        if (!string.IsNullOrWhiteSpace(settings.AuthorizationHeader))
-        {
-            code.AppendLine($"@authorization = {settings.AuthorizationHeader}");
-        }
-
-        code.AppendLine();
+            new[] { new ScriptFile("Requests.ps1", code.ToString()) });
     }
 
     private static GeneratorResult GenerateMultipleFiles(
@@ -70,7 +57,7 @@ public static class ScriptFileGenerator
         CSharpClientGenerator generator,
         string baseUrl)
     {
-        var files = new List<HttpFile>();
+        var files = new List<ScriptFile>();
         foreach (var kv in document.Paths)
         {
             foreach (var operations in kv.Value)
@@ -84,10 +71,9 @@ public static class ScriptFileGenerator
                 var filename = $"{name.CapitalizeFirstCharacter()}.ps1";
 
                 var code = new StringBuilder();
-                WriteFileHeaders(settings, code);
                 code.AppendLine(GenerateRequest(settings, baseUrl, verb, kv, operation));
 
-                files.Add(new HttpFile(filename, code.ToString()));
+                files.Add(new ScriptFile(filename, code.ToString()));
             }
         }
 
@@ -103,18 +89,18 @@ public static class ScriptFileGenerator
     {
         var code = new StringBuilder();
         AppendSummary(verb, kv, operation, code);
-        code.AppendLine($"{verb.ToUpperInvariant()} {baseUrl}{kv.Key}");
-        code.AppendLine("Content-Type: {{contentType}}");
+        code.AppendLine($"curl -X {verb.ToUpperInvariant()} {baseUrl}{kv.Key} `");
+        code.AppendLine($"  -H 'Accept: {settings.ContentType}' `");
+        code.AppendLine($"  -H 'Content-Type: {settings.ContentType}' `");
 
         if (!string.IsNullOrWhiteSpace(settings.AuthorizationHeader))
         {
-            code.AppendLine("Authorization: {{authorization}}");
+            code.AppendLine($"  -H 'Authorization: {settings.AuthorizationHeader}' `");
         }
 
         var contentType = operation.RequestBody?.Content?.Keys
             ?.FirstOrDefault(c => c.Contains(settings.ContentType));
 
-        code.AppendLine();
         if (operation.RequestBody?.Content is null || contentType is null)
             return code.ToString();
 
@@ -122,7 +108,7 @@ public static class ScriptFileGenerator
         var requestBodySchema = requestBody.Content[contentType].Schema.ActualSchema;
         var requestBodyJson = requestBodySchema?.ToSampleJson()?.ToString() ?? string.Empty;
 
-        code.AppendLine(requestBodyJson);
+        code.AppendLine($"  -d '{requestBodyJson}'");
         return code.ToString();
     }
 

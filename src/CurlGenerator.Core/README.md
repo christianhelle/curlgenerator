@@ -1,4 +1,4 @@
-# HTTP File Generator Core Library
+# cURL Request Generator Core Library
 
 Core library used by the CurlGenerator CLI tool for generating `.http` files for the popular REST Client IDE extension
 

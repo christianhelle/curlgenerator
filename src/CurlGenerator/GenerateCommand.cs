@@ -21,7 +21,7 @@ public class GenerateCommand : AsyncCommand<Settings>
         try
         {
             var stopwatch = Stopwatch.StartNew();
-            AnsiConsole.MarkupLine($"[green]HTTP File Generator v{GetType().Assembly.GetName().Version!}[/]");
+            AnsiConsole.MarkupLine($"[green]cURL Request Generator v{GetType().Assembly.GetName().Version!}[/]");
             AnsiConsole.MarkupLine(
                 settings.NoLogging
                     ? "[green]Support key: Unavailable when logging is disabled[/]"
@@ -41,7 +41,7 @@ public class GenerateCommand : AsyncCommand<Settings>
                 OutputType = settings.OutputType,
             };
 
-            var result = await HttpFileGenerator.Generate(generatorSettings);
+            var result = await ScriptFileGenerator.Generate(generatorSettings);
             await Analytics.LogFeatureUsage(settings);
 
             if (!string.IsNullOrWhiteSpace(settings.OutputFolder) && !Directory.Exists(settings.OutputFolder))

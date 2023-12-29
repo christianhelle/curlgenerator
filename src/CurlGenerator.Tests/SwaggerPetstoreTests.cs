@@ -57,7 +57,7 @@ public class SwaggerPetstoreTests
     [InlineData(HttpUrlPrefix + "petstore.yaml", OutputType.OneFile)]
     public async Task Can_Generate_Code_From_Url(string url, OutputType outputType)
     {
-        var generateCode = await HttpFileGenerator.Generate(
+        var generateCode = await ScriptFileGenerator.Generate(
             new GeneratorSettings
             {
                 OpenApiPath = url,
@@ -87,7 +87,7 @@ public class SwaggerPetstoreTests
         string url,
         OutputType outputType)
     {
-        var generateCode = await HttpFileGenerator.Generate(
+        var generateCode = await ScriptFileGenerator.Generate(
             new GeneratorSettings
             {
                 OpenApiPath = url,
@@ -108,7 +108,7 @@ public class SwaggerPetstoreTests
     {
         var json = EmbeddedResources.GetSwaggerPetstore(version);
         var swaggerFile = await TestFile.CreateSwaggerFile(json, filename);
-        return await HttpFileGenerator.Generate(
+        return await ScriptFileGenerator.Generate(
             new GeneratorSettings
             {
                 OpenApiPath = swaggerFile,
