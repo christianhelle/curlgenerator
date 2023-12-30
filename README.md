@@ -1,3 +1,10 @@
+[![Build](https://github.com/christianhelle/curlgenerator/actions/workflows/build.yml/badge.svg)](https://github.com/christianhelle/curlgenerator/actions/workflows/build.yml)
+[![Smoke Tests](https://github.com/christianhelle/curlgenerator/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/christianhelle/curlgenerator/actions/workflows/smoke-tests.yml)
+[![NuGet](https://img.shields.io/nuget/v/curlgenerator?color=blue)](https://www.nuget.org/packages/curlgenerator)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=christianhelle_curlgenerator&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=christianhelle_curlgenerator)
+[![codecov](https://codecov.io/gh/christianhelle/curlgenerator/graph/badge.svg?token=242YT1N6T2)](https://codecov.io/gh/christianhelle/curlgenerator)
+[![Qodana](https://github.com/christianhelle/curlgenerator/actions/workflows/qodana.yml/badge.svg)](https://github.com/christianhelle/curlgenerator/actions/workflows/qodana.yml)
+
 # cURL Request Generator
 
 Generate cURL requests from OpenAPI specifications v2.0 and v3.0
