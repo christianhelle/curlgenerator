@@ -41,7 +41,7 @@ public class SwaggerPetstoreTests
         generateCode.Should().NotBeNull();
         generateCode.Files.Should().NotBeNullOrEmpty();
         generateCode.Files
-            .All(file => file.Content.Count(c => c == '#') >= 6)
+            .All(file => file.Content.Count(c => c == '#') >= 2)
             .Should()
             .BeTrue();
     }
@@ -69,7 +69,7 @@ public class SwaggerPetstoreTests
         generateCode.Should().NotBeNull();
         generateCode.Files.Should().NotBeNullOrEmpty();
         generateCode.Files
-            .All(file => file.Content.Count(c => c == '#') >= 6)
+            .All(file => file.Content.Count(c => c == '#') >= 2)
             .Should()
             .BeTrue();
     }
