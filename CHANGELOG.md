@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Remove support for single output file [\#3](https://github.com/christianhelle/curlgenerator/pull/3) ([christianhelle](https://github.com/christianhelle))
 - Add Powershell script parameters [\#2](https://github.com/christianhelle/curlgenerator/pull/2) ([christianhelle](https://github.com/christianhelle))
 
 ## [0.1.3](https://github.com/christianhelle/curlgenerator/tree/0.1.3) (2023-12-30)
