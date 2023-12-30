@@ -21,37 +21,10 @@ public static class ScriptFileGenerator
                       baseUrl;
         }
 
-        return settings.OutputType == OutputType.OneRequestPerFile
-            ? GenerateMultipleFiles(settings, document, generator, baseUrl)
-            : GenerateSingleFile(settings, document, baseUrl);
+        return GenerateCode(settings, document, generator, baseUrl);
     }
 
-    private static GeneratorResult GenerateSingleFile(
-        GeneratorSettings settings,
-        OpenApiDocument document,
-        string baseUrl)
-    {
-        var code = new StringBuilder();
-
-        foreach (var kv in document.Paths)
-        {
-            foreach (var operations in kv.Value)
-            {
-                code.AppendLine(
-                    GenerateRequest(
-                        settings,
-                        baseUrl,
-                        operations.Key.CapitalizeFirstCharacter(),
-                        kv,
-                        operations.Value));
-            }
-        }
-
-        return new GeneratorResult(
-            new[] { new ScriptFile("Requests.ps1", code.ToString()) });
-    }
-
-    private static GeneratorResult GenerateMultipleFiles(
+    private static GeneratorResult GenerateCode(
         GeneratorSettings settings,
         OpenApiDocument document,
         CSharpClientGenerator generator,
