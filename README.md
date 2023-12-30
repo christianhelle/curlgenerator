@@ -2,6 +2,16 @@
 
 Generate cURL requests from OpenAPI specifications v2.0 and v3.0
 
+## Installation
+
+This is tool is distrubuted as a .NET Tool on NuGet.org
+
+To install, simply use the following command
+
+```bash
+dotnet tool install --global curlgenerator
+```
+
 ## Usage
 
 ```pwsh
