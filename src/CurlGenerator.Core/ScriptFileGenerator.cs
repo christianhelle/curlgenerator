@@ -89,7 +89,11 @@ public static class ScriptFileGenerator
     {
         var code = new StringBuilder();
         AppendSummary(verb, kv, operation, code);
-        code.AppendLine($"curl -X {verb.ToUpperInvariant()} {baseUrl}{kv.Key} `");
+        AppendParameters(verb, kv, operation, code);
+
+        var route = kv.Key.Replace("{", "$").Replace("}", null);
+        code.AppendLine($"curl -X {verb.ToUpperInvariant()} {baseUrl}{route} `");
+
         code.AppendLine($"  -H 'Accept: {settings.ContentType}' `");
         code.AppendLine($"  -H 'Content-Type: {settings.ContentType}' `");
 
@@ -112,47 +116,65 @@ public static class ScriptFileGenerator
         return code.ToString();
     }
 
+    private static void AppendParameters(
+        string verb,
+        KeyValuePair<string, OpenApiPathItem> kv,
+        OpenApiOperation operation,
+        StringBuilder code)
+    {
+        var parameters = operation
+            .Parameters
+            .Where(c => c.Kind is OpenApiParameterKind.Path or OpenApiParameterKind.Query)
+            .ToArray();
+
+        if (parameters.Length == 0)
+        {
+            code.AppendLine();
+            return;
+        }
+
+        code.AppendLine("param(");
+        
+        foreach (var parameter in parameters)
+        {
+            code.AppendLine(
+                parameter.Description is null
+                    ? $"""
+                         [Parameter(Mandatory=$True)]
+                         [String] ${parameter.Name},
+                       """
+                    : $"""
+                          <# {parameter.Description} #>
+                          [Parameter(Mandatory=$True)]
+                          [String] ${parameter.Name},
+                       """);
+            code.AppendLine();
+        }
+        code.Remove(code.Length - 5, 3);
+
+        code.AppendLine(")");
+        code.AppendLine();
+    }
+
     private static void AppendSummary(
         string verb,
         KeyValuePair<string, OpenApiPathItem> kv,
         OpenApiOperation operation,
         StringBuilder code)
     {
-        const int padding = 2;
-        const string summary = "### Summary: ";
-        const string description = "### Description: ";
-
-        var request = $"### Request: {verb.ToUpperInvariant()} {kv.Key}";
-        var length = request.Length + padding;
-        length = Math.Max(
-            length,
-            Math.Max(
-                (operation.Summary?.Length ?? 0) + summary.Length + padding,
-                (operation.Description?.Length ?? 0) + description.Length + padding));
-
-        for (var i = 0; i < length; i++)
-        {
-            code.Insert(0, "#");
-        }
-
-        code.AppendLine();
-        code.AppendLine(request);
+        code.AppendLine("<#");
+        code.AppendLine($"  Request: {verb.ToUpperInvariant()} {kv.Key}");
 
         if (!string.IsNullOrWhiteSpace(operation.Summary))
         {
-            code.AppendLine($"{summary}{operation.Summary}");
+            code.AppendLine($"  Summary: {operation.Summary}");
         }
 
         if (!string.IsNullOrWhiteSpace(operation.Description))
         {
-            code.AppendLine($"{description}{operation.Description}");
+            code.AppendLine($"  Description: {operation.Description}");
         }
 
-        for (var i = 0; i < length; i++)
-        {
-            code.Insert(code.Length, "#");
-        }
-
-        code.AppendLine(Environment.NewLine);
+        code.AppendLine("#>");
     }
 }
