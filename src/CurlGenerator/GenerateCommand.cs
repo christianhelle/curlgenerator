@@ -38,7 +38,6 @@ public class GenerateCommand : AsyncCommand<Settings>
                 OpenApiPath = settings.OpenApiPath,
                 ContentType = settings.ContentType,
                 BaseUrl = settings.BaseUrl,
-                OutputType = settings.OutputType,
             };
 
             var result = await ScriptFileGenerator.Generate(generatorSettings);

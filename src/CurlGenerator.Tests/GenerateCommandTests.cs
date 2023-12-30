@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using CurlGenerator.Core;
 using CurlGenerator.Tests.Resources;
 using Spectre.Console.Cli;
 using Inline = Atc.Test.InlineAutoNSubstituteDataAttribute;
@@ -18,26 +17,25 @@ public class GenerateCommandTests
         Http + "://raw.githubusercontent.com/christianhelle/curlgenerator/main/test/OpenAPI/v3.0/";
 
     [Theory]
-    [Inline(Samples.PetstoreJsonV3, "SwaggerPetstore.json", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreYamlV3, "SwaggerPetstore.yaml", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreJsonV2, "SwaggerPetstore.json", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreYamlV2, "SwaggerPetstore.yaml", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreJsonV3, "SwaggerPetstore.json", OutputType.OneFile)]
-    [Inline(Samples.PetstoreYamlV3, "SwaggerPetstore.yaml", OutputType.OneFile)]
-    [Inline(Samples.PetstoreJsonV2, "SwaggerPetstore.json", OutputType.OneFile)]
-    [Inline(Samples.PetstoreYamlV2, "SwaggerPetstore.yaml", OutputType.OneFile)]
-    [Inline(Samples.PetstoreJsonV3WithDifferentHeaders, "SwaggerPetstore.json", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreYamlV3WithDifferentHeaders, "SwaggerPetstore.yaml", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreJsonV2WithDifferentHeaders, "SwaggerPetstore.json", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreYamlV2WithDifferentHeaders, "SwaggerPetstore.yaml", OutputType.OneRequestPerFile)]
-    [Inline(Samples.PetstoreJsonV3WithDifferentHeaders, "SwaggerPetstore.json", OutputType.OneFile)]
-    [Inline(Samples.PetstoreYamlV3WithDifferentHeaders, "SwaggerPetstore.yaml", OutputType.OneFile)]
-    [Inline(Samples.PetstoreJsonV2WithDifferentHeaders, "SwaggerPetstore.json", OutputType.OneFile)]
-    [Inline(Samples.PetstoreYamlV2WithDifferentHeaders, "SwaggerPetstore.yaml", OutputType.OneFile)]
+    [Inline(Samples.PetstoreJsonV3, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV3, "SwaggerPetstore.yaml")]
+    [Inline(Samples.PetstoreJsonV2, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV2, "SwaggerPetstore.yaml")]
+    [Inline(Samples.PetstoreJsonV3, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV3, "SwaggerPetstore.yaml")]
+    [Inline(Samples.PetstoreJsonV2, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV2, "SwaggerPetstore.yaml")]
+    [Inline(Samples.PetstoreJsonV3WithDifferentHeaders, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV3WithDifferentHeaders, "SwaggerPetstore.yaml")]
+    [Inline(Samples.PetstoreJsonV2WithDifferentHeaders, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV2WithDifferentHeaders, "SwaggerPetstore.yaml")]
+    [Inline(Samples.PetstoreJsonV3WithDifferentHeaders, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV3WithDifferentHeaders, "SwaggerPetstore.yaml")]
+    [Inline(Samples.PetstoreJsonV2WithDifferentHeaders, "SwaggerPetstore.json")]
+    [Inline(Samples.PetstoreYamlV2WithDifferentHeaders, "SwaggerPetstore.yaml")]
     public async Task Should_Generate_Code_From_File(
         Samples version,
         string filename,
-        OutputType outputType,
         GenerateCommand sut,
         CommandContext context,
         Settings settings)
@@ -52,17 +50,16 @@ public class GenerateCommandTests
     }
 
     [Theory]
-    [Inline("V31.non-oauth-scopes.json", OutputType.OneRequestPerFile)]
-    [Inline("V31.non-oauth-scopes.yaml", OutputType.OneRequestPerFile)]
-    [Inline("V31.webhook-example.json", OutputType.OneRequestPerFile)]
-    [Inline("V31.webhook-example.yaml", OutputType.OneRequestPerFile)]
-    [Inline("V31.non-oauth-scopes.json", OutputType.OneFile)]
-    [Inline("V31.non-oauth-scopes.yaml", OutputType.OneFile)]
-    [Inline("V31.webhook-example.json", OutputType.OneFile)]
-    [Inline("V31.webhook-example.yaml", OutputType.OneFile)]
+    [Inline("V31.non-oauth-scopes.json")]
+    [Inline("V31.non-oauth-scopes.yaml")]
+    [Inline("V31.webhook-example.json")]
+    [Inline("V31.webhook-example.yaml")]
+    [Inline("V31.non-oauth-scopes.json")]
+    [Inline("V31.non-oauth-scopes.yaml")]
+    [Inline("V31.webhook-example.json")]
+    [Inline("V31.webhook-example.yaml")]
     public async Task Should_Generate_Code_From_File_V31_Spec_When_Validation_Skipped(
         string manifestResourceStreamName,
-        OutputType outputType,
         GenerateCommand sut,
         CommandContext context,
         Settings settings)
@@ -78,17 +75,16 @@ public class GenerateCommandTests
     }
 
     [Theory]
-    [Inline("V31.non-oauth-scopes.json", OutputType.OneRequestPerFile)]
-    [Inline("V31.non-oauth-scopes.yaml", OutputType.OneRequestPerFile)]
-    [Inline("V31.webhook-example.json", OutputType.OneRequestPerFile)]
-    [Inline("V31.webhook-example.yaml", OutputType.OneRequestPerFile)]
-    [Inline("V31.non-oauth-scopes.json", OutputType.OneFile)]
-    [Inline("V31.non-oauth-scopes.yaml", OutputType.OneFile)]
-    [Inline("V31.webhook-example.json", OutputType.OneFile)]
-    [Inline("V31.webhook-example.yaml", OutputType.OneFile)]
+    [Inline("V31.non-oauth-scopes.json")]
+    [Inline("V31.non-oauth-scopes.yaml")]
+    [Inline("V31.webhook-example.json")]
+    [Inline("V31.webhook-example.yaml")]
+    [Inline("V31.non-oauth-scopes.json")]
+    [Inline("V31.non-oauth-scopes.yaml")]
+    [Inline("V31.webhook-example.json")]
+    [Inline("V31.webhook-example.yaml")]
     public async Task Should_Fail_Validating_V31_Spec(
         string manifestResourceStreamName,
-        OutputType outputType,
         GenerateCommand sut,
         CommandContext context,
         Settings settings)
@@ -103,17 +99,16 @@ public class GenerateCommandTests
     }
 
     [Theory]
-    [Inline(HttpsUrlPrefix + "petstore.json", OutputType.OneRequestPerFile)]
-    [Inline(HttpsUrlPrefix + "petstore.yaml", OutputType.OneRequestPerFile)]
-    [Inline(HttpUrlPrefix + "petstore.json", OutputType.OneRequestPerFile)]
-    [Inline(HttpUrlPrefix + "petstore.yaml", OutputType.OneRequestPerFile)]
-    [Inline(HttpsUrlPrefix + "petstore.json", OutputType.OneFile)]
-    [Inline(HttpsUrlPrefix + "petstore.yaml", OutputType.OneFile)]
-    [Inline(HttpUrlPrefix + "petstore.json", OutputType.OneFile)]
-    [Inline(HttpUrlPrefix + "petstore.yaml", OutputType.OneFile)]
+    [Inline(HttpsUrlPrefix + "petstore.json")]
+    [Inline(HttpsUrlPrefix + "petstore.yaml")]
+    [Inline(HttpUrlPrefix + "petstore.json")]
+    [Inline(HttpUrlPrefix + "petstore.yaml")]
+    [Inline(HttpsUrlPrefix + "petstore.json")]
+    [Inline(HttpsUrlPrefix + "petstore.yaml")]
+    [Inline(HttpUrlPrefix + "petstore.json")]
+    [Inline(HttpUrlPrefix + "petstore.yaml")]
     public async Task Can_Generate_Code_From_Url(
         string url,
-        OutputType outputType,
         GenerateCommand sut,
         CommandContext context,
         Settings settings)
@@ -130,7 +125,6 @@ public class GenerateCommandTests
     [Inline(HttpsUrlPrefix)]
     public async Task Fails_With_Bad_Url(
         string url,
-        OutputType outputType,
         GenerateCommand sut,
         CommandContext context,
         Settings settings)
