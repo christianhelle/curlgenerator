@@ -87,29 +87,53 @@ Which will produce the following files:
 
 In this example, the contents of `PostAddPet.ps1` looks like this:
 
-```pwsh
-curl -X 'POST' 'https://petstore3.swagger.io/api/v3/pet' \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' \
-  -H 'Content-Type: application/json' \
+```powershell
+<#
+  Request: POST /pet
+  Summary: Add a new pet to the store
+  Description: Add a new pet to the store
+#>
+
+curl -X POST https://petstore3.swagger.io/api/v3/pet `
+  -H 'Accept: application/json' `
+  -H 'Content-Type: application/json' `
   -d '{
-  "id": 10,
-  "name": "doggie",
+  "id": 0,
+  "name": "name",
   "category": {
-    "id": 1,
-    "name": "Dogs"
+    "id": 0,
+    "name": "name"
   },
   "photoUrls": [
-    "string"
+    ""
   ],
   "tags": [
     {
       "id": 0,
-      "name": "string"
+      "name": "name"
     }
   ],
   "status": "available"
 }'
+```
+
+The generated script will contain mandatory parameters for operations where the path contains parameters, it will look something like this:
+
+```powershell
+<#
+  Request: GET /pet/{petId}
+  Summary: Find pet by ID
+  Description: Returns a single pet
+#>
+param(
+   <# ID of pet to return #>
+   [Parameter(Mandatory=$True)]
+   [String] $petId
+)
+
+curl -X GET https://petstore3.swagger.io/api/v3/pet/$petId `
+  -H 'Accept: application/json' `
+  -H 'Content-Type: application/json'
 ```
 
 Here's an advanced example of generating `.ps1` files for a REST API hosted on Microsoft Azure that uses the Microsoft Entra ID service as an STS. For this example, I use PowerShell and Azure CLI to retrieve an access token for the user I'm currently logged in with.
