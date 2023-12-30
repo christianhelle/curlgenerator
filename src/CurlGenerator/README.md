@@ -30,7 +30,7 @@ OPTIONS:
         --authorization-header <HEADER>                         Authorization header to use for all requests                                                                  
         --content-type <CONTENT-TYPE>      application/json     Default Content-Type header to use for all requests                                                           
         --base-url <BASE-URL>                                   Default Base URL to use for all requests. Use this if the OpenAPI spec doesn't explicitly specify a server URL
-        --output-type <OUTPUT-TYPE>        OneRequestPerFile    OneRequestPerFile generates one .http file per request. OneFile generates a single .http file for all requests
+        --output-type <OUTPUT-TYPE>        OneRequestPerFile    OneRequestPerFile generates one .ps1 file per request. OneFile generates a single .ps1 file for all requests
         --azure-scope <SCOPE>                                   Azure Entra ID Scope to use for retrieving Access Token for Authorization header                              
         --azure-tenant-id <TENANT-ID>                           Azure Entra ID Tenant ID to use for retrieving Access Token for Authorization header                          
 ```
@@ -64,62 +64,55 @@ Duration: 00:00:02.3089450
 Which will produce the following files:
 
 ```sh
--rw-r--r-- 1 christian 197121  593 Dec 10 10:44 DeleteOrder.http        
--rw-r--r-- 1 christian 197121  231 Dec 10 10:44 DeletePet.http
--rw-r--r-- 1 christian 197121  358 Dec 10 10:44 DeleteUser.http
--rw-r--r-- 1 christian 197121  432 Dec 10 10:44 GetFindPetsByStatus.http
--rw-r--r-- 1 christian 197121  504 Dec 10 10:44 GetFindPetsByTags.http  
--rw-r--r-- 1 christian 197121  371 Dec 10 10:44 GetInventory.http       
--rw-r--r-- 1 christian 197121  247 Dec 10 10:44 GetLoginUser.http       
--rw-r--r-- 1 christian 197121  291 Dec 10 10:44 GetLogoutUser.http      
--rw-r--r-- 1 christian 197121  540 Dec 10 10:44 GetOrderById.http
--rw-r--r-- 1 christian 197121  275 Dec 10 10:44 GetPetById.http
--rw-r--r-- 1 christian 197121  245 Dec 10 10:44 GetUserByName.http
--rw-r--r-- 1 christian 197121  513 Dec 10 10:44 PostAddPet.http
--rw-r--r-- 1 christian 197121  521 Dec 10 10:44 PostCreateUser.http
--rw-r--r-- 1 christian 197121  610 Dec 10 10:44 PostCreateUsersWithListInput.http
--rw-r--r-- 1 christian 197121  464 Dec 10 10:44 PostPlaceOrder.http
--rw-r--r-- 1 christian 197121  299 Dec 10 10:44 PostUpdatePetWithForm.http
--rw-r--r-- 1 christian 197121  274 Dec 10 10:44 PostUploadFile.http
--rw-r--r-- 1 christian 197121  513 Dec 10 10:44 PutUpdatePet.http
--rw-r--r-- 1 christian 197121  541 Dec 10 10:44 PutUpdateUser.http
+-rw-r--r-- 1 christian 197121  593 Dec 10 10:44 DeleteOrder.ps1        
+-rw-r--r-- 1 christian 197121  231 Dec 10 10:44 DeletePet.ps1
+-rw-r--r-- 1 christian 197121  358 Dec 10 10:44 DeleteUser.ps1
+-rw-r--r-- 1 christian 197121  432 Dec 10 10:44 GetFindPetsByStatus.ps1
+-rw-r--r-- 1 christian 197121  504 Dec 10 10:44 GetFindPetsByTags.ps1  
+-rw-r--r-- 1 christian 197121  371 Dec 10 10:44 GetInventory.ps1       
+-rw-r--r-- 1 christian 197121  247 Dec 10 10:44 GetLoginUser.ps1       
+-rw-r--r-- 1 christian 197121  291 Dec 10 10:44 GetLogoutUser.ps1      
+-rw-r--r-- 1 christian 197121  540 Dec 10 10:44 GetOrderById.ps1
+-rw-r--r-- 1 christian 197121  275 Dec 10 10:44 GetPetById.ps1
+-rw-r--r-- 1 christian 197121  245 Dec 10 10:44 GetUserByName.ps1
+-rw-r--r-- 1 christian 197121  513 Dec 10 10:44 PostAddPet.ps1
+-rw-r--r-- 1 christian 197121  521 Dec 10 10:44 PostCreateUser.ps1
+-rw-r--r-- 1 christian 197121  610 Dec 10 10:44 PostCreateUsersWithListInput.ps1
+-rw-r--r-- 1 christian 197121  464 Dec 10 10:44 PostPlaceOrder.ps1
+-rw-r--r-- 1 christian 197121  299 Dec 10 10:44 PostUpdatePetWithForm.ps1
+-rw-r--r-- 1 christian 197121  274 Dec 10 10:44 PostUploadFile.ps1
+-rw-r--r-- 1 christian 197121  513 Dec 10 10:44 PutUpdatePet.ps1
+-rw-r--r-- 1 christian 197121  541 Dec 10 10:44 PutUpdateUser.ps1
 ```
 
-In this example, the contents of `PostAddPet.http` looks like this:
+In this example, the contents of `PostAddPet.ps1` looks like this:
 
-```sh
-@contentType = application/json
-
-#############################################
-### Request: POST /pet
-### Summary: Add a new pet to the store
-### Description: Add a new pet to the store
-#############################################
-
-POST https://petstore3.swagger.io/api/v3/pet
-Content-Type: {{contentType}}
-
-{
-  "id": 0,
-  "name": "name",
+```pwsh
+curl -X 'POST' 'https://petstore3.swagger.io/api/v3/pet' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "id": 10,
+  "name": "doggie",
   "category": {
-    "id": 0,
-    "name": "name"
+    "id": 1,
+    "name": "Dogs"
   },
   "photoUrls": [
-    ""
+    "string"
   ],
   "tags": [
     {
       "id": 0,
-      "name": "name"
+      "name": "string"
     }
   ],
   "status": "available"
-}
+}'
 ```
 
-Here's an advanced example of generating `.http` files for a REST API hosted on Microsoft Azure that uses the Microsoft Entra ID service as an STS. For this example, I use PowerShell and Azure CLI to retrieve an access token for the user I'm currently logged in with.
+Here's an advanced example of generating `.ps1` files for a REST API hosted on Microsoft Azure that uses the Microsoft Entra ID service as an STS. For this example, I use PowerShell and Azure CLI to retrieve an access token for the user I'm currently logged in with.
 
 ```powershell
 az account get-access-token --scope [Some Application ID URI]/.default `
