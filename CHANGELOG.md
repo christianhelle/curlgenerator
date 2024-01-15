@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Update dependency xunit to v2.6.6 [\#13](https://github.com/christianhelle/curlgenerator/pull/13) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.1 [\#10](https://github.com/christianhelle/curlgenerator/pull/10) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14 \(major\) [\#9](https://github.com/christianhelle/curlgenerator/pull/9) ([renovate[bot]](https://github.com/apps/renovate))
 - Update actions/upload-artifact action to v4 [\#7](https://github.com/christianhelle/curlgenerator/pull/7) ([renovate[bot]](https://github.com/apps/renovate))
