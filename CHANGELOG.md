@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Update nswag monorepo to v14.0.2 [\#15](https://github.com/christianhelle/curlgenerator/pull/15) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.Readers to v1.6.12 [\#14](https://github.com/christianhelle/curlgenerator/pull/14) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency xunit to v2.6.6 [\#13](https://github.com/christianhelle/curlgenerator/pull/13) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.1 [\#10](https://github.com/christianhelle/curlgenerator/pull/10) ([renovate[bot]](https://github.com/apps/renovate))
