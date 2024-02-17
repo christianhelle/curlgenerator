@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Update xunit-dotnet monorepo [\#22](https://github.com/christianhelle/curlgenerator/pull/22) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.Extensions.Azure to v1.7.2 [\#20](https://github.com/christianhelle/curlgenerator/pull/20) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.NET.Test.Sdk to v17.9.0 [\#19](https://github.com/christianhelle/curlgenerator/pull/19) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.3 [\#18](https://github.com/christianhelle/curlgenerator/pull/18) ([renovate[bot]](https://github.com/apps/renovate))
