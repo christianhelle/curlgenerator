@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Bump coverlet.collector from 6.0.1 to 6.0.2 [\#28](https://github.com/christianhelle/curlgenerator/pull/28) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.OpenApi.Readers to v1.6.14 [\#26](https://github.com/christianhelle/curlgenerator/pull/26) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency coverlet.collector to v6.0.1 [\#24](https://github.com/christianhelle/curlgenerator/pull/24) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo [\#22](https://github.com/christianhelle/curlgenerator/pull/22) ([renovate[bot]](https://github.com/apps/renovate))
