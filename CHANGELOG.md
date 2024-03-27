@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Update nswag monorepo to v14.0.7 [\#31](https://github.com/christianhelle/curlgenerator/pull/31) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.4 [\#30](https://github.com/christianhelle/curlgenerator/pull/30) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to v1.6.0 [\#29](https://github.com/christianhelle/curlgenerator/pull/29) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump coverlet.collector from 6.0.1 to 6.0.2 [\#28](https://github.com/christianhelle/curlgenerator/pull/28) ([dependabot[bot]](https://github.com/apps/dependabot))
