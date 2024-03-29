@@ -7,6 +7,7 @@
 **Merged pull requests:**
 
 - Update dependency Microsoft.OpenApi.OData to v1.6.1 [\#35](https://github.com/christianhelle/curlgenerator/pull/35) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency Exceptionless to v6.0.4 [\#34](https://github.com/christianhelle/curlgenerator/pull/34) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.7 [\#31](https://github.com/christianhelle/curlgenerator/pull/31) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.4 [\#30](https://github.com/christianhelle/curlgenerator/pull/30) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to v1.6.0 [\#29](https://github.com/christianhelle/curlgenerator/pull/29) ([renovate[bot]](https://github.com/apps/renovate))
