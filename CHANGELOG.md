@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Update dependency Microsoft.OpenApi.OData to v1.6.2 [\#47](https://github.com/christianhelle/curlgenerator/pull/47) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Spectre.Console.Cli from 0.49.0 to 0.49.1 [\#46](https://github.com/christianhelle/curlgenerator/pull/46) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Spectre.Console.Cli from 0.48.0 to 0.49.0 [\#44](https://github.com/christianhelle/curlgenerator/pull/44) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Spectre.Console.Cli to v0.49.0 [\#43](https://github.com/christianhelle/curlgenerator/pull/43) ([renovate[bot]](https://github.com/apps/renovate))
