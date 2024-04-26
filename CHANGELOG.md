@@ -6,6 +6,9 @@
 
 **Merged pull requests:**
 
+- Bump Spectre.Console.Cli from 0.49.0 to 0.49.1 [\#46](https://github.com/christianhelle/curlgenerator/pull/46) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump Spectre.Console.Cli from 0.48.0 to 0.49.0 [\#44](https://github.com/christianhelle/curlgenerator/pull/44) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update dependency Spectre.Console.Cli to v0.49.0 [\#43](https://github.com/christianhelle/curlgenerator/pull/43) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.Extensions.Azure to v1.7.3 [\#41](https://github.com/christianhelle/curlgenerator/pull/41) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo [\#38](https://github.com/christianhelle/curlgenerator/pull/38) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Atc.Test to v1.0.89 [\#37](https://github.com/christianhelle/curlgenerator/pull/37) ([renovate[bot]](https://github.com/apps/renovate))
