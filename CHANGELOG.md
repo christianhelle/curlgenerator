@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.OpenApi.OData from 1.6.2 to 1.6.3 [\#52](https://github.com/christianhelle/curlgenerator/pull/52) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update xunit-dotnet monorepo to v2.8.0 [\#48](https://github.com/christianhelle/curlgenerator/pull/48) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to v1.6.2 [\#47](https://github.com/christianhelle/curlgenerator/pull/47) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Spectre.Console.Cli from 0.49.0 to 0.49.1 [\#46](https://github.com/christianhelle/curlgenerator/pull/46) ([dependabot[bot]](https://github.com/apps/dependabot))
