@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.NET.Test.Sdk from 17.9.0 to 17.10.0 [\#56](https://github.com/christianhelle/curlgenerator/pull/56) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.OpenApi.OData to v1.6.4 [\#53](https://github.com/christianhelle/curlgenerator/pull/53) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.OpenApi.OData from 1.6.2 to 1.6.3 [\#52](https://github.com/christianhelle/curlgenerator/pull/52) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update xunit-dotnet monorepo to v2.8.0 [\#48](https://github.com/christianhelle/curlgenerator/pull/48) ([renovate[bot]](https://github.com/apps/renovate))
