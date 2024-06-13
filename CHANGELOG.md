@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Update nswag monorepo to v14.0.8 [\#62](https://github.com/christianhelle/curlgenerator/pull/62) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to v1.6.6 [\#61](https://github.com/christianhelle/curlgenerator/pull/61) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to v1.6.5 [\#60](https://github.com/christianhelle/curlgenerator/pull/60) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo to v2.8.1 [\#57](https://github.com/christianhelle/curlgenerator/pull/57) ([renovate[bot]](https://github.com/apps/renovate))
