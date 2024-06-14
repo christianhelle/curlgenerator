@@ -15,6 +15,11 @@ public class Settings : CommandSettings
     [CommandOption("-o|--output <OUTPUT>")]
     [DefaultValue("./")]
     public string OutputFolder { get; set; } = "./";
+    
+    [Description("Generate Bash scripts")]
+    [CommandOption("--bash")]
+    [DefaultValue(false)]
+    public bool GenerateBashScripts { get; set; }
 
     [Description("Don't log errors or collect telemetry")]
     [CommandOption("--no-logging")]

@@ -27,4 +27,9 @@ public class GeneratorSettings
     /// Gets or sets the default BaseUrl to use for all requests
     /// </summary>
     public string? BaseUrl { get; set; }
+    
+    /// <summary>
+    /// Gets or sets a value indicating whether to generate bash scripts.
+    /// </summary>
+    public bool GenerateBashScripts { get; set; }
 }
