@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Update dependency Microsoft.Extensions.Azure to v1.7.4 [\#65](https://github.com/christianhelle/curlgenerator/pull/65) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.8 [\#62](https://github.com/christianhelle/curlgenerator/pull/62) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to v1.6.6 [\#61](https://github.com/christianhelle/curlgenerator/pull/61) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to v1.6.5 [\#60](https://github.com/christianhelle/curlgenerator/pull/60) ([renovate[bot]](https://github.com/apps/renovate))
