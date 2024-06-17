@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.1.4...HEAD)
 
+**Implemented enhancements:**
+
+- Added bash curl generation [\#67](https://github.com/christianhelle/curlgenerator/pull/67) ([msbel5](https://github.com/msbel5))
+
 **Merged pull requests:**
 
 - Update dependency Microsoft.Extensions.Azure to v1.7.4 [\#65](https://github.com/christianhelle/curlgenerator/pull/65) ([renovate[bot]](https://github.com/apps/renovate))
