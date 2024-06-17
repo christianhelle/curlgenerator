@@ -94,8 +94,10 @@ function RunTests {
                     Copy-Item $filename ./openapi.$format
                     if ($version -eq "v3.1") {
                         Generate -format $format -output $_/$version/$format -args "--skip-validation"
+                        Generate -format $format -output $_/$version/$format -args "--skip-validation --bash"
                     } else {
                         Generate -format $format -output $_/$version/$format
+                        Generate -format $format -output $_/$version/$format -args "--bash"
                     }
                 }
             }
