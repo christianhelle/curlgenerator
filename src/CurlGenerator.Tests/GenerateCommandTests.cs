@@ -92,6 +92,7 @@ public class GenerateCommandTests
         var json = EmbeddedResources.GetStringFromEmbeddedResource(manifestResourceStreamName);
         settings.OpenApiPath = await TestFile.CreateSwaggerFile(json, manifestResourceStreamName);
         settings.NoLogging = true;
+        settings.SkipValidation = false;
 
         (await sut.ExecuteAsync(context, settings))
             .Should()

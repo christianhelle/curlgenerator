@@ -38,6 +38,7 @@ public class GenerateCommand : AsyncCommand<Settings>
                 OpenApiPath = settings.OpenApiPath,
                 ContentType = settings.ContentType,
                 BaseUrl = settings.BaseUrl,
+                GenerateBashScripts = settings.GenerateBashScripts
             };
 
             var result = await ScriptFileGenerator.Generate(generatorSettings);

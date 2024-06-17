@@ -36,6 +36,11 @@ internal static class Program
                 configuration
                     .AddExample(
                         "./openapi.json",
+                        "--bash");
+                
+                configuration
+                    .AddExample(
+                        "./openapi.json",
                         "--output-type",
                         "onefile");
 
