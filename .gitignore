@@ -398,3 +398,5 @@ FodyWeavers.xsd
 *.sln.iml
 .idea
 test/Generated/
+test/openapi.json
+test/openapi.yaml
