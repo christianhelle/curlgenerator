@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- chore\(deps\): update dependency microsoft.openapi.odata to v1.6.7 [\#69](https://github.com/christianhelle/curlgenerator/pull/69) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency microsoft.openapi.readers to v1.6.15 [\#68](https://github.com/christianhelle/curlgenerator/pull/68) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.Extensions.Azure to v1.7.4 [\#65](https://github.com/christianhelle/curlgenerator/pull/65) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to v14.0.8 [\#62](https://github.com/christianhelle/curlgenerator/pull/62) ([renovate[bot]](https://github.com/apps/renovate))
