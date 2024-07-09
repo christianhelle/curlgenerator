@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/christianhelle/curlgenerator/tree/HEAD)
 
-[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.1.4...HEAD)
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.5...HEAD)
+
+**Merged pull requests:**
+
+- chore\(deps\): update xunit-dotnet monorepo [\#71](https://github.com/christianhelle/curlgenerator/pull/71) ([renovate[bot]](https://github.com/apps/renovate))
+
+## [0.2.5](https://github.com/christianhelle/curlgenerator/tree/0.2.5) (2024-06-27)
+
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.1.4...0.2.5)
 
 **Implemented enhancements:**
 
