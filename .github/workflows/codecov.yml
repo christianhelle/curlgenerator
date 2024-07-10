@@ -21,6 +21,7 @@ on:
 
 env:
   VERSION: 0.2.1.${{ github.run_number }}
+  CODECOV_TOKEN: 1c9f4d51-92d8-4eb8-986f-75d7f3904674
 
 jobs:
   build:
