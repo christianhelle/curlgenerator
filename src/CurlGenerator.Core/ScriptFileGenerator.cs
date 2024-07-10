@@ -227,7 +227,6 @@ public static class ScriptFileGenerator
         {
             using var writer = new StreamWriter(LogFilePath, true);
             writer.WriteLine($"{DateTime.Now}: {message}");
-
         }
         catch
         {
