@@ -15,11 +15,11 @@ public static class ScriptFileGenerator
 
     public static async Task<GeneratorResult> Generate(GeneratorSettings settings)
     {
-        Log("Starting generation...");
-        Log($"Settings: {SerializeObject(settings)}");
+        TryLog("Starting generation...");
+        TryLog($"Settings: {SerializeObject(settings)}");
 
         var document = await OpenApiDocumentFactory.CreateAsync(settings.OpenApiPath);
-        Log($"Document: {SerializeObject(document)}");
+        TryLog($"Document: {SerializeObject(document)}");
 
         var generator = new CSharpClientGenerator(document, new CSharpClientGeneratorSettings());
         generator.BaseSettings.OperationNameGenerator = new OperationNameGenerator();
@@ -33,7 +33,7 @@ public static class ScriptFileGenerator
                       baseUrl;
         }
 
-        Log($"Base URL: {baseUrl}");
+        TryLog($"Base URL: {baseUrl}");
 
         return GenerateCode(settings, document, generator, baseUrl);
     }
@@ -47,10 +47,10 @@ public static class ScriptFileGenerator
         var files = new List<ScriptFile>();
         foreach (var kv in document.Paths)
         {
-            Log($"Processing path: {kv.Key}");
+            TryLog($"Processing path: {kv.Key}");
             foreach (var operations in kv.Value)
             {
-                Log($"Processing operation: {operations.Key}");
+                TryLog($"Processing operation: {operations.Key}");
 
                 var operation = operations.Value;
                 var verb = operations.Key.CapitalizeFirstCharacter();
@@ -71,7 +71,7 @@ public static class ScriptFileGenerator
                     code.AppendLine(GenerateBashRequest(settings, baseUrl, verb, kv, operation));
                 }
 
-                Log($"Generated code for {filename}:\n{code}");
+                TryLog($"Generated code for {filename}:\n{code}");
 
                 files.Add(new ScriptFile(filename, code.ToString()));
             }
@@ -87,7 +87,7 @@ public static class ScriptFileGenerator
         KeyValuePair<string, OpenApiPathItem> kv,
         OpenApiOperation operation)
     {
-        Log($"Generating bash request for operation: {operation.OperationId}");
+        TryLog($"Generating bash request for operation: {operation.OperationId}");
 
         var code = new StringBuilder();
         AppendBashSummary(verb, kv, operation, code);
@@ -111,7 +111,7 @@ public static class ScriptFileGenerator
                           ?? operation.RequestBody?.Content?.Keys.FirstOrDefault() 
                           ?? "application/json";
 
-        Log($"Content type for operation {operation.OperationId}: {contentType}");
+        TryLog($"Content type for operation {operation.OperationId}: {contentType}");
         code.AppendLine($"  -H \"Content-Type: {contentType}\" \\");
 
         if (!string.IsNullOrWhiteSpace(settings.AuthorizationHeader))
@@ -147,7 +147,7 @@ public static class ScriptFileGenerator
             code.Length -= 2; // Remove the last backslash and newline
         }
 
-        Log($"Generated bash request: {code}");
+        TryLog($"Generated bash request: {code}");
 
         return code.ToString();
     }
@@ -184,7 +184,7 @@ public static class ScriptFileGenerator
         if (operation.RequestBody?.Content != null)
         {
             var contentType = operation.RequestBody.Content.Keys.FirstOrDefault() ?? "application/json";
-            Log($"Request body content type for operation {operation.OperationId}: {contentType}");
+            TryLog($"Request body content type for operation {operation.OperationId}: {contentType}");
             if (contentType == "application/x-www-form-urlencoded" || contentType == "multipart/form-data")
             {
                 var formData = operation.RequestBody.Content[contentType].Schema.Properties
@@ -221,11 +221,17 @@ public static class ScriptFileGenerator
         code.AppendLine("#");
     }
 
-    private static void Log(string message)
+    private static void TryLog(string message)
     {
-        using (var writer = new StreamWriter(LogFilePath, true))
+        try
         {
+            using var writer = new StreamWriter(LogFilePath, true);
             writer.WriteLine($"{DateTime.Now}: {message}");
+
+        }
+        catch
+        {
+            // Ignore
         }
     }
 
