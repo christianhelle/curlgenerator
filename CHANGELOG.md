@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.5...HEAD)
 
+**Implemented enhancements:**
+
+- House Keeping [\#74](https://github.com/christianhelle/curlgenerator/pull/74) ([christianhelle](https://github.com/christianhelle))
+
 **Merged pull requests:**
 
 - chore\(deps\): update xunit-dotnet monorepo [\#71](https://github.com/christianhelle/curlgenerator/pull/71) ([renovate[bot]](https://github.com/apps/renovate))
