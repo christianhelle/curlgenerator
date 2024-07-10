@@ -21,14 +21,6 @@ public class SwaggerPetstoreTests
     [InlineData(Samples.PetstoreYamlV3, "SwaggerPetstore.yaml")]
     [InlineData(Samples.PetstoreJsonV2, "SwaggerPetstore.json")]
     [InlineData(Samples.PetstoreYamlV2, "SwaggerPetstore.yaml")]
-    [InlineData(Samples.PetstoreJsonV3, "SwaggerPetstore.json")]
-    [InlineData(Samples.PetstoreYamlV3, "SwaggerPetstore.yaml")]
-    [InlineData(Samples.PetstoreJsonV2, "SwaggerPetstore.json")]
-    [InlineData(Samples.PetstoreYamlV2, "SwaggerPetstore.yaml")]
-    [InlineData(Samples.PetstoreJsonV3WithDifferentHeaders, "SwaggerPetstore.json")]
-    [InlineData(Samples.PetstoreYamlV3WithDifferentHeaders, "SwaggerPetstore.yaml")]
-    [InlineData(Samples.PetstoreJsonV2WithDifferentHeaders, "SwaggerPetstore.json")]
-    [InlineData(Samples.PetstoreYamlV2WithDifferentHeaders, "SwaggerPetstore.yaml")]
     [InlineData(Samples.PetstoreJsonV3WithDifferentHeaders, "SwaggerPetstore.json")]
     [InlineData(Samples.PetstoreYamlV3WithDifferentHeaders, "SwaggerPetstore.yaml")]
     [InlineData(Samples.PetstoreJsonV2WithDifferentHeaders, "SwaggerPetstore.json")]
@@ -47,10 +39,6 @@ public class SwaggerPetstoreTests
     }
 
     [Theory]
-    [InlineData(HttpsUrlPrefix + "petstore.json")]
-    [InlineData(HttpsUrlPrefix + "petstore.yaml")]
-    [InlineData(HttpUrlPrefix + "petstore.json")]
-    [InlineData(HttpUrlPrefix + "petstore.yaml")]
     [InlineData(HttpsUrlPrefix + "petstore.json")]
     [InlineData(HttpsUrlPrefix + "petstore.yaml")]
     [InlineData(HttpUrlPrefix + "petstore.json")]
@@ -74,10 +62,6 @@ public class SwaggerPetstoreTests
     }
 
     [Theory]
-    [InlineData(HttpsUrlPrefix + "petstore.json")]
-    [InlineData(HttpsUrlPrefix + "petstore.yaml")]
-    [InlineData(HttpUrlPrefix + "petstore.json")]
-    [InlineData(HttpUrlPrefix + "petstore.yaml")]
     [InlineData(HttpsUrlPrefix + "petstore.json")]
     [InlineData(HttpsUrlPrefix + "petstore.yaml")]
     [InlineData(HttpUrlPrefix + "petstore.json")]
