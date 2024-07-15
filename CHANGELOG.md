@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Fix missing query string parameters in URL in generated Powershell scripts [\#75](https://github.com/christianhelle/curlgenerator/pull/75) ([christianhelle](https://github.com/christianhelle))
 - House Keeping [\#74](https://github.com/christianhelle/curlgenerator/pull/74) ([christianhelle](https://github.com/christianhelle))
 
 **Merged pull requests:**
