@@ -58,9 +58,9 @@ public static class ScriptFileGenerator
                     .BaseSettings
                     .OperationNameGenerator
                     .GetOperationName(document, kv.Key, verb, operation);
-                    
+
                 var filename = !settings.GenerateBashScripts ? $"{name.CapitalizeFirstCharacter()}.ps1" : $"{name.CapitalizeFirstCharacter()}.sh";
-                    
+
                 var code = new StringBuilder();
                 if (!settings.GenerateBashScripts)
                 {
@@ -107,8 +107,8 @@ public static class ScriptFileGenerator
         code.AppendLine($"  -H \"Accept: application/json\" \\");
 
         // Determine content type based on consumes or request body
-        var contentType = operation.Consumes?.FirstOrDefault() 
-                          ?? operation.RequestBody?.Content?.Keys.FirstOrDefault() 
+        var contentType = operation.Consumes?.FirstOrDefault()
+                          ?? operation.RequestBody?.Content?.Keys.FirstOrDefault()
                           ?? "application/json";
 
         TryLog($"Content type for operation {operation.OperationId}: {contentType}");
@@ -249,10 +249,25 @@ public static class ScriptFileGenerator
     {
         var code = new StringBuilder();
         AppendSummary(verb, kv, operation, code);
-        AppendParameters(verb, kv, operation, code);
+        var parameterNameMap = AppendParameters(verb, kv, operation, code);
 
-        var route = kv.Key.Replace("{", "$").Replace("}", null);
-        code.AppendLine($"curl -X {verb.ToUpperInvariant()} {baseUrl}{route} `");
+        var url = kv.Key.Replace("{", "$").Replace("}", null);
+        if (!settings.GenerateBashScripts)
+        {
+            if (parameterNameMap.Count > 0)
+            {
+                url += "?";
+            }
+
+            foreach (var parameterName in parameterNameMap)
+            {
+                url += $"{parameterName.Key}=${parameterName.Value}&";
+            }
+
+            url = url.Remove(url.Length - 1);
+        }
+
+        code.AppendLine($"curl -X {verb.ToUpperInvariant()} {baseUrl}{url} `");
 
         code.AppendLine($"  -H 'Accept: {settings.ContentType}' `");
         code.AppendLine($"  -H 'Content-Type: {settings.ContentType}' `");
@@ -276,7 +291,7 @@ public static class ScriptFileGenerator
         return code.ToString();
     }
 
-    private static void AppendParameters(
+    private static Dictionary<string, string> AppendParameters(
         string verb,
         KeyValuePair<string, OpenApiPathItem> kv,
         OpenApiOperation operation,
@@ -290,11 +305,12 @@ public static class ScriptFileGenerator
         if (parameters.Length == 0)
         {
             code.AppendLine();
-            return;
+            return new Dictionary<string, string>();
         }
 
         code.AppendLine("param(");
-        
+
+        var parameterNameMap = new Dictionary<string, string>();
         foreach (var parameter in parameters)
         {
             code.AppendLine(
@@ -309,11 +325,14 @@ public static class ScriptFileGenerator
                           [String] ${parameter.Name},
                        """);
             code.AppendLine();
+            parameterNameMap[parameter.Name] = parameter.Name;
         }
         code.Remove(code.Length - 5, 3);
 
         code.AppendLine(")");
         code.AppendLine();
+
+        return parameterNameMap;
     }
 
     private static void AppendSummary(
@@ -337,5 +356,5 @@ public static class ScriptFileGenerator
 
         code.AppendLine("#>");
     }
-    
+
 }
