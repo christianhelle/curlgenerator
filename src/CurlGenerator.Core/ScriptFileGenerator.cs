@@ -254,27 +254,17 @@ public static class ScriptFileGenerator
         var url = kv.Key.Replace("{", "$").Replace("}", null);
         if (!settings.GenerateBashScripts)
         {
-            if (url.Contains("{") || url.Contains("}"))
+            if (parameterNameMap.Count > 0)
             {
-                foreach (var parameterName in parameterNameMap)
-                {
-                    url = url.Replace($"{{{{{parameterName.Key}}}}}", $"${parameterName.Value}");
-                }
+                url += "?";
             }
-            else
+
+            foreach (var parameterName in parameterNameMap)
             {
-                if (parameterNameMap.Count > 0)
-                {
-                    url += "?";
-                }
-
-                foreach (var parameterName in parameterNameMap)
-                {
-                    url += $"{parameterName.Key}=${parameterName.Value}&";
-                }
-
-                url = url.Remove(url.Length - 1);
+                url += $"{parameterName.Key}=${parameterName.Value}&";
             }
+
+            url = url.Remove(url.Length - 1);
         }
 
         code.AppendLine($"curl -X {verb.ToUpperInvariant()} {baseUrl}{url} `");
