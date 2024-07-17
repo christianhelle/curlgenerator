@@ -11,6 +11,7 @@
 
 **Merged pull requests:**
 
+- chore\(deps\): update nswag monorepo to v14.1.0 [\#76](https://github.com/christianhelle/curlgenerator/pull/76) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update xunit-dotnet monorepo [\#71](https://github.com/christianhelle/curlgenerator/pull/71) ([renovate[bot]](https://github.com/apps/renovate))
 
 ## [0.2.5](https://github.com/christianhelle/curlgenerator/tree/0.2.5) (2024-06-27)
