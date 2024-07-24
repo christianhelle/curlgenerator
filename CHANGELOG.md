@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/christianhelle/curlgenerator/tree/HEAD)
 
-[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.5...HEAD)
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.6...HEAD)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency microsoft.openapi.odata to v1.6.8 [\#77](https://github.com/christianhelle/curlgenerator/pull/77) ([renovate[bot]](https://github.com/apps/renovate))
+
+## [0.2.6](https://github.com/christianhelle/curlgenerator/tree/0.2.6) (2024-07-17)
+
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.5...0.2.6)
 
 **Implemented enhancements:**
 
