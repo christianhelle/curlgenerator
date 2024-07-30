@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- chore\(deps\): update dependency microsoft.openapi.readers to v1.6.16 [\#78](https://github.com/christianhelle/curlgenerator/pull/78) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency microsoft.openapi.odata to v1.6.8 [\#77](https://github.com/christianhelle/curlgenerator/pull/77) ([renovate[bot]](https://github.com/apps/renovate))
 
 ## [0.2.6](https://github.com/christianhelle/curlgenerator/tree/0.2.6) (2024-07-17)
