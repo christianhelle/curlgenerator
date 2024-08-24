@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- chore\(deps\): update dependency microsoft.openapi.readers to v1.6.18 [\#87](https://github.com/christianhelle/curlgenerator/pull/87) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.NET.Test.Sdk from 17.10.0 to 17.11.0 [\#86](https://github.com/christianhelle/curlgenerator/pull/86) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Microsoft.Extensions.Azure from 1.7.4 to 1.7.5 [\#84](https://github.com/christianhelle/curlgenerator/pull/84) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Atc.Test from 1.0.89 to 1.0.96 [\#83](https://github.com/christianhelle/curlgenerator/pull/83) ([dependabot[bot]](https://github.com/apps/dependabot))
