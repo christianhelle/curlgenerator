@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.OpenApi.Readers from 1.6.18 to 1.6.21 [\#91](https://github.com/christianhelle/curlgenerator/pull/91) ([dependabot[bot]](https://github.com/apps/dependabot))
 - chore\(deps\): update dependency microsoft.net.test.sdk to 17.11.1 [\#90](https://github.com/christianhelle/curlgenerator/pull/90) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency microsoft.openapi.readers to v1.6.18 [\#87](https://github.com/christianhelle/curlgenerator/pull/87) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.NET.Test.Sdk from 17.10.0 to 17.11.0 [\#86](https://github.com/christianhelle/curlgenerator/pull/86) ([dependabot[bot]](https://github.com/apps/dependabot))
