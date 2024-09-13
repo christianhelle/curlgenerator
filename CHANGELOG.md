@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Bump Atc.Test from 1.0.98 to 1.0.100 [\#94](https://github.com/christianhelle/curlgenerator/pull/94) ([dependabot[bot]](https://github.com/apps/dependabot))
 - chore\(deps\): update dependency atc.test to 1.0.98 [\#93](https://github.com/christianhelle/curlgenerator/pull/93) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency fluentassertions to 6.12.1 [\#92](https://github.com/christianhelle/curlgenerator/pull/92) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.OpenApi.Readers from 1.6.18 to 1.6.21 [\#91](https://github.com/christianhelle/curlgenerator/pull/91) ([dependabot[bot]](https://github.com/apps/dependabot))
