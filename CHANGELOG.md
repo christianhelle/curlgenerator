@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Bump xunit from 2.9.1 to 2.9.2 [\#100](https://github.com/christianhelle/curlgenerator/pull/100) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump xunit from 2.9.0 to 2.9.1 [\#99](https://github.com/christianhelle/curlgenerator/pull/99) ([dependabot[bot]](https://github.com/apps/dependabot))
 - chore\(deps\): update dependency atc.test to 1.0.105 [\#96](https://github.com/christianhelle/curlgenerator/pull/96) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency atc.test to 1.0.102 [\#95](https://github.com/christianhelle/curlgenerator/pull/95) ([renovate[bot]](https://github.com/apps/renovate))
