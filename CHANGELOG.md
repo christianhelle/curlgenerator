@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- chore\(deps\): update dependency atc.test to 1.1.2 [\#103](https://github.com/christianhelle/curlgenerator/pull/103) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency microsoft.openapi.readers to 1.6.22 [\#101](https://github.com/christianhelle/curlgenerator/pull/101) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump xunit from 2.9.1 to 2.9.2 [\#100](https://github.com/christianhelle/curlgenerator/pull/100) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump xunit from 2.9.0 to 2.9.1 [\#99](https://github.com/christianhelle/curlgenerator/pull/99) ([dependabot[bot]](https://github.com/apps/dependabot))
