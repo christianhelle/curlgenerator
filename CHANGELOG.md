@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.6...HEAD)
 
+**Implemented enhancements:**
+
+- NSwag v14.2.0 [\#114](https://github.com/christianhelle/curlgenerator/pull/114) ([renovate[bot]](https://github.com/apps/renovate))
+
 **Merged pull requests:**
 
 - chore\(deps\): update dependency atc.test to 1.1.4 [\#107](https://github.com/christianhelle/curlgenerator/pull/107) ([renovate[bot]](https://github.com/apps/renovate))
