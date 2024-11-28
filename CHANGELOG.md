@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.Extensions.Azure from 1.7.6 to 1.9.0 [\#115](https://github.com/christianhelle/curlgenerator/pull/115) ([dependabot[bot]](https://github.com/apps/dependabot))
 - chore\(deps\): update dependency microsoft.net.test.sdk to 17.12.0 [\#113](https://github.com/christianhelle/curlgenerator/pull/113) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump FluentAssertions from 6.12.1 to 6.12.2 [\#111](https://github.com/christianhelle/curlgenerator/pull/111) ([dependabot[bot]](https://github.com/apps/dependabot))
 - chore\(deps\): update dependency atc.test to 1.1.4 [\#107](https://github.com/christianhelle/curlgenerator/pull/107) ([renovate[bot]](https://github.com/apps/renovate))
