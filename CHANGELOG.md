@@ -11,6 +11,7 @@
 **Merged pull requests:**
 
 - Bump coverlet.collector from 6.0.2 to 6.0.3 [\#126](https://github.com/christianhelle/curlgenerator/pull/126) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump Microsoft.OpenApi.OData from 1.6.8 to 1.6.9 [\#124](https://github.com/christianhelle/curlgenerator/pull/124) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump FluentAssertions from 6.12.2 to 7.0.0 [\#118](https://github.com/christianhelle/curlgenerator/pull/118) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Microsoft.Extensions.Azure from 1.7.6 to 1.9.0 [\#115](https://github.com/christianhelle/curlgenerator/pull/115) ([dependabot[bot]](https://github.com/apps/dependabot))
 - chore\(deps\): update dependency microsoft.net.test.sdk to 17.12.0 [\#113](https://github.com/christianhelle/curlgenerator/pull/113) ([renovate[bot]](https://github.com/apps/renovate))
