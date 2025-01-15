@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- Update dependency Microsoft.OpenApi.OData to 1.7.1 [\#132](https://github.com/christianhelle/curlgenerator/pull/132) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo [\#128](https://github.com/christianhelle/curlgenerator/pull/128) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Atc.Test to 1.1.9 [\#127](https://github.com/christianhelle/curlgenerator/pull/127) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump coverlet.collector from 6.0.2 to 6.0.3 [\#126](https://github.com/christianhelle/curlgenerator/pull/126) ([dependabot[bot]](https://github.com/apps/dependabot))
