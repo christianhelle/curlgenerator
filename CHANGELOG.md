@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- Bump coverlet.collector from 6.0.3 to 6.0.4 [\#136](https://github.com/christianhelle/curlgenerator/pull/136) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency FluentAssertions to 7.1.0 [\#133](https://github.com/christianhelle/curlgenerator/pull/133) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to 1.7.1 [\#132](https://github.com/christianhelle/curlgenerator/pull/132) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo [\#128](https://github.com/christianhelle/curlgenerator/pull/128) ([renovate[bot]](https://github.com/apps/renovate))
