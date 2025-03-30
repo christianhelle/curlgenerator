@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- Update nswag monorepo to 14.3.0 [\#154](https://github.com/christianhelle/curlgenerator/pull/154) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to 1.7.4 [\#142](https://github.com/christianhelle/curlgenerator/pull/142) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to 1.7.3 [\#139](https://github.com/christianhelle/curlgenerator/pull/139) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.OpenApi.OData from 1.7.1 to 1.7.2 [\#138](https://github.com/christianhelle/curlgenerator/pull/138) ([dependabot[bot]](https://github.com/apps/dependabot))
