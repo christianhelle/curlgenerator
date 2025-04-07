@@ -14,6 +14,7 @@
 - Update dependency Microsoft.OpenApi.OData to 1.7.5 [\#155](https://github.com/christianhelle/curlgenerator/pull/155) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to 14.3.0 [\#154](https://github.com/christianhelle/curlgenerator/pull/154) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.Extensions.Azure from 1.9.0 to 1.11.0 [\#153](https://github.com/christianhelle/curlgenerator/pull/153) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump FluentAssertions from 7.1.0 to 7.2.0 [\#152](https://github.com/christianhelle/curlgenerator/pull/152) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.Extensions.Azure to 1.11.0 [\#144](https://github.com/christianhelle/curlgenerator/pull/144) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to 1.7.4 [\#142](https://github.com/christianhelle/curlgenerator/pull/142) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to 1.7.3 [\#139](https://github.com/christianhelle/curlgenerator/pull/139) ([renovate[bot]](https://github.com/apps/renovate))
