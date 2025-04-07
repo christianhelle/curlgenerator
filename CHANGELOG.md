@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Convert parameters using kebab case to snake case [\#158](https://github.com/christianhelle/curlgenerator/pull/158) ([christianhelle](https://github.com/christianhelle))
 - NSwag v14.2.0 [\#114](https://github.com/christianhelle/curlgenerator/pull/114) ([renovate[bot]](https://github.com/apps/renovate))
 
 **Merged pull requests:**
