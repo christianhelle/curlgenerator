@@ -22,6 +22,7 @@
 - Update dependency Microsoft.OpenApi.OData to 1.7.3 [\#139](https://github.com/christianhelle/curlgenerator/pull/139) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.OpenApi.OData from 1.7.1 to 1.7.2 [\#138](https://github.com/christianhelle/curlgenerator/pull/138) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump coverlet.collector from 6.0.3 to 6.0.4 [\#136](https://github.com/christianhelle/curlgenerator/pull/136) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update dependency Atc.Test to 1.1.18 [\#134](https://github.com/christianhelle/curlgenerator/pull/134) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency FluentAssertions to 7.1.0 [\#133](https://github.com/christianhelle/curlgenerator/pull/133) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.OData to 1.7.1 [\#132](https://github.com/christianhelle/curlgenerator/pull/132) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo [\#128](https://github.com/christianhelle/curlgenerator/pull/128) ([renovate[bot]](https://github.com/apps/renovate))
