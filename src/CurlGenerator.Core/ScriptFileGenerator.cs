@@ -59,7 +59,9 @@ public static class ScriptFileGenerator
                     .OperationNameGenerator
                     .GetOperationName(document, kv.Key, verb, operation);
 
-                var filename = !settings.GenerateBashScripts ? $"{name.CapitalizeFirstCharacter()}.ps1" : $"{name.CapitalizeFirstCharacter()}.sh";
+                var filename = !settings.GenerateBashScripts
+                    ? $"{name.CapitalizeFirstCharacter()}.ps1"
+                    : $"{name.CapitalizeFirstCharacter()}.sh";
 
                 var code = new StringBuilder();
                 if (!settings.GenerateBashScripts)
@@ -98,7 +100,7 @@ public static class ScriptFileGenerator
         // Add query parameters directly to the URL if there are any
         var queryParams = operation.Parameters
             .Where(p => p.Kind == OpenApiParameterKind.Query)
-            .Select(p => $"{p.Name}=${{{p.Name}}}")
+            .Select(p => $"{p.Name}=${{{p.Name.ConvertKebabCaseToSnakeCase()}}}")
             .ToList();
 
         var queryString = queryParams.Any() ? $"?{string.Join("&", queryParams)}" : string.Empty;
@@ -159,7 +161,11 @@ public static class ScriptFileGenerator
         StringBuilder code)
     {
         var parameters = operation.Parameters
-            .Where(p => p.Kind == OpenApiParameterKind.Path || p.Kind == OpenApiParameterKind.Query || p.Kind == OpenApiParameterKind.Header || p.Kind == OpenApiParameterKind.Cookie)
+            .Where(p =>
+                p.Kind == OpenApiParameterKind.Path ||
+                p.Kind == OpenApiParameterKind.Query ||
+                p.Kind == OpenApiParameterKind.Header ||
+                p.Kind == OpenApiParameterKind.Cookie)
             .ToArray();
 
         if (parameters.Length == 0)
@@ -172,12 +178,13 @@ public static class ScriptFileGenerator
 
         foreach (var parameter in parameters)
         {
+            var name = parameter.Name.ConvertKebabCaseToSnakeCase();
             code.AppendLine(
                 parameter.Description is null
-                    ? $"# {parameter.Kind.ToString().ToLowerInvariant()} parameter: {parameter.Name}"
+                    ? $"# {parameter.Kind.ToString().ToLowerInvariant()} parameter: {name}"
                     : $"# {parameter.Description}");
 
-            code.AppendLine($"{parameter.Name}=\"\""); // Initialize the parameter
+            code.AppendLine($"{name}=\"\""); // Initialize the parameter
         }
 
         // Handle form data and file upload fields
@@ -261,7 +268,8 @@ public static class ScriptFileGenerator
 
             foreach (var parameterName in parameterNameMap)
             {
-                url += $"{parameterName.Key}=${parameterName.Value}&";
+                var value = parameterName.Value.ConvertKebabCaseToSnakeCase();
+                url += $"{parameterName.Key}=${value}&";
             }
 
             url = url.Remove(url.Length - 1);
@@ -313,19 +321,20 @@ public static class ScriptFileGenerator
         var parameterNameMap = new Dictionary<string, string>();
         foreach (var parameter in parameters)
         {
+            var name = parameter.Name.ConvertKebabCaseToSnakeCase();
             code.AppendLine(
                 parameter.Description is null
                     ? $"""
-                         [Parameter(Mandatory=$True)]
-                         [String] ${parameter.Name},
+                          [Parameter(Mandatory=$True)]
+                          [String] ${name},
                        """
                     : $"""
                           <# {parameter.Description} #>
                           [Parameter(Mandatory=$True)]
-                          [String] ${parameter.Name},
+                          [String] ${name},
                        """);
             code.AppendLine();
-            parameterNameMap[parameter.Name] = parameter.Name;
+            parameterNameMap[parameter.Name] = name;
         }
         code.Remove(code.Length - 5, 3);
 

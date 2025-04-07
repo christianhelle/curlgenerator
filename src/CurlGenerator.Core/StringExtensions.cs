@@ -15,6 +15,11 @@ public static class StringExtensions
 
         return string.Join(string.Empty, parts);
     }
+    
+    public static string ConvertKebabCaseToSnakeCase(this string str)
+    {
+        return str.Replace("-", "_").ToLowerInvariant();
+    }
 
     public static string ConvertRouteToCamelCase(this string str)
     {
