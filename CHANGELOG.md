@@ -11,6 +11,7 @@
 
 **Merged pull requests:**
 
+- Update dependency Spectre.Console.Cli to 0.50.0 [\#161](https://github.com/christianhelle/curlgenerator/pull/161) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Exceptionless from 6.0.4 to 6.1.0 [\#160](https://github.com/christianhelle/curlgenerator/pull/160) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Microsoft.OpenApi.Readers from 1.6.23 to 1.6.24 [\#157](https://github.com/christianhelle/curlgenerator/pull/157) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.OpenApi.OData to 1.7.5 [\#155](https://github.com/christianhelle/curlgenerator/pull/155) ([renovate[bot]](https://github.com/apps/renovate))
