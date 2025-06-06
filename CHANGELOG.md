@@ -11,6 +11,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.NET.Test.Sdk from 17.14.0 to 17.14.1 [\#167](https://github.com/christianhelle/curlgenerator/pull/167) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.NET.Test.Sdk to 17.14.0 [\#165](https://github.com/christianhelle/curlgenerator/pull/165) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to 14.4.0 [\#162](https://github.com/christianhelle/curlgenerator/pull/162) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Spectre.Console.Cli to 0.50.0 [\#161](https://github.com/christianhelle/curlgenerator/pull/161) ([renovate[bot]](https://github.com/apps/renovate))
