@@ -135,14 +135,14 @@ public class GenerateCommand : AsyncCommand<Settings>
             .AddColumn(new TableColumn("[bold]Component[/]").LeftAligned())
             .AddColumn(new TableColumn("[bold]Count[/]").RightAligned());
 
-        statsTable.AddRow("🛣️  Path Items", $"[blue]{statistics.PathItemCount}[/]");
+        statsTable.AddRow("📝 Path Items", $"[blue]{statistics.PathItemCount}[/]");
         statsTable.AddRow("⚙️  Operations", $"[blue]{statistics.OperationCount}[/]");
         statsTable.AddRow("📝 Parameters", $"[blue]{statistics.ParameterCount}[/]");
         statsTable.AddRow("📦 Request Bodies", $"[blue]{statistics.RequestBodyCount}[/]");
         statsTable.AddRow("📋 Responses", $"[blue]{statistics.ResponseCount}[/]");
         statsTable.AddRow("🔗 Links", $"[blue]{statistics.LinkCount}[/]");
         statsTable.AddRow("📞 Callbacks", $"[blue]{statistics.CallbackCount}[/]");
-        statsTable.AddRow("🏗️  Schemas", $"[blue]{statistics.SchemaCount}[/]");
+        statsTable.AddRow("📝 Schemas", $"[blue]{statistics.SchemaCount}[/]");
 
         AnsiConsole.Write(new Panel(statsTable)
             .Header("[bold blue]📊 OpenAPI Statistics[/]")
