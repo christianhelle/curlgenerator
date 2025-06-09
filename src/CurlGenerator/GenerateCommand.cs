@@ -16,16 +16,15 @@ public class GenerateCommand : AsyncCommand<Settings>
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         if (!settings.NoLogging)
-            Analytics.Configure();
-
-        try
+            Analytics.Configure();        try
         {
             var stopwatch = Stopwatch.StartNew();
-            AnsiConsole.MarkupLine($"[green]cURL Request Generator v{GetType().Assembly.GetName().Version!}[/]");
-            AnsiConsole.MarkupLine(
-                settings.NoLogging
-                    ? "[green]Support key: Unavailable when logging is disabled[/]"
-                    : $"[green]Support key: {SupportInformation.GetSupportKey()}[/]");
+            
+            // Display improved header
+            DisplayHeader(settings);
+            
+            // Display configuration
+            DisplayConfiguration(settings);
 
             if (!settings.SkipValidation)
                 await ValidateOpenApiSpec(settings);
@@ -45,16 +44,13 @@ public class GenerateCommand : AsyncCommand<Settings>
             await Analytics.LogFeatureUsage(settings);
 
             if (!string.IsNullOrWhiteSpace(settings.OutputFolder) && !Directory.Exists(settings.OutputFolder))
-                Directory.CreateDirectory(settings.OutputFolder);
-
-            await Task.WhenAll(
+                Directory.CreateDirectory(settings.OutputFolder);            await Task.WhenAll(
                 result.Files.Select(
                     file => File.WriteAllTextAsync(
                         Path.Combine(settings.OutputFolder, file.Filename),
                         file.Content)));
 
-            AnsiConsole.MarkupLine($"[green]Files: {result.Files.Count}[/]");
-            AnsiConsole.MarkupLine($"[green]Duration: {stopwatch.Elapsed}{Crlf}[/]");
+            DisplayResults(result, stopwatch.Elapsed, settings);
             return 0;
         }
         catch (OpenApiUnsupportedSpecVersionException exception)
@@ -90,11 +86,9 @@ public class GenerateCommand : AsyncCommand<Settings>
              string.IsNullOrWhiteSpace(settings.AzureTenantId)))
         {
             return;
-        }
-
-        try
+        }        try
         {
-            AnsiConsole.MarkupLine($"[green]Acquiring authorization header from Azure Entra ID[/]{Crlf}");
+            AnsiConsole.MarkupLine("[green]🔐 Acquiring authorization header from Azure Entra ID...[/]");
             using var listener = AzureEventSourceListener.CreateConsoleLogger();
             var token = await AzureEntraID
                 .TryGetAccessTokenAsync(
@@ -105,7 +99,7 @@ public class GenerateCommand : AsyncCommand<Settings>
             if (!string.IsNullOrWhiteSpace(token))
             {
                 settings.AuthorizationHeader = $"Bearer {token}";
-                AnsiConsole.MarkupLine($"{Crlf}[green]Successfully acquired access token[/]{Crlf}");
+                AnsiConsole.MarkupLine("[green]✅ Successfully acquired access token[/]");
             }
         }
         catch (Exception exception)
@@ -131,10 +125,30 @@ public class GenerateCommand : AsyncCommand<Settings>
                 TryWriteLine(warning, "yellow", "Warning");
             }
 
-            validationResult.ThrowIfInvalid();
-        }
+            validationResult.ThrowIfInvalid();        }
 
-        AnsiConsole.MarkupLine($"[green]{Crlf}OpenAPI statistics:{Crlf}{validationResult.Statistics}{Crlf}[/]");
+        DisplayOpenApiStatistics(validationResult.Statistics);
+    }    private static void DisplayOpenApiStatistics(OpenApiStats statistics)
+    {
+        var statsTable = new Table()
+            .BorderColor(Color.Blue)
+            .AddColumn(new TableColumn("[bold]Component[/]").LeftAligned())
+            .AddColumn(new TableColumn("[bold]Count[/]").RightAligned());
+
+        statsTable.AddRow("📝 Path Items", $"[blue]{statistics.PathItemCount}[/]");
+        statsTable.AddRow("⚙️  Operations", $"[blue]{statistics.OperationCount}[/]");
+        statsTable.AddRow("📝 Parameters", $"[blue]{statistics.ParameterCount}[/]");
+        statsTable.AddRow("📦 Request Bodies", $"[blue]{statistics.RequestBodyCount}[/]");
+        statsTable.AddRow("📋 Responses", $"[blue]{statistics.ResponseCount}[/]");
+        statsTable.AddRow("🔗 Links", $"[blue]{statistics.LinkCount}[/]");
+        statsTable.AddRow("📞 Callbacks", $"[blue]{statistics.CallbackCount}[/]");
+        statsTable.AddRow("📝 Schemas", $"[blue]{statistics.SchemaCount}[/]");
+
+        AnsiConsole.Write(new Panel(statsTable)
+            .Header("[bold blue]📊 OpenAPI Statistics[/]")
+            .BorderColor(Color.Blue)
+            .Padding(1, 0));
+        AnsiConsole.WriteLine();
     }
 
     private static void TryWriteLine(
@@ -150,5 +164,107 @@ public class GenerateCommand : AsyncCommand<Settings>
         {
             // ignored
         }
+    }
+
+    private static void DisplayHeader(Settings settings)
+    {
+        // Create a fancy header panel
+        var version = typeof(GenerateCommand).Assembly.GetName().Version!.ToString();
+        var headerText = new Text($"🔧 cURL Request Generator v{version}", new Style(Color.Green, decoration: Decoration.Bold));
+        
+        var panel = new Panel(headerText)
+            .BorderColor(Color.Green)
+            .Padding(1, 0)
+            .Expand();
+            
+        AnsiConsole.Write(panel);
+        AnsiConsole.WriteLine();
+        
+        // Support key info
+        var supportKey = settings.NoLogging 
+            ? "[yellow]⚠️  Unavailable when logging is disabled[/]"
+            : $"[green]🔑 Support key: {SupportInformation.GetSupportKey()}[/]";
+        AnsiConsole.MarkupLine(supportKey);
+        AnsiConsole.WriteLine();
+    }
+
+    private static void DisplayConfiguration(Settings settings)
+    {
+        var configTable = new Table()
+            .BorderColor(Color.Grey)
+            .AddColumn(new TableColumn("[bold]Setting[/]").LeftAligned())
+            .AddColumn(new TableColumn("[bold]Value[/]").LeftAligned());
+
+        configTable.AddRow("📁 OpenAPI Source", $"[cyan]{settings.OpenApiPath}[/]");
+        configTable.AddRow("📂 Output Folder", $"[cyan]{settings.OutputFolder}[/]");
+        configTable.AddRow("🌐 Content Type", $"[cyan]{settings.ContentType}[/]");
+        
+        if (!string.IsNullOrWhiteSpace(settings.BaseUrl))
+            configTable.AddRow("🔗 Base URL", $"[cyan]{settings.BaseUrl}[/]");
+            
+        if (settings.GenerateBashScripts)
+            configTable.AddRow("🐚 Bash Scripts", "[green]✓ Enabled[/]");
+            
+        if (settings.SkipValidation)
+            configTable.AddRow("⚠️  Validation", "[yellow]⚠️  Skipped[/]");
+
+        if (!string.IsNullOrWhiteSpace(settings.AuthorizationHeader))
+        {
+            var authHeader = settings.AuthorizationHeader.Length > 50 
+                ? settings.AuthorizationHeader[..47] + "..." 
+                : settings.AuthorizationHeader;
+            configTable.AddRow("🔐 Authorization", $"[dim]{authHeader}[/]");
+        }
+
+        AnsiConsole.Write(new Panel(configTable)
+            .Header("[bold yellow]📋 Configuration[/]")
+            .BorderColor(Color.Yellow)
+            .Padding(1, 0));
+        AnsiConsole.WriteLine();
+    }
+
+    private static void DisplayResults(GeneratorResult result, TimeSpan elapsed, Settings settings)
+    {
+        // Create a results table
+        var resultsTable = new Table()
+            .BorderColor(Color.Green)
+            .AddColumn(new TableColumn("[bold]Metric[/]").LeftAligned())
+            .AddColumn(new TableColumn("[bold]Value[/]").LeftAligned());
+
+        resultsTable.AddRow("📄 Files Generated", $"[green]{result.Files.Count}[/]");
+        resultsTable.AddRow("⏱️  Duration", $"[green]{elapsed.TotalMilliseconds:F0}ms[/]");
+        resultsTable.AddRow("📁 Output Location", $"[cyan]{Path.GetFullPath(settings.OutputFolder)}[/]");
+
+        if (result.Files.Any())
+        {
+            AnsiConsole.Write(new Panel(resultsTable)
+                .Header("[bold green]✅ Generation Complete[/]")
+                .BorderColor(Color.Green)
+                .Padding(1, 0));
+
+            // List generated files
+            AnsiConsole.MarkupLine("[bold yellow]📁 Generated Files:[/]");
+            foreach (var file in result.Files)
+            {
+                var fileSize = System.Text.Encoding.UTF8.GetByteCount(file.Content);
+                var fileSizeText = fileSize switch
+                {
+                    < 1024 => $"{fileSize} bytes",
+                    < 1024 * 1024 => $"{fileSize / 1024.0:F1} KB",
+                    _ => $"{fileSize / (1024.0 * 1024.0):F1} MB"
+                };
+                AnsiConsole.MarkupLine($"  📝 [cyan]{file.Filename}[/] [dim]({fileSizeText})[/]");
+            }
+        }
+        else
+        {
+            AnsiConsole.Write(new Panel(resultsTable)
+                .Header("[bold yellow]⚠️  Generation Complete (No Files)[/]")
+                .BorderColor(Color.Yellow)
+                .Padding(1, 0));
+        }
+        
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold green]🎉 Done![/]");
     }
 }
