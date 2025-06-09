@@ -27,6 +27,7 @@ public class GenerateCommand : AsyncCommand<Settings>
             AnsiConsole.MarkupLine($"[bold cyan]cURL Request Generator v{GetType().Assembly.GetName().Version!}[/]");
             AnsiConsole.MarkupLine(
                 settings.NoLogging
+                    // The dim color is used intentionally to denote lower importance when logging is disabled.
                     ? "[dim]Support key: Unavailable when logging is disabled[/]"
                     : $"[dim]Support key: {SupportInformation.GetSupportKey()}[/]");
             AnsiConsole.WriteLine();
@@ -120,7 +121,7 @@ public class GenerateCommand : AsyncCommand<Settings>
 
         try
         {
-            AnsiConsole.MarkupLine($"[yellow]Acquiring authorization header from Azure Entra ID...[/]");
+            AnsiConsole.MarkupLine($"[dim]Acquiring authorization header from Azure Entra ID...[/]");
             using var listener = AzureEventSourceListener.CreateConsoleLogger();
             var token = await AzureEntraID
                 .TryGetAccessTokenAsync(
@@ -131,7 +132,7 @@ public class GenerateCommand : AsyncCommand<Settings>
             if (!string.IsNullOrWhiteSpace(token))
             {
                 settings.AuthorizationHeader = $"Bearer {token}";
-                AnsiConsole.MarkupLine($"[green]✓ Successfully acquired access token[/]");
+                AnsiConsole.MarkupLine($"[bold green]✓ Successfully acquired access token[/]");
                 AnsiConsole.WriteLine();
             }
         }
