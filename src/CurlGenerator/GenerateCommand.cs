@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using Azure.Core.Diagnostics;
 using CurlGenerator.Core;
 using CurlGenerator.Validation;
@@ -21,11 +22,14 @@ public class GenerateCommand : AsyncCommand<Settings>
         try
         {
             var stopwatch = Stopwatch.StartNew();
-            AnsiConsole.MarkupLine($"[green]cURL Request Generator v{GetType().Assembly.GetName().Version!}[/]");
+            
+            // Display banner
+            AnsiConsole.MarkupLine($"[bold cyan]cURL Request Generator v{GetType().Assembly.GetName().Version!}[/]");
             AnsiConsole.MarkupLine(
                 settings.NoLogging
-                    ? "[green]Support key: Unavailable when logging is disabled[/]"
-                    : $"[green]Support key: {SupportInformation.GetSupportKey()}[/]");
+                    ? "[dim]Support key: Unavailable when logging is disabled[/]"
+                    : $"[dim]Support key: {SupportInformation.GetSupportKey()}[/]");
+            AnsiConsole.WriteLine();
 
             if (!settings.SkipValidation)
                 await ValidateOpenApiSpec(settings);
@@ -53,8 +57,30 @@ public class GenerateCommand : AsyncCommand<Settings>
                         Path.Combine(settings.OutputFolder, file.Filename),
                         file.Content)));
 
-            AnsiConsole.MarkupLine($"[green]Files: {result.Files.Count}[/]");
-            AnsiConsole.MarkupLine($"[green]Duration: {stopwatch.Elapsed}{Crlf}[/]");
+            // Display success summary
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[bold green]✓ Generation completed successfully![/]");
+            AnsiConsole.WriteLine();
+            
+            // Display output information
+            var outputPath = Path.GetFullPath(settings.OutputFolder);
+            AnsiConsole.MarkupLine($"[cyan]Output directory:[/] {outputPath}");
+            AnsiConsole.MarkupLine($"[cyan]Files generated:[/] {result.Files.Count}");
+            AnsiConsole.MarkupLine($"[cyan]Script type:[/] {(settings.GenerateBashScripts ? "Bash (.sh)" : "PowerShell (.ps1)")}");
+            AnsiConsole.MarkupLine($"[cyan]Duration:[/] {stopwatch.Elapsed:c}");
+            
+            // List generated files
+            if (result.Files.Count > 0)
+            {
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[bold]Generated files:[/]");
+                foreach (var file in result.Files.OrderBy(f => f.Filename))
+                {
+                    AnsiConsole.MarkupLine($"  [dim]•[/] {file.Filename}");
+                }
+            }
+            
+            AnsiConsole.WriteLine();
             return 0;
         }
         catch (OpenApiUnsupportedSpecVersionException exception)
@@ -94,7 +120,7 @@ public class GenerateCommand : AsyncCommand<Settings>
 
         try
         {
-            AnsiConsole.MarkupLine($"[green]Acquiring authorization header from Azure Entra ID[/]{Crlf}");
+            AnsiConsole.MarkupLine($"[yellow]Acquiring authorization header from Azure Entra ID...[/]");
             using var listener = AzureEventSourceListener.CreateConsoleLogger();
             var token = await AzureEntraID
                 .TryGetAccessTokenAsync(
@@ -105,7 +131,8 @@ public class GenerateCommand : AsyncCommand<Settings>
             if (!string.IsNullOrWhiteSpace(token))
             {
                 settings.AuthorizationHeader = $"Bearer {token}";
-                AnsiConsole.MarkupLine($"{Crlf}[green]Successfully acquired access token[/]{Crlf}");
+                AnsiConsole.MarkupLine($"[green]✓ Successfully acquired access token[/]");
+                AnsiConsole.WriteLine();
             }
         }
         catch (Exception exception)
@@ -134,7 +161,16 @@ public class GenerateCommand : AsyncCommand<Settings>
             validationResult.ThrowIfInvalid();
         }
 
-        AnsiConsole.MarkupLine($"[green]{Crlf}OpenAPI statistics:{Crlf}{validationResult.Statistics}{Crlf}[/]");
+        AnsiConsole.MarkupLine("[bold green]✓ OpenAPI specification validated successfully[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold]OpenAPI Statistics:[/]");
+        AnsiConsole.MarkupLine($"[dim]• Path Items:[/] {validationResult.Statistics.PathItemCount}");
+        AnsiConsole.MarkupLine($"[dim]• Operations:[/] {validationResult.Statistics.OperationCount}");
+        AnsiConsole.MarkupLine($"[dim]• Parameters:[/] {validationResult.Statistics.ParameterCount}");
+        AnsiConsole.MarkupLine($"[dim]• Request Bodies:[/] {validationResult.Statistics.RequestBodyCount}");
+        AnsiConsole.MarkupLine($"[dim]• Responses:[/] {validationResult.Statistics.ResponseCount}");
+        AnsiConsole.MarkupLine($"[dim]• Schemas:[/] {validationResult.Statistics.SchemaCount}");
+        AnsiConsole.WriteLine();
     }
 
     private static void TryWriteLine(
