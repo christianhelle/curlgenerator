@@ -13,6 +13,7 @@
 
 **Merged pull requests:**
 
+- Bump xunit.runner.visualstudio from 3.1.0 to 3.1.1 [\#169](https://github.com/christianhelle/curlgenerator/pull/169) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Microsoft.NET.Test.Sdk from 17.14.0 to 17.14.1 [\#167](https://github.com/christianhelle/curlgenerator/pull/167) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.NET.Test.Sdk to 17.14.0 [\#165](https://github.com/christianhelle/curlgenerator/pull/165) ([renovate[bot]](https://github.com/apps/renovate))
 - Update nswag monorepo to 14.4.0 [\#162](https://github.com/christianhelle/curlgenerator/pull/162) ([renovate[bot]](https://github.com/apps/renovate))
