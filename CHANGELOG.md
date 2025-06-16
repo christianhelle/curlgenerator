@@ -13,6 +13,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.Extensions.Azure from 1.11.0 to 1.12.0 [\#174](https://github.com/christianhelle/curlgenerator/pull/174) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump xunit.runner.visualstudio from 3.1.0 to 3.1.1 [\#169](https://github.com/christianhelle/curlgenerator/pull/169) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Microsoft.NET.Test.Sdk from 17.14.0 to 17.14.1 [\#167](https://github.com/christianhelle/curlgenerator/pull/167) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.NET.Test.Sdk to 17.14.0 [\#165](https://github.com/christianhelle/curlgenerator/pull/165) ([renovate[bot]](https://github.com/apps/renovate))
