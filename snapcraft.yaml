@@ -1,0 +1,42 @@
+name: curlgenerator
+base: core22
+version: git
+summary: cURL Request Generator CLI tool
+description: |
+  cURL Request Generator is a CLI tool for generating cURL requests from OpenAPI specifications.
+  It can generate both PowerShell and Bash scripts with cURL commands for testing REST APIs.
+  
+  The tool supports:
+  - OpenAPI 2.0 and 3.0 specifications
+  - JSON and YAML formats
+  - Authorization headers
+  - Azure Entra ID authentication
+  - Custom base URLs and content types
+  - Both PowerShell (.ps1) and Bash (.sh) script generation
+
+grade: stable
+confinement: strict
+
+apps:
+  curlgenerator:
+    command: bin/curlgenerator
+    plugs:
+      - home
+      - network
+
+parts:
+  curlgenerator:
+    plugin: dotnet
+    source: .
+    source-type: git
+    dotnet-build-configuration: Release
+    build-packages:
+      - dotnet-sdk-8.0
+    stage-packages:
+      - dotnet-runtime-8.0
+    override-build: |
+      craftctl default
+      # Build the specific CLI project 
+      dotnet publish src/CurlGenerator/CurlGenerator.csproj \
+        --configuration Release \
+        --output $CRAFT_PART_INSTALL/bin
