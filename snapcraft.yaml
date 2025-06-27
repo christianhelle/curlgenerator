@@ -1,5 +1,5 @@
 name: curlgenerator
-base: core22
+base: core24
 version: git
 summary: cURL Request Generator CLI tool
 description: |
@@ -26,17 +26,27 @@ apps:
 
 parts:
   curlgenerator:
-    plugin: dotnet
+    plugin: nil
     source: .
-    source-type: git
-    dotnet-build-configuration: Release
-    build-packages:
-      - dotnet-sdk-8.0
-    stage-packages:
+    build-snaps:
+      - dotnet-sdk/8.0/stable
+    stage-snaps:
       - dotnet-runtime-8.0
+    build-packages:
+      - ca-certificates
     override-build: |
-      craftctl default
-      # Build the specific CLI project 
+      # Publish as framework-dependent to avoid glibc issues
       dotnet publish src/CurlGenerator/CurlGenerator.csproj \
         --configuration Release \
-        --output $CRAFT_PART_INSTALL/bin
+        --framework net8.0 \
+        --output $CRAFT_PART_INSTALL/lib/curlgenerator
+      
+      # Create wrapper script
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cat > $CRAFT_PART_INSTALL/bin/curlgenerator << 'EOF'
+#!/bin/bash
+exec dotnet "$SNAP/lib/curlgenerator/curlgenerator.dll" "$@"
+EOF
+      
+      # Make the wrapper script executable
+      chmod +x $CRAFT_PART_INSTALL/bin/curlgenerator
