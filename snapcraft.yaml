@@ -44,9 +44,6 @@ parts:
       # Create wrapper script
       mkdir -p $CRAFT_PART_INSTALL/bin
       cat > $CRAFT_PART_INSTALL/bin/curlgenerator << 'EOF'
-#!/bin/bash
-exec dotnet "$SNAP/lib/curlgenerator/curlgenerator.dll" "$@"
-EOF
       
       # Make the wrapper script executable
       chmod +x $CRAFT_PART_INSTALL/bin/curlgenerator
