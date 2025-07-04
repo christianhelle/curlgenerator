@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cURL Request Generator - Generate cURL requests from OpenAPI specifications</title>
+    <meta name="description" content="Generate cURL requests from OpenAPI specifications v2.0 and v3.0. A .NET CLI tool for creating HTTP requests from Swagger/OpenAPI specs.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="../images/icon.png">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="brand">
+                    <img src="../images/icon.png" alt="cURL Generator" class="logo">
+                    <div class="brand-text">
+                        <h1>cURL Request Generator</h1>
+                        <p class="tagline">Generate cURL requests from OpenAPI specifications</p>
+                    </div>
+                </div>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                    <span class="theme-toggle-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="badges">
+                <a href="https://github.com/christianhelle/curlgenerator/actions/workflows/build.yml">
+                    <img src="https://github.com/christianhelle/curlgenerator/actions/workflows/build.yml/badge.svg" alt="Build">
+                </a>
+                <a href="https://github.com/christianhelle/curlgenerator/actions/workflows/smoke-tests.yml">
+                    <img src="https://github.com/christianhelle/curlgenerator/actions/workflows/smoke-tests.yml/badge.svg" alt="Smoke Tests">
+                </a>
+                <a href="https://www.nuget.org/packages/curlgenerator">
+                    <img src="https://img.shields.io/nuget/v/curlgenerator?color=blue" alt="NuGet">
+                </a>
+                <a href="https://sonarcloud.io/summary/new_code?id=christianhelle_curlgenerator">
+                    <img src="https://sonarcloud.io/api/project_badges/measure?project=christianhelle_curlgenerator&metric=alert_status" alt="Quality Gate Status">
+                </a>
+                <a href="https://codecov.io/gh/christianhelle/curlgenerator">
+                    <img src="https://codecov.io/gh/christianhelle/curlgenerator/graph/badge.svg?token=242YT1N6T2" alt="codecov">
+                </a>
+                <a href="https://github.com/christianhelle/curlgenerator/actions/workflows/qodana.yml">
+                    <img src="https://github.com/christianhelle/curlgenerator/actions/workflows/qodana.yml/badge.svg" alt="Qodana">
+                </a>
+            </section>
+
+            <section class="hero">
+                <h2>Overview</h2>
+                <p>Generate cURL requests from OpenAPI specifications v2.0 and v3.0. This .NET CLI tool makes it easy to create HTTP request scripts from your Swagger/OpenAPI documentation.</p>
+            </section>
+
+            <section class="installation">
+                <h2>Installation</h2>
+                <p>This tool is distributed as a .NET Tool on NuGet.org</p>
+                <p>To install, simply use the following command:</p>
+                <div class="code-block">
+                    <pre><code>dotnet tool install --global curlgenerator</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('dotnet tool install --global curlgenerator')">Copy</button>
+                </div>
+            </section>
+
+            <section class="usage">
+                <h2>Usage</h2>
+                <div class="code-block">
+                    <pre><code>USAGE:
+    curlgenerator [URL or input file] [OPTIONS]
+
+EXAMPLES:
+    curlgenerator ./openapi.json
+    curlgenerator ./openapi.json --output ./
+    curlgenerator ./openapi.json --bash
+    curlgenerator ./openapi.json --output-type onefile
+    curlgenerator https://petstore.swagger.io/v2/swagger.json
+    curlgenerator https://petstore3.swagger.io/api/v3/openapi.json --base-url https://petstore3.swagger.io
+    curlgenerator ./openapi.json --authorization-header Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+    curlgenerator ./openapi.json --azure-scope [Some Application ID URI]/.default
+
+ARGUMENTS:
+    [URL or input file]    URL or file path to OpenAPI Specification file
+
+OPTIONS:
+                                           DEFAULT                                                                                                                           
+    -h, --help                                                 Prints help information                                                                                       
+    -v, --version                                              Prints version information                                                                                    
+    -o, --output &lt;o&gt;                  ./                  Output directory                                                                                              
+        --bash                                                 Generate Bash scripts                                                                                         
+        --no-logging                                           Don't log errors or collect telemetry                                                                         
+        --skip-validation                                      Skip validation of OpenAPI Specification file                                                                 
+        --authorization-header &lt;HEADER&gt;                        Authorization header to use for all requests                                                                  
+        --content-type &lt;CONTENT-TYPE&gt;      application/json    Default Content-Type header to use for all requests                                                           
+        --base-url &lt;BASE-URL&gt;                                  Default Base URL to use for all requests. Use this if the OpenAPI spec doesn't explicitly specify a server URL
+        --azure-scope &lt;SCOPE&gt;                                  Azure Entra ID Scope to use for retrieving Access Token for Authorization header                              
+        --azure-tenant-id &lt;TENANT-ID&gt;                          Azure Entra ID Tenant ID to use for retrieving Access Token for Authorization header</code></pre>
+                </div>
+            </section>
+
+            <section class="example">
+                <h2>Example Output</h2>
+                <p>Running the following command:</p>
+                <div class="code-block">
+                    <pre><code>curlgenerator https://petstore.swagger.io/v2/swagger.json</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('curlgenerator https://petstore.swagger.io/v2/swagger.json')">Copy</button>
+                </div>
+                
+                <p>Outputs the following:</p>
+                <div class="code-block">
+                    <pre><code>cURL Request Generator v0.1.1
+Support key: mbmbqvd
+
+OpenAPI statistics:
+ - Path Items: 14
+ - Operations: 20
+ - Parameters: 14
+ - Request Bodies: 9
+ - Responses: 20
+ - Links: 0
+ - Callbacks: 0
+ - Schemas: 67
+
+Files: 20
+Duration: 00:00:02.3089450</code></pre>
+                </div>
+
+                <p>Which will produce the following files:</p>
+                <div class="code-block">
+                    <pre><code>-rw-r--r-- 1 christian 197121  593 Dec 10 10:44 DeleteOrder.ps1        
+-rw-r--r-- 1 christian 197121  231 Dec 10 10:44 DeletePet.ps1
+-rw-r--r-- 1 christian 197121  358 Dec 10 10:44 DeleteUser.ps1
+-rw-r--r-- 1 christian 197121  432 Dec 10 10:44 GetFindPetsByStatus.ps1
+-rw-r--r-- 1 christian 197121  504 Dec 10 10:44 GetFindPetsByTags.ps1  
+-rw-r--r-- 1 christian 197121  371 Dec 10 10:44 GetInventory.ps1       
+-rw-r--r-- 1 christian 197121  247 Dec 10 10:44 GetLoginUser.ps1       
+-rw-r--r-- 1 christian 197121  291 Dec 10 10:44 GetLogoutUser.ps1      
+-rw-r--r-- 1 christian 197121  540 Dec 10 10:44 GetOrderById.ps1
+-rw-r--r-- 1 christian 197121  275 Dec 10 10:44 GetPetById.ps1
+-rw-r--r-- 1 christian 197121  245 Dec 10 10:44 GetUserByName.ps1
+-rw-r--r-- 1 christian 197121  513 Dec 10 10:44 PostAddPet.ps1
+-rw-r--r-- 1 christian 197121  521 Dec 10 10:44 PostCreateUser.ps1
+-rw-r--r-- 1 christian 197121  610 Dec 10 10:44 PostCreateUsersWithListInput.ps1
+-rw-r--r-- 1 christian 197121  464 Dec 10 10:44 PostPlaceOrder.ps1
+-rw-r--r-- 1 christian 197121  299 Dec 10 10:44 PostUpdatePetWithForm.ps1
+-rw-r--r-- 1 christian 197121  274 Dec 10 10:44 PostUploadFile.ps1
+-rw-r--r-- 1 christian 197121  513 Dec 10 10:44 PutUpdatePet.ps1
+-rw-r--r-- 1 christian 197121  541 Dec 10 10:44 PutUpdateUser.ps1</code></pre>
+                </div>
+
+                <h3>Generated Script Example</h3>
+                <p>In this example, the contents of <code>PostAddPet.ps1</code> looks like this:</p>
+                <div class="code-block">
+                    <pre><code>&lt;#
+  Request: POST /pet
+  Summary: Add a new pet to the store
+  Description: Add a new pet to the store
+#&gt;
+
+curl -X POST https://petstore3.swagger.io/api/v3/pet `
+  -H 'Accept: application/json' `
+  -H 'Content-Type: application/json' `
+  -d '{
+  "id": 0,
+  "name": "name",
+  "category": {
+    "id": 0,
+    "name": "name"
+  },
+  "photoUrls": [
+    ""
+  ],
+  "tags": [
+    {
+      "id": 0,
+      "name": "name"
+    }
+  ],
+  "status": "available"
+}'</code></pre>
+                </div>
+
+                <h3>Parameterized Scripts</h3>
+                <p>The generated script will contain mandatory parameters for operations where the path contains parameters:</p>
+                <div class="code-block">
+                    <pre><code>&lt;#
+  Request: GET /pet/{petId}
+  Summary: Find pet by ID
+  Description: Returns a single pet
+#&gt;
+param(
+   &lt;# ID of pet to return #&gt;
+   [Parameter(Mandatory=$True)]
+   [String] $petId
+)
+
+curl -X GET https://petstore3.swagger.io/api/v3/pet/$petId `
+  -H 'Accept: application/json' `
+  -H 'Content-Type: application/json'</code></pre>
+                </div>
+            </section>
+
+            <section class="advanced-usage">
+                <h2>Advanced Usage</h2>
+                <h3>Azure Integration</h3>
+                <p>Here's an advanced example of generating cURL requests for a REST API hosted on Microsoft Azure that uses the Microsoft Entra ID service as an STS. For this example, use PowerShell and Azure CLI to retrieve an access token:</p>
+                <div class="code-block">
+                    <pre><code>az account get-access-token --scope [Some Application ID URI]/.default `
+| ConvertFrom-Json `
+| %{
+    curlgenerator `
+        https://api.example.com/swagger/v1/swagger.json `
+        --authorization-header ("Bearer " + $_.accessToken) `
+        --base-url https://api.example.com `
+        --output ./HttpFiles 
+}</code></pre>
+                </div>
+
+                <p>You can also use the <code>--azure-scope</code> and <code>--azure-tenant-id</code> arguments which internally use <code>DefaultAzureCredentials</code> from the <code>Microsoft.Extensions.Azure</code> NuGet package:</p>
+                <div class="code-block">
+                    <pre><code>curlgenerator `
+  https://api.example.com/swagger/v1/swagger.json `
+  --azure-scope [Some Application ID URI]/.default `
+  --base-url https://api.example.com `
+  --output ./HttpFiles</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('curlgenerator `\n  https://api.example.com/swagger/v1/swagger.json `\n  --azure-scope [Some Application ID URI]/.default `\n  --base-url https://api.example.com `\n  --output ./HttpFiles')">Copy</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>For tips and tricks on software development, check out <a href="https://christianhelle.com" target="_blank">my blog</a></p>
+                <p>If you find this useful and feel a bit generous then feel free to <a href="https://www.buymeacoffee.com/christianhelle" target="_blank">buy me a coffee ☕</a></p>
+                <p><a href="https://github.com/christianhelle/curlgenerator" target="_blank">View on GitHub</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
