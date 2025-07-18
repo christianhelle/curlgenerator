@@ -11,8 +11,15 @@
 - Convert parameters using kebab case to snake case [\#158](https://github.com/christianhelle/curlgenerator/pull/158) ([christianhelle](https://github.com/christianhelle))
 - NSwag v14.2.0 [\#114](https://github.com/christianhelle/curlgenerator/pull/114) ([renovate[bot]](https://github.com/apps/renovate))
 
+**Closed issues:**
+
+- Create Static Documentation Website from README [\#177](https://github.com/christianhelle/curlgenerator/issues/177)
+
 **Merged pull requests:**
 
+- Update dependency xunit.runner.visualstudio to 3.1.3 [\#182](https://github.com/christianhelle/curlgenerator/pull/182) ([renovate[bot]](https://github.com/apps/renovate))
+- Update actions/configure-pages action to v5 [\#179](https://github.com/christianhelle/curlgenerator/pull/179) ([renovate[bot]](https://github.com/apps/renovate))
+- Create Static Documentation Website from README [\#178](https://github.com/christianhelle/curlgenerator/pull/178) ([Copilot](https://github.com/apps/copilot-swe-agent))
 - Bump Microsoft.Extensions.Azure from 1.11.0 to 1.12.0 [\#174](https://github.com/christianhelle/curlgenerator/pull/174) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump xunit.runner.visualstudio from 3.1.0 to 3.1.1 [\#169](https://github.com/christianhelle/curlgenerator/pull/169) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Microsoft.NET.Test.Sdk from 17.14.0 to 17.14.1 [\#167](https://github.com/christianhelle/curlgenerator/pull/167) ([dependabot[bot]](https://github.com/apps/dependabot))
