@@ -17,6 +17,7 @@
 
 **Merged pull requests:**
 
+- Update nswag monorepo to 14.5.0 [\#186](https://github.com/christianhelle/curlgenerator/pull/186) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency xunit.runner.visualstudio to 3.1.3 [\#182](https://github.com/christianhelle/curlgenerator/pull/182) ([renovate[bot]](https://github.com/apps/renovate))
 - Update actions/configure-pages action to v5 [\#179](https://github.com/christianhelle/curlgenerator/pull/179) ([renovate[bot]](https://github.com/apps/renovate))
 - Create Static Documentation Website from README [\#178](https://github.com/christianhelle/curlgenerator/pull/178) ([Copilot](https://github.com/apps/copilot-swe-agent))
