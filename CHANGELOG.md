@@ -13,10 +13,13 @@
 
 **Closed issues:**
 
+- Setup CoPilot instructions [\#191](https://github.com/christianhelle/curlgenerator/issues/191)
 - Create Static Documentation Website from README [\#177](https://github.com/christianhelle/curlgenerator/issues/177)
 
 **Merged pull requests:**
 
+- Update actions/checkout action to v5 [\#193](https://github.com/christianhelle/curlgenerator/pull/193) ([renovate[bot]](https://github.com/apps/renovate))
+- Add comprehensive GitHub Copilot instructions for CurlGenerator development [\#192](https://github.com/christianhelle/curlgenerator/pull/192) ([Copilot](https://github.com/apps/copilot-swe-agent))
 - Update nswag monorepo to 14.5.0 [\#186](https://github.com/christianhelle/curlgenerator/pull/186) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency xunit.runner.visualstudio to 3.1.3 [\#182](https://github.com/christianhelle/curlgenerator/pull/182) ([renovate[bot]](https://github.com/apps/renovate))
 - Update actions/configure-pages action to v5 [\#179](https://github.com/christianhelle/curlgenerator/pull/179) ([renovate[bot]](https://github.com/apps/renovate))
