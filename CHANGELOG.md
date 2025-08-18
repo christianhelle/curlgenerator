@@ -18,6 +18,7 @@
 
 **Merged pull requests:**
 
+- Bump xunit.runner.visualstudio from 3.1.3 to 3.1.4 [\#196](https://github.com/christianhelle/curlgenerator/pull/196) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update actions/checkout action to v5 [\#193](https://github.com/christianhelle/curlgenerator/pull/193) ([renovate[bot]](https://github.com/apps/renovate))
 - Add comprehensive GitHub Copilot instructions for CurlGenerator development [\#192](https://github.com/christianhelle/curlgenerator/pull/192) ([Copilot](https://github.com/apps/copilot-swe-agent))
 - Update nswag monorepo to 14.5.0 [\#186](https://github.com/christianhelle/curlgenerator/pull/186) ([renovate[bot]](https://github.com/apps/renovate))
