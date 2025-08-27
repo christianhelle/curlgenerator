@@ -7,6 +7,7 @@
 **Implemented enhancements:**
 
 - Improve CLI tool experience [\#170](https://github.com/christianhelle/curlgenerator/issues/170)
+- Revert NSwag back to v14.4.0 [\#200](https://github.com/christianhelle/curlgenerator/pull/200) ([christianhelle](https://github.com/christianhelle))
 - Fancy CLI output using Spectre Console [\#172](https://github.com/christianhelle/curlgenerator/pull/172) ([christianhelle](https://github.com/christianhelle))
 - Convert parameters using kebab case to snake case [\#158](https://github.com/christianhelle/curlgenerator/pull/158) ([christianhelle](https://github.com/christianhelle))
 - NSwag v14.2.0 [\#114](https://github.com/christianhelle/curlgenerator/pull/114) ([renovate[bot]](https://github.com/apps/renovate))
