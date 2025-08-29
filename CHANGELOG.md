@@ -19,6 +19,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.OpenApi.Readers from 1.6.24 to 1.6.25 [\#199](https://github.com/christianhelle/curlgenerator/pull/199) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump xunit.runner.visualstudio from 3.1.3 to 3.1.4 [\#196](https://github.com/christianhelle/curlgenerator/pull/196) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update actions/checkout action to v5 [\#193](https://github.com/christianhelle/curlgenerator/pull/193) ([renovate[bot]](https://github.com/apps/renovate))
 - Add comprehensive GitHub Copilot instructions for CurlGenerator development [\#192](https://github.com/christianhelle/curlgenerator/pull/192) ([Copilot](https://github.com/apps/copilot-swe-agent))
