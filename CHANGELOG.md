@@ -7,10 +7,16 @@
 **Implemented enhancements:**
 
 - Improve CLI tool experience [\#170](https://github.com/christianhelle/curlgenerator/issues/170)
+- Improve code coverage [\#214](https://github.com/christianhelle/curlgenerator/pull/214) ([christianhelle](https://github.com/christianhelle))
+- Only remove the last character when there are query string parameters [\#213](https://github.com/christianhelle/curlgenerator/pull/213) ([christianhelle](https://github.com/christianhelle))
 - Revert NSwag back to v14.4.0 [\#200](https://github.com/christianhelle/curlgenerator/pull/200) ([christianhelle](https://github.com/christianhelle))
 - Fancy CLI output using Spectre Console [\#172](https://github.com/christianhelle/curlgenerator/pull/172) ([christianhelle](https://github.com/christianhelle))
 - Convert parameters using kebab case to snake case [\#158](https://github.com/christianhelle/curlgenerator/pull/158) ([christianhelle](https://github.com/christianhelle))
 - NSwag v14.2.0 [\#114](https://github.com/christianhelle/curlgenerator/pull/114) ([renovate[bot]](https://github.com/apps/renovate))
+
+**Fixed bugs:**
+
+- last symbol truncated in generated request [\#211](https://github.com/christianhelle/curlgenerator/issues/211)
 
 **Closed issues:**
 
@@ -19,7 +25,10 @@
 
 **Merged pull requests:**
 
+- Update actions/github-script action to v8 [\#212](https://github.com/christianhelle/curlgenerator/pull/212) ([renovate[bot]](https://github.com/apps/renovate))
+- Update actions/setup-dotnet action to v5 [\#210](https://github.com/christianhelle/curlgenerator/pull/210) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump Microsoft.OpenApi.Readers from 1.6.24 to 1.6.25 [\#199](https://github.com/christianhelle/curlgenerator/pull/199) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update actions/upload-pages-artifact action to v4 [\#198](https://github.com/christianhelle/curlgenerator/pull/198) ([renovate[bot]](https://github.com/apps/renovate))
 - Bump xunit.runner.visualstudio from 3.1.3 to 3.1.4 [\#196](https://github.com/christianhelle/curlgenerator/pull/196) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update actions/checkout action to v5 [\#193](https://github.com/christianhelle/curlgenerator/pull/193) ([renovate[bot]](https://github.com/apps/renovate))
 - Add comprehensive GitHub Copilot instructions for CurlGenerator development [\#192](https://github.com/christianhelle/curlgenerator/pull/192) ([Copilot](https://github.com/apps/copilot-swe-agent))
