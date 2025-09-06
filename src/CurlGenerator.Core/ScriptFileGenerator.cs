@@ -272,7 +272,10 @@ public static class ScriptFileGenerator
                 url += $"{parameterName.Key}=${value}&";
             }
 
-            url = url.Remove(url.Length - 1);
+            if (parameterNameMap.Count > 0)
+            {
+                url = url.Remove(url.Length - 1);
+            }
         }
 
         code.AppendLine($"curl -X {verb.ToUpperInvariant()} {baseUrl}{url} `");
