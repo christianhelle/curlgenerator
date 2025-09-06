@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.12.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="CurlGenerator.Tests" />
+  </ItemGroup>
+
 </Project>
