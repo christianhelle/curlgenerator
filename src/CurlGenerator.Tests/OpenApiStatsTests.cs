@@ -63,7 +63,5 @@ public class OpenApiStatsTests
         stats.SchemaCount.Should().Be(1);
         stats.HeaderCount.Should().Be(1);
 
-        ;
-        
     }
 }
