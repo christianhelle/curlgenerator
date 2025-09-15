@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/christianhelle/curlgenerator/tree/HEAD)
 
-[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.6...HEAD)
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.3.7...HEAD)
+
+**Merged pull requests:**
+
+- Bump Spectre.Console.Cli from 0.50.0 to 0.51.1 [\#221](https://github.com/christianhelle/curlgenerator/pull/221) ([dependabot[bot]](https://github.com/apps/dependabot))
+
+## [0.3.7](https://github.com/christianhelle/curlgenerator/tree/0.3.7) (2025-09-07)
+
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.2.6...0.3.7)
 
 **Implemented enhancements:**
 
