@@ -237,7 +237,19 @@ public static class ScriptFileGenerator
 
     private static string SerializeObject(object obj)
     {
-        return Newtonsoft.Json.JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented);
+        try
+        {
+            var settings = new Newtonsoft.Json.JsonSerializerSettings
+            {
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore,
+                Formatting = Newtonsoft.Json.Formatting.Indented
+            };
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj, settings);
+        }
+        catch
+        {
+            return obj?.ToString() ?? "null";
+        }
     }
 
     private static string GenerateSampleJsonFromSchema(OpenApiSchema? schema)
