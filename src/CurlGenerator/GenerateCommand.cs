@@ -55,23 +55,27 @@ public class GenerateCommand : AsyncCommand<Settings>
         }
         catch (OpenApiUnsupportedSpecVersionException exception)
         {
-            AnsiConsole.MarkupLine($"{Crlf}[red]Error:{Crlf}{exception.Message}[/]");
+            var escapedMessage = exception.Message.Replace("[", "[[").Replace("]", "]]");
+            AnsiConsole.MarkupLine($"{Crlf}[red]Error:{Crlf}{escapedMessage}[/]");
             AnsiConsole.MarkupLine(
                 $"{Crlf}[yellow]Tips:{Crlf}" +
                 $"Consider using the --skip-validation argument.{Crlf}" +
                 $"In some cases, the features that are specific to the " +
                 $"unsupported versions of OpenAPI specifications aren't really used.{Crlf}" +
-                $"This tool uses NSwag libraries to parse the OpenAPI document and " +
-                $"Microsoft.OpenApi libraries for validation.{Crlf}{Crlf}[/]");
+                $"This tool uses Microsoft.OpenApi libraries for both parsing and validation.{Crlf}{Crlf}[/]");
             return exception.HResult;
         }
         catch (Exception exception)
         {
             if (exception is not OpenApiValidationException)
             {
-                AnsiConsole.MarkupLine($"{Crlf}[red]Error:{Crlf}{exception.Message}[/]");
+                // Escape markup characters in exception messages
+                var escapedMessage = exception.Message.Replace("[", "[[").Replace("]", "]]");
+                var escapedStackTrace = exception.StackTrace?.Replace("[", "[[").Replace("]", "]]") ?? "";
+                
+                AnsiConsole.MarkupLine($"{Crlf}[red]Error:{Crlf}{escapedMessage}[/]");
                 AnsiConsole.MarkupLine($"[red]Exception:{Crlf}{exception.GetType()}[/]");
-                AnsiConsole.MarkupLine($"[yellow]Stack Trace:{Crlf}{exception.StackTrace}[/]");
+                AnsiConsole.MarkupLine($"[yellow]Stack Trace:{Crlf}{escapedStackTrace}[/]");
             }
 
             await Analytics.LogError(exception, settings);
@@ -104,7 +108,8 @@ public class GenerateCommand : AsyncCommand<Settings>
         }
         catch (Exception exception)
         {
-            AnsiConsole.MarkupLine($"{Crlf}[red]Error:{Crlf}{exception.Message}[/]");
+            var escapedMessage = exception.Message.Replace("[", "[[").Replace("]", "]]");
+            AnsiConsole.MarkupLine($"{Crlf}[red]Error:{Crlf}{escapedMessage}[/]");
         }
     }
 
@@ -158,7 +163,9 @@ public class GenerateCommand : AsyncCommand<Settings>
     {
         try
         {
-            AnsiConsole.MarkupLine($"[{color}]{label}:{Crlf}{error}{Crlf}[/]");
+            // Escape markup characters in the error message to prevent markup interpretation
+            var escapedError = error.ToString().Replace("[", "[[").Replace("]", "]]");
+            AnsiConsole.MarkupLine($"[{color}]{label}:{Crlf}{escapedError}{Crlf}[/]");
         }
         catch
         {
@@ -253,7 +260,9 @@ public class GenerateCommand : AsyncCommand<Settings>
                     < 1024 * 1024 => $"{fileSize / 1024.0:F1} KB",
                     _ => $"{fileSize / (1024.0 * 1024.0):F1} MB"
                 };
-                AnsiConsole.MarkupLine($"  📝 [cyan]{file.Filename}[/] [dim]({fileSizeText})[/]");
+                // Escape markup characters in filename
+                var escapedFilename = file.Filename.Replace("[", "[[").Replace("]", "]]");
+                AnsiConsole.MarkupLine($"  📝 [cyan]{escapedFilename}[/] [dim]({fileSizeText})[/]");
             }
         }
         else

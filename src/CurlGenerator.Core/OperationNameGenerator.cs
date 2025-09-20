@@ -1,22 +1,27 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using NSwag;
-using NSwag.CodeGeneration.OperationNameGenerators;
+using Microsoft.OpenApi.Models;
 
 namespace CurlGenerator.Core;
 
-internal class OperationNameGenerator : IOperationNameGenerator
+internal interface IOperationNameGenerator
 {
-    private readonly IOperationNameGenerator defaultGenerator =
-        new MultipleClientsFromOperationIdOperationNameGenerator();
+    string GetOperationName(
+        OpenApiDocument document,
+        string path,
+        string httpMethod,
+        OpenApiOperation operation);
+}
 
+public class OperationNameGenerator : IOperationNameGenerator
+{
     [ExcludeFromCodeCoverage]
-    public bool SupportsMultipleClients => throw new NotImplementedException();
+    public bool SupportsMultipleClients => false;
 
     [ExcludeFromCodeCoverage]
     public string GetClientName(OpenApiDocument document, string path, string httpMethod, OpenApiOperation operation)
     {
-        return defaultGenerator.GetClientName(document, path, httpMethod, operation);
+        return "ApiClient";
     }
 
     public string GetOperationName(
@@ -27,16 +32,24 @@ internal class OperationNameGenerator : IOperationNameGenerator
     {
         try
         {
-            return defaultGenerator
-                .GetOperationName(document, path, httpMethod, operation)
-                .CapitalizeFirstCharacter()
-                .ConvertKebabCaseToPascalCase()
-                .ConvertRouteToCamelCase()
-                .ConvertSpacesToPascalCase()
-                .Prefix(
-                    httpMethod
-                        .ToLowerInvariant()
-                        .CapitalizeFirstCharacter());
+            // Try to use operationId if available
+            if (!string.IsNullOrWhiteSpace(operation.OperationId))
+            {
+                return operation.OperationId
+                    .CapitalizeFirstCharacter()
+                    .ConvertKebabCaseToPascalCase()
+                    .ConvertRouteToCamelCase()
+                    .ConvertSpacesToPascalCase()
+                    .Prefix(
+                        httpMethod
+                            .ToLowerInvariant()
+                            .CapitalizeFirstCharacter());
+            }
+            
+            // Fallback to generating from path and method
+            return httpMethod.CapitalizeFirstCharacter() + 
+                   path.ConvertRouteToCamelCase()
+                       .ConvertSpacesToPascalCase();
         }
         catch (Exception e)
         {
@@ -53,14 +66,14 @@ internal class OperationNameGenerator : IOperationNameGenerator
         List<string> operationNames = new();
         foreach (var kv in document.Paths)
         {
-            foreach (var operations in kv.Value)
+            foreach (var operations in kv.Value.Operations)
             {
                 var operation = operations.Value;
                 operationNames.Add(
                     GetOperationName(
                         document,
                         kv.Key,
-                        operations.Key,
+                        operations.Key.ToString(),
                         operation));
             }
         }
