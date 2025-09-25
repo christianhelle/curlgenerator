@@ -4,8 +4,13 @@
 
 [Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.3.7...HEAD)
 
+**Closed issues:**
+
+- Migrate from using NSwag to Microsoft.OpenApi [\#229](https://github.com/christianhelle/curlgenerator/issues/229)
+
 **Merged pull requests:**
 
+- Migrate from NSwag to Microsoft.OpenApi for OpenAPI specification parsing [\#230](https://github.com/christianhelle/curlgenerator/pull/230) ([Copilot](https://github.com/apps/copilot-swe-agent))
 - Bump Spectre.Console.Cli from 0.50.0 to 0.51.1 [\#221](https://github.com/christianhelle/curlgenerator/pull/221) ([dependabot[bot]](https://github.com/apps/dependabot))
 
 ## [0.3.7](https://github.com/christianhelle/curlgenerator/tree/0.3.7) (2025-09-07)
