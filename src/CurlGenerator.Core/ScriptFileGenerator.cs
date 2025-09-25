@@ -6,8 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NSwag;
-using NSwag.CodeGeneration.CSharp;
+using Microsoft.OpenApi.Models;
 
 public static class ScriptFileGenerator
 {
@@ -21,8 +20,7 @@ public static class ScriptFileGenerator
         var document = await OpenApiDocumentFactory.CreateAsync(settings.OpenApiPath);
         TryLog($"Document: {SerializeObject(document)}");
 
-        var generator = new CSharpClientGenerator(document, new CSharpClientGeneratorSettings());
-        generator.BaseSettings.OperationNameGenerator = new OperationNameGenerator();
+        var generator = new OperationNameGenerator();
 
         var baseUrl = settings.BaseUrl + document.Servers?.FirstOrDefault()?.Url;
         if (!Uri.IsWellFormedUriString(baseUrl, UriKind.Absolute) &&
@@ -41,23 +39,20 @@ public static class ScriptFileGenerator
     private static GeneratorResult GenerateCode(
         GeneratorSettings settings,
         OpenApiDocument document,
-        CSharpClientGenerator generator,
+        OperationNameGenerator generator,
         string baseUrl)
     {
         var files = new List<ScriptFile>();
         foreach (var kv in document.Paths)
         {
             TryLog($"Processing path: {kv.Key}");
-            foreach (var operations in kv.Value)
+            foreach (var operations in kv.Value.Operations)
             {
                 TryLog($"Processing operation: {operations.Key}");
 
                 var operation = operations.Value;
-                var verb = operations.Key.CapitalizeFirstCharacter();
-                var name = generator
-                    .BaseSettings
-                    .OperationNameGenerator
-                    .GetOperationName(document, kv.Key, verb, operation);
+                var verb = operations.Key.ToString().CapitalizeFirstCharacter();
+                var name = generator.GetOperationName(document, kv.Key, verb, operation);
 
                 var filename = !settings.GenerateBashScripts
                     ? $"{name.CapitalizeFirstCharacter()}.ps1"
@@ -99,7 +94,7 @@ public static class ScriptFileGenerator
 
         // Add query parameters directly to the URL if there are any
         var queryParams = operation.Parameters
-            .Where(p => p.Kind == OpenApiParameterKind.Query)
+            .Where(p => p.In == ParameterLocation.Query)
             .Select(p => $"{p.Name}=${{{p.Name.ConvertKebabCaseToSnakeCase()}}}")
             .ToList();
 
@@ -108,9 +103,8 @@ public static class ScriptFileGenerator
 
         code.AppendLine($"  -H \"Accept: application/json\" \\");
 
-        // Determine content type based on consumes or request body
-        var contentType = operation.Consumes?.FirstOrDefault()
-                          ?? operation.RequestBody?.Content?.Keys.FirstOrDefault()
+        // Determine content type based on request body
+        var contentType = operation.RequestBody?.Content?.Keys.FirstOrDefault()
                           ?? "application/json";
 
         TryLog($"Content type for operation {operation.OperationId}: {contentType}");
@@ -138,8 +132,8 @@ public static class ScriptFileGenerator
             }
             else
             {
-                var requestBodySchema = operation.RequestBody.Content[contentType].Schema.ActualSchema;
-                var requestBodyJson = requestBodySchema?.ToSampleJson()?.ToString() ?? string.Empty;
+                var requestBodySchema = operation.RequestBody.Content[contentType].Schema;
+                var requestBodyJson = GenerateSampleJsonFromSchema(requestBodySchema);
                 code.AppendLine($"  -d '{requestBodyJson}'");
             }
         }
@@ -162,10 +156,10 @@ public static class ScriptFileGenerator
     {
         var parameters = operation.Parameters
             .Where(p =>
-                p.Kind == OpenApiParameterKind.Path ||
-                p.Kind == OpenApiParameterKind.Query ||
-                p.Kind == OpenApiParameterKind.Header ||
-                p.Kind == OpenApiParameterKind.Cookie)
+                p.In == ParameterLocation.Path ||
+                p.In == ParameterLocation.Query ||
+                p.In == ParameterLocation.Header ||
+                p.In == ParameterLocation.Cookie)
             .ToArray();
 
         if (parameters.Length == 0)
@@ -181,7 +175,7 @@ public static class ScriptFileGenerator
             var name = parameter.Name.ConvertKebabCaseToSnakeCase();
             code.AppendLine(
                 parameter.Description is null
-                    ? $"# {parameter.Kind.ToString().ToLowerInvariant()} parameter: {name}"
+                    ? $"# {parameter.In.ToString().ToLowerInvariant()} parameter: {name}"
                     : $"# {parameter.Description}");
 
             code.AppendLine($"{name}=\"\""); // Initialize the parameter
@@ -243,7 +237,103 @@ public static class ScriptFileGenerator
 
     private static string SerializeObject(object obj)
     {
-        return Newtonsoft.Json.JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.Indented);
+        try
+        {
+            var settings = new Newtonsoft.Json.JsonSerializerSettings
+            {
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore,
+                Formatting = Newtonsoft.Json.Formatting.Indented
+            };
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj, settings);
+        }
+        catch
+        {
+            return obj?.ToString() ?? "null";
+        }
+    }
+
+    private static string GenerateSampleJsonFromSchema(OpenApiSchema? schema)
+    {
+        if (schema == null)
+            return "{}";
+
+        try
+        {
+            var sampleObject = GenerateSampleObjectFromSchema(schema);
+            return Newtonsoft.Json.JsonConvert.SerializeObject(sampleObject, Newtonsoft.Json.Formatting.Indented);
+        }
+        catch
+        {
+            return "{}";
+        }
+    }
+
+    private static object GenerateSampleObjectFromSchema(OpenApiSchema schema)
+    {
+        if (schema.Example != null)
+        {
+            return ConvertOpenApiAnyToObject(schema.Example);
+        }
+
+        switch (schema.Type)
+        {
+            case "object":
+                var obj = new Dictionary<string, object>();
+                if (schema.Properties != null)
+                {
+                    foreach (var prop in schema.Properties)
+                    {
+                        obj[prop.Key] = GenerateSampleObjectFromSchema(prop.Value);
+                    }
+                }
+                return obj;
+
+            case "array":
+                if (schema.Items != null)
+                {
+                    return new[] { GenerateSampleObjectFromSchema(schema.Items) };
+                }
+                return new object[0];
+
+            case "string":
+                return schema.Format switch
+                {
+                    "date" => DateTime.Today.ToString("yyyy-MM-dd"),
+                    "date-time" => DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    "email" => "user@example.com",
+                    "uri" => "https://example.com",
+                    _ => "string"
+                };
+
+            case "integer":
+                return 0;
+
+            case "number":
+                return 0.0;
+
+            case "boolean":
+                return false;
+
+            default:
+                return "value";
+        }
+    }
+
+    private static object ConvertOpenApiAnyToObject(Microsoft.OpenApi.Any.IOpenApiAny openApiAny)
+    {
+        return openApiAny switch
+        {
+            Microsoft.OpenApi.Any.OpenApiString str => str.Value,
+            Microsoft.OpenApi.Any.OpenApiInteger integer => integer.Value,
+            Microsoft.OpenApi.Any.OpenApiLong longVal => longVal.Value,
+            Microsoft.OpenApi.Any.OpenApiFloat floatVal => floatVal.Value,
+            Microsoft.OpenApi.Any.OpenApiDouble doubleVal => doubleVal.Value,
+            Microsoft.OpenApi.Any.OpenApiBoolean boolVal => boolVal.Value,
+            Microsoft.OpenApi.Any.OpenApiDateTime dateTime => dateTime.Value,
+            Microsoft.OpenApi.Any.OpenApiObject obj => obj.ToDictionary(kv => kv.Key, kv => ConvertOpenApiAnyToObject(kv.Value)),
+            Microsoft.OpenApi.Any.OpenApiArray array => array.Select(ConvertOpenApiAnyToObject).ToArray(),
+            _ => openApiAny.ToString() ?? "value"
+        };
     }
 
 
@@ -295,8 +385,8 @@ public static class ScriptFileGenerator
             return code.ToString();
 
         var requestBody = operation.RequestBody;
-        var requestBodySchema = requestBody.Content[contentType].Schema.ActualSchema;
-        var requestBodyJson = requestBodySchema?.ToSampleJson()?.ToString() ?? string.Empty;
+        var requestBodySchema = requestBody.Content[contentType].Schema;
+        var requestBodyJson = GenerateSampleJsonFromSchema(requestBodySchema);
 
         code.AppendLine($"  -d '{requestBodyJson}'");
         return code.ToString();
@@ -310,7 +400,7 @@ public static class ScriptFileGenerator
     {
         var parameters = operation
             .Parameters
-            .Where(c => c.Kind is OpenApiParameterKind.Path or OpenApiParameterKind.Query)
+            .Where(c => c.In is ParameterLocation.Path or ParameterLocation.Query)
             .ToArray();
 
         if (parameters.Length == 0)
