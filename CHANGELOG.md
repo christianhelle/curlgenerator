@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- chore\(deps\): update dependency newtonsoft.json to 13.0.4 [\#235](https://github.com/christianhelle/curlgenerator/pull/235) ([renovate[bot]](https://github.com/apps/renovate))
 - Migrate from NSwag to Microsoft.OpenApi for OpenAPI specification parsing [\#230](https://github.com/christianhelle/curlgenerator/pull/230) ([Copilot](https://github.com/apps/copilot-swe-agent))
 - Bump Spectre.Console.Cli from 0.50.0 to 0.51.1 [\#221](https://github.com/christianhelle/curlgenerator/pull/221) ([dependabot[bot]](https://github.com/apps/dependabot))
 
