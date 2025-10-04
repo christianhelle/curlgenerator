@@ -10,6 +10,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.OpenApi.Readers from 1.6.26 to 1.6.27 [\#241](https://github.com/christianhelle/curlgenerator/pull/241) ([dependabot[bot]](https://github.com/apps/dependabot))
 - chore\(deps\): update dependency newtonsoft.json to 13.0.4 [\#235](https://github.com/christianhelle/curlgenerator/pull/235) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency microsoft.openapi.readers to 1.6.26 [\#232](https://github.com/christianhelle/curlgenerator/pull/232) ([renovate[bot]](https://github.com/apps/renovate))
 - Migrate from NSwag to Microsoft.OpenApi for OpenAPI specification parsing [\#230](https://github.com/christianhelle/curlgenerator/pull/230) ([Copilot](https://github.com/apps/copilot-swe-agent))
