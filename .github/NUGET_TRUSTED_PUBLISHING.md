@@ -79,7 +79,7 @@ permissions:
   id: nuget-login
   uses: NuGet/login@v1
   with:
-    user: christianhelle
+    user: christian.helle
 ```
 
 ### Updated Push Command
