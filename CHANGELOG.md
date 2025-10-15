@@ -2,7 +2,16 @@
 
 ## [Unreleased](https://github.com/christianhelle/curlgenerator/tree/HEAD)
 
-[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.3.7...HEAD)
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.4.1.1-preview...HEAD)
+
+**Merged pull requests:**
+
+- Fix Code Coverage workflow [\#248](https://github.com/christianhelle/curlgenerator/pull/248) ([christianhelle](https://github.com/christianhelle))
+- Bump Spectre.Console.Cli from 0.51.1 to 0.52.0 [\#247](https://github.com/christianhelle/curlgenerator/pull/247) ([dependabot[bot]](https://github.com/apps/dependabot))
+
+## [0.4.1.1-preview](https://github.com/christianhelle/curlgenerator/tree/0.4.1.1-preview) (2025-10-08)
+
+[Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.3.7...0.4.1.1-preview)
 
 **Closed issues:**
 
