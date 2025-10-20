@@ -8,6 +8,7 @@
 
 - Fix Code Coverage workflow [\#248](https://github.com/christianhelle/curlgenerator/pull/248) ([christianhelle](https://github.com/christianhelle))
 - Bump Spectre.Console.Cli from 0.51.1 to 0.52.0 [\#247](https://github.com/christianhelle/curlgenerator/pull/247) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update dependency ruby to v3.4.7 [\#245](https://github.com/christianhelle/curlgenerator/pull/245) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.OpenApi.Readers to 1.6.28 [\#239](https://github.com/christianhelle/curlgenerator/pull/239) ([renovate[bot]](https://github.com/apps/renovate))
 
 ## [0.4.1.1-preview](https://github.com/christianhelle/curlgenerator/tree/0.4.1.1-preview) (2025-10-08)
