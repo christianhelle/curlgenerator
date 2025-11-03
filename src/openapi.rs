@@ -148,10 +148,31 @@ fn convert_swagger_v2_to_v3(spec: &serde_json::Value) -> Result<OpenAPI> {
         json_obj.insert("components".to_string(), serde_json::Value::Object(components));
     }
 
+    // Update all $ref paths from #/definitions/ to #/components/schemas/
+    let mut value = serde_json::Value::Object(json_obj);
+    value = update_refs(&mut value)?;
+    json_obj = if let serde_json::Value::Object(obj) = value {
+        obj
+    } else {
+        return Err(CurlGeneratorError::OpenApiParseError(
+            "Failed to convert references".to_string(),
+        )
+        .into());
+    };
+
     // Remove Swagger 2.0 specific fields
     json_obj.remove("securityDefinitions");
     json_obj.remove("consumes");
     json_obj.remove("produces");
+
+    // Debug: write converted spec to file
+    if std::env::var("DEBUG_OPENAPI").is_ok() {
+        let debug_path = "converted_v3_debug.json";
+        if let Ok(file) = std::fs::File::create(debug_path) {
+            let _ = serde_json::to_writer_pretty(file, &json_obj);
+            eprintln!("DEBUG: Wrote converted spec to {}", debug_path);
+        }
+    }
 
     // Try to deserialize to OpenAPI v3
     let openapi_spec: OpenAPI = serde_json::from_value(serde_json::Value::Object(json_obj))?;
@@ -579,6 +600,35 @@ fn convert_parameter_v2_to_v3(param: &mut serde_json::Value) {
             // Parameter without type - add default schema
             param_obj.insert("schema".to_string(), serde_json::json!({"type": "string"}));
         }
+    }
+}
+
+fn update_refs(value: &mut serde_json::Value) -> Result<serde_json::Value> {
+    match value {
+        serde_json::Value::Object(obj) => {
+            let mut new_obj = serde_json::Map::new();
+            for (key, val) in obj.iter_mut() {
+                if key == "$ref" {
+                    if let Some(ref_str) = val.as_str() {
+                        if ref_str.starts_with("#/definitions/") {
+                            let new_ref = ref_str.replace("#/definitions/", "#/components/schemas/");
+                            new_obj.insert(key.clone(), serde_json::Value::String(new_ref));
+                            continue;
+                        }
+                    }
+                }
+                new_obj.insert(key.clone(), update_refs(val)?);
+            }
+            Ok(serde_json::Value::Object(new_obj))
+        }
+        serde_json::Value::Array(arr) => {
+            let mut new_arr = Vec::new();
+            for item in arr.iter_mut() {
+                new_arr.push(update_refs(item)?);
+            }
+            Ok(serde_json::Value::Array(new_arr))
+        }
+        _ => Ok(value.clone()),
     }
 }
 
