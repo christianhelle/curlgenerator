@@ -27,6 +27,9 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 
+# Build the project in release mode
+cargo build --release
+
 # Set default binary path based on detected project root
 if ([string]::IsNullOrEmpty($Binary))
 {
@@ -81,16 +84,7 @@ Write-Host "━━━━━━━━━━━━━━━━━━━━━━�
 if (-not (Test-Path $Binary))
 {
   Write-Host "✗ Binary not found: $Binary" -ForegroundColor Red
-  Write-Host "  Building release binary..." -ForegroundColor Yellow
-  Push-Location $projectRoot
-  cargo build --release
-  $buildResult = $LASTEXITCODE
-  Pop-Location
-  if ($buildResult -ne 0)
-  {
-    Write-Host "✗ Build failed" -ForegroundColor Red
-    exit 1
-  }
+  exit 1
 }
 
 Write-Host "Project Root: $projectRoot" -ForegroundColor Gray
