@@ -43,8 +43,7 @@ fn parse_openapi(content: &str) -> Result<OpenAPI> {
     // Check if it's Swagger 2.0
     if let Some(swagger) = json_value.get("swagger").and_then(|v| v.as_str()) {
         if swagger.starts_with("2.") {
-            eprintln!("DEBUG: Detected Swagger v2.0, converting to OpenAPI v3...");
-            return convert_swagger_v2_to_v3(&json_value);
+            return convert_swagger_v2_using_api(&json_value);
         }
     }
 
@@ -630,6 +629,37 @@ fn update_refs(value: &mut serde_json::Value) -> Result<serde_json::Value> {
         }
         _ => Ok(value.clone()),
     }
+}
+
+fn convert_swagger_v2_using_api(spec: &serde_json::Value) -> Result<OpenAPI> {
+    // Use the Swagger Converter API
+    let client = reqwest::blocking::Client::new();
+    let response = client
+        .post("https://converter.swagger.io/api/convert")
+        .json(spec)
+        .send()?;
+
+    if !response.status().is_success() {
+        return Err(CurlGeneratorError::OpenApiParseError(
+            format!("Converter API failed with status: {}", response.status()),
+        )
+        .into());
+    }
+
+    let converted_text = response.text()?;
+    
+    // Try to parse as OpenAPI v3
+    if let Ok(openapi) = serde_json::from_str::<OpenAPI>(&converted_text) {
+        return Ok(openapi);
+    }
+    if let Ok(openapi) = serde_yaml::from_str::<OpenAPI>(&converted_text) {
+        return Ok(openapi);
+    }
+
+    Err(CurlGeneratorError::OpenApiParseError(
+        "Failed to parse converted OpenAPI v3 specification".to_string(),
+    )
+    .into())
 }
 
 fn is_http_url(path: &str) -> bool {
