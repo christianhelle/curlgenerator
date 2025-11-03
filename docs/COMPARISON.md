@@ -2,6 +2,10 @@
 
 This document compares the original .NET implementation with the new Rust port.
 
+> **📦 .NET Version Repository**
+>
+> The .NET implementation is available at: https://github.com/christianhelle/curlgenerator-dotnet
+
 ## Project Structure Comparison
 
 ### .NET Version

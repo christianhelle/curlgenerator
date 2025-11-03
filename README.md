@@ -7,18 +7,19 @@
 Generate cURL requests from OpenAPI specifications v2.0 and v3.0
 
 > **⚠️ IMPORTANT: This repository has been rewritten in Rust**
-> 
-> The original .NET version has been archived in the [`dotnet-archived/`](./dotnet-archived/) folder. This repository now contains the Rust implementation, which provides:
+>
+> The original .NET version is now maintained in the separate [`curlgenerator-dotnet`](https://github.com/christianhelle/curlgenerator-dotnet) repository. This repository now contains the Rust implementation, which provides:
+>
 > - **4-5x faster** execution time
-> - **5-6x lower** memory usage  
-> - **10x smaller** binary size
+> - **5-6x lower** memory usage
+> - **smaller** binary size
 > - **No runtime dependencies** (single native binary)
 > - **40x faster** cold start time
 > - **Cross-platform** support without installing .NET
 >
 > **Reason for Migration:** Users of cURL Request Generator are predominantly on Linux and macOS. Getting .NET to run reliably on non-Windows systems has become increasingly troublesome, while a single natively compiled Rust binary provides a dramatically simpler and faster experience.
 >
-> For the legacy .NET version, see the [`dotnet-archived/`](./dotnet-archived/) folder or install from [NuGet](https://www.nuget.org/packages/curlgenerator).
+> For the legacy .NET version, see the [`curlgenerator-dotnet`](https://github.com/christianhelle/curlgenerator-dotnet) repository or install from [NuGet](https://www.nuget.org/packages/curlgenerator).
 
 ## Installation
 
@@ -209,6 +210,7 @@ cargo test
 If you're migrating from the .NET version, see the **[Migration Guide](MIGRATION.md)** for detailed instructions.
 
 **Quick comparison:**
+
 - Installation: `dotnet tool install` → `cargo install` or download binary
 - Performance: 4-5x faster execution
 - Binary size: 100MB → 10MB

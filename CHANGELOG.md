@@ -22,7 +22,7 @@ The primary motivation for this rewrite is **cross-platform usability**:
 #### Changed
 
 - **[BREAKING]** Repository now contains Rust implementation as primary codebase
-- **[BREAKING]** .NET version moved to `dotnet-archived/` folder and enters maintenance mode
+- **[BREAKING]** .NET version moved to separate repository: https://github.com/christianhelle/curlgenerator-dotnet
 - **[BREAKING]** Installation method changed from `dotnet tool install` to `cargo install`
 - **[BREAKING]** Azure Entra ID integration (`--azure-scope`, `--azure-tenant-id`) removed
   - Workaround: Use Azure CLI to obtain token manually, then pass via `--authorization-header`
@@ -31,9 +31,9 @@ The primary motivation for this rewrite is **cross-platform usability**:
 
 - Complete Rust implementation with identical CLI interface
 - Zero runtime dependencies (single native binary)
-- [MIGRATION.md](MIGRATION.md) - Comprehensive migration guide
-- [dotnet-archived/README.md](dotnet-archived/README.md) - Documentation for archived .NET version
-- [COMPARISON.md](COMPARISON.md) - Detailed comparison between implementations
+- [docs/MIGRATION.md](docs/MIGRATION.md) - Comprehensive migration guide
+- [docs/COMPARISON.md](docs/COMPARISON.md) - Detailed comparison between implementations
+- .NET version available at: https://github.com/christianhelle/curlgenerator-dotnet
 
 #### Performance Improvements
 

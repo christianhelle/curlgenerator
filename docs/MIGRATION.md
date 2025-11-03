@@ -2,6 +2,12 @@
 
 This document explains the migration from the .NET version to the Rust implementation of cURL Request Generator.
 
+> **📦 .NET Version Repository**
+>
+> The .NET version is now maintained in a separate repository: https://github.com/christianhelle/curlgenerator-dotnet
+>
+> This allows both implementations to be actively developed and maintained independently.
+
 ## Why Rust?
 
 The decision to rewrite cURL Request Generator in Rust was driven by real-world user feedback and pain points:

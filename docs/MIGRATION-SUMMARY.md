@@ -5,14 +5,18 @@
 
 ## Overview
 
-This repository has been completely rewritten from .NET to Rust. The .NET implementation has been archived but remains accessible for users who require .NET-specific features.
+This repository has been completely rewritten from .NET to Rust. The .NET implementation has been moved to a separate repository for independent maintenance.
+
+> **📦 .NET Version Repository**
+>
+> The .NET implementation is now maintained at: https://github.com/christianhelle/curlgenerator-dotnet
 
 ## What Happened
 
 ### 1. Code Migration
 
 - ✅ All Rust source code copied from `../curlgenerator-rs`
-- ✅ .NET source code moved to `dotnet-archived/` folder
+- ✅ .NET source code moved to https://github.com/christianhelle/curlgenerator-dotnet
 - ✅ GitHub workflows updated for Rust CI/CD
 - ✅ Build system changed from .NET SDK to Cargo
 - ✅ Tests directory updated with Rust test fixtures
@@ -20,10 +24,10 @@ This repository has been completely rewritten from .NET to Rust. The .NET implem
 ### 2. Documentation Updates
 
 **New Documentation:**
-- [`README.md`](README.md) - Updated with Rust information and migration notice
+- [`README.md`](../README.md) - Updated with Rust information and migration notice
 - [`MIGRATION.md`](MIGRATION.md) - Comprehensive migration guide for users
-- [`dotnet-archived/README.md`](dotnet-archived/README.md) - Documentation for archived .NET version
-- [`CHANGELOG.md`](CHANGELOG.md) - Added v2.0.0 release notes documenting the migration
+- [`CHANGELOG.md`](../CHANGELOG.md) - Added v2.0.0 release notes documenting the migration
+- .NET version: https://github.com/christianhelle/curlgenerator-dotnet
 
 **Preserved Documentation:**
 - [`COMPARISON.md`](COMPARISON.md) - Detailed .NET vs Rust comparison
