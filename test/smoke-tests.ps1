@@ -119,7 +119,9 @@ function Test-Generation
     $null = New-Item -ItemType Directory -Force -Path $psOutput
         
     # Direct execution - much faster than Start-Process
+    $psStart = Get-Date
     & $Binary $specPath --output $psOutput --skip-validation --no-logging 2>$null
+    $psDuration = (Get-Date) - $psStart
         
     if ($LASTEXITCODE -ne 0)
     {
@@ -138,7 +140,9 @@ function Test-Generation
     $shOutput = Join-Path $OutputDir "sh"
     $null = New-Item -ItemType Directory -Force -Path $shOutput
         
+    $shStart = Get-Date
     & $Binary $specPath --output $shOutput --skip-validation --bash --no-logging 2>$null
+    $shDuration = (Get-Date) - $shStart
         
     if ($LASTEXITCODE -ne 0)
     {
@@ -152,9 +156,12 @@ function Test-Generation
       Write-Host "  ✗ $testName (Bash - no files)" -ForegroundColor Red
       return "FAIL"
     }
+    
+    $avgDuration = [math]::Round(($psDuration.TotalMilliseconds + $shDuration.TotalMilliseconds) / 2, 0)
         
     Write-Host "  ✓ $testName" -ForegroundColor Green -NoNewline
-    Write-Host " ($($psFiles.Count) PS, $($shFiles.Count) SH)" -ForegroundColor Gray
+    Write-Host " ($($psFiles.Count) PS, $($shFiles.Count) SH) " -ForegroundColor Gray -NoNewline
+    Write-Host "${avgDuration}ms" -ForegroundColor Cyan
     return "PASS"
         
   } catch
