@@ -116,15 +116,15 @@ function Test-Generation {
         $psOutput = Join-Path $OutputDir "ps"
         $null = New-Item -ItemType Directory -Force -Path $psOutput
         
-        # Use Start-Process without redirection for speed
-        $process = Start-Process -FilePath $Binary -ArgumentList $specPath,"--output",$psOutput,"--skip-validation" -NoNewWindow -PassThru -Wait
+        # Direct execution - much faster than Start-Process
+        & $Binary $specPath --output $psOutput --skip-validation --no-logging 2>$null
         
-        if ($process.ExitCode -ne 0) {
+        if ($LASTEXITCODE -ne 0) {
             Write-Host "  ✗ $testName (PowerShell)" -ForegroundColor Red
             return "FAIL"
         }
         
-        $psFiles = Get-ChildItem "$psOutput\*.ps1" -ErrorAction SilentlyContinue
+        $psFiles = @(Get-ChildItem "$psOutput\*.ps1" -ErrorAction SilentlyContinue)
         if ($psFiles.Count -eq 0) {
             Write-Host "  ✗ $testName (PowerShell - no files)" -ForegroundColor Red
             return "FAIL"
@@ -134,16 +134,14 @@ function Test-Generation {
         $shOutput = Join-Path $OutputDir "sh"
         $null = New-Item -ItemType Directory -Force -Path $shOutput
         
-        $bashArgs = @($specPath, "--output", $shOutput, "--skip-validation", "--bash")
-        if ($ExtraArgs) { $bashArgs += $ExtraArgs.Split(' ') }
-        $process = Start-Process -FilePath $Binary -ArgumentList $bashArgs -NoNewWindow -PassThru -Wait
+        & $Binary $specPath --output $shOutput --skip-validation --bash --no-logging 2>$null
         
-        if ($process.ExitCode -ne 0) {
+        if ($LASTEXITCODE -ne 0) {
             Write-Host "  ✗ $testName (Bash)" -ForegroundColor Red
             return "FAIL"
         }
         
-        $shFiles = Get-ChildItem "$shOutput\*.sh" -ErrorAction SilentlyContinue
+        $shFiles = @(Get-ChildItem "$shOutput\*.sh" -ErrorAction SilentlyContinue)
         if ($shFiles.Count -eq 0) {
             Write-Host "  ✗ $testName (Bash - no files)" -ForegroundColor Red
             return "FAIL"
