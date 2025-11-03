@@ -9,5 +9,6 @@
 .vscode/
 .idea/
 tests/output/
+test/output/
 **/obj
 **/bin
