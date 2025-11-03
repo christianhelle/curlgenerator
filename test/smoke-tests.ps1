@@ -22,23 +22,24 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$startTime = Get-Date
 
 # Detect script location and set up paths
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 
 # Build the project in release mode
-cargo build --release
+cargo build
 
 # Set default binary path based on detected project root
 if ([string]::IsNullOrEmpty($Binary))
 {
   if ($IsWindows -or $env:OS -match "Windows")
   {
-    $Binary = Join-Path $projectRoot "target\release\curlgenerator.exe"
+    $Binary = Join-Path $projectRoot ".\target\debug\curlgenerator.exe"
   } else
   {
-    $Binary = Join-Path $projectRoot "target/release/curlgenerator"
+    $Binary = Join-Path $projectRoot "target/debug/curlgenerator"
   }
 }
 
@@ -73,8 +74,6 @@ $totalTests = 0
 $passedTests = 0
 $failedTests = 0
 $skippedTests = 0
-$startTime = Get-Date
-
 
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
 Write-Host "            cURL Generator - Smoke Test Suite               " -ForegroundColor Cyan
