@@ -696,6 +696,16 @@ fn convert_swagger_v2_manual(spec: &serde_json::Value) -> Result<OpenAPI> {
         if let Some(paths_obj) = paths.as_object_mut() {
             for (_path, path_item) in paths_obj.iter_mut() {
                 if let Some(path_obj) = path_item.as_object_mut() {
+                    // Convert path-level parameters first
+                    if let Some(path_params) = path_obj.get_mut("parameters") {
+                        if let Some(params_arr) = path_params.as_array_mut() {
+                            for param in params_arr.iter_mut() {
+                                convert_parameter_v2_to_v3(param);
+                            }
+                        }
+                    }
+                    
+                    // Convert operation-level parameters
                     for (_method, operation) in path_obj.iter_mut() {
                         if let Some(op_obj) = operation.as_object_mut() {
                             convert_operation_parameters_v2_to_v3(op_obj);
