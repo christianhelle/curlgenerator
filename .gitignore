@@ -9,6 +9,5 @@
 .vscode/
 .idea/
 tests/output/
-dotnet-archived/src/CurlGenerator/bin
-dotnet-archived/src/CurlGenerator/obj
-dotnet-archived/src/CurlGenerator.Core/bin
+**/obj
+**/bin
