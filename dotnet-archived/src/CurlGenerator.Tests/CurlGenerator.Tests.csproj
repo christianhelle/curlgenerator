@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Atc.Test" Version="1.1.18" />
+    <PackageReference Include="FluentAssertions" Version="7.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.28" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\V2\SwaggerPetstore.json" />
+    <EmbeddedResource Include="Resources\V2\SwaggerPetstore.yaml" />
+    <EmbeddedResource Include="Resources\V2\SwaggerPetstoreWithDifferentHeaders.json" />
+    <EmbeddedResource Include="Resources\V2\SwaggerPetstoreWithDifferentHeaders.yaml" />
+    <EmbeddedResource Include="Resources\V3\SwaggerPetstore.json" />
+    <EmbeddedResource Include="Resources\V3\SwaggerPetstore.yaml" />
+    <EmbeddedResource Include="Resources\V3\SwaggerPetstoreWithDifferentHeaders.json" />
+    <EmbeddedResource Include="Resources\V3\SwaggerPetstoreWithDifferentHeaders.yaml" />
+    <None Remove="Resources\V31\non-oauth-scopes.json" />
+    <EmbeddedResource Include="Resources\V31\non-oauth-scopes.json" />
+    <None Remove="Resources\V31\non-oauth-scopes.yaml" />
+    <EmbeddedResource Include="Resources\V31\non-oauth-scopes.yaml" />
+    <None Remove="Resources\V31\webhook-example.json" />
+    <EmbeddedResource Include="Resources\V31\webhook-example.json" />
+    <None Remove="Resources\V31\webhook-example.yaml" />
+    <EmbeddedResource Include="Resources\V31\webhook-example.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CurlGenerator.Core\CurlGenerator.Core.csproj" />
+    <ProjectReference Include="..\CurlGenerator\CurlGenerator.csproj" />
+  </ItemGroup>
+
+</Project>
