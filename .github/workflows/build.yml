@@ -1,45 +1,75 @@
 name: Build
 
 on:
-  workflow_dispatch:
   push:
-    paths-ignore:
-      - "**/*"
-      - "!.github/workflows/build.yml"
-      - "!src/**/*.csproj"
-      - "!src/**/*.cs"
-    branches:
-      - "*"
+    branches: [ main ]
   pull_request:
-    paths-ignore:
-      - "**/*"
-      - "!.github/workflows/build.yml"
-      - "!src/**/*.csproj"
-      - "!src/**/*.cs"
-    branches:
-      - "*"
+    branches: [ main ]
+  workflow_dispatch:
 
 env:
-  VERSION: 0.4.1.${{ github.run_number }}
+  CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: 👌 Verify build
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: 🛒 Checkout repository
-        uses: actions/checkout@v5
-      - uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "8.0.x"
-      - name: 🛠️ Build
-        run: dotnet build -c Release CurlGenerator.sln -p:UseSourceLink=true -p:PackageVersion="${{ env.VERSION }}" -p:Version="${{ env.VERSION }}"
-      - name: 🧪 Test
-        run: dotnet test CurlGenerator.sln -c Release
-      - name: 🗳️ Upload
-        uses: actions/upload-artifact@v5
-        with:
-          name: Packages
-          path: |
-            **/*.nupkg
-            README.md
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+    
+    - name: Check formatting
+      run: cargo fmt -- --check
+    
+    - name: Run clippy
+      run: cargo clippy --all-targets --all-features -- -D warnings
+
+  build:
+    name: Build & Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Cache cargo index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Cache target directory
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Build
+      run: cargo build --verbose --release
+    
+    - name: Run tests
+      run: cargo test --verbose --release
+    
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: curlgenerator-${{ matrix.os }}
+        path: |
+          target/release/curlgenerator${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+        retention-days: 7

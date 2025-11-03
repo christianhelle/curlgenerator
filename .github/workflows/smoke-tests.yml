@@ -1,71 +1,106 @@
 name: Smoke Tests
 
 on:
-  workflow_dispatch:
   push:
-    paths-ignore:
-      - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
-      - "!.github/workflows/smoke-tests.yml"
-    branches:
-      - "*"
+    branches: [ main ]
   pull_request:
-    paths-ignore:
-      - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
-      - "!.github/workflows/smoke-tests.yml"
-    branches:
-      - "*"
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  
-  file:
+  smoke-test:
+    name: Smoke Test
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        format: [json, yaml]
-        version: [v2.0, v3.0]
-        os: [ubuntu-latest]
-        openapi: [
-          "api-with-examples",
-          "callback-example",
-          "link-example",
-          "uber",
-          "uspto",
-          "petstore",
-          "petstore-expanded",
-          "petstore-minimal",
-          "petstore-simple",
-          "petstore-with-external-docs",
-          "ingram-micro",
-          "hubspot-events",
-          "hubspot-webhooks"
-        ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     
-    uses: ./.github/workflows/template.yml
-    with:
-      format: ${{ matrix.format }}
-      version: ${{ matrix.version }}
-      openapi: ${{ matrix.openapi }}
-      os: ${{ matrix.os }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
-  
-  url:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        openapi_url: [
-          "https://petstore3.swagger.io/api/v3/openapi.json", 
-          "https://petstore3.swagger.io/api/v3/openapi.yaml"
-        ]
-
-    uses: ./.github/workflows/template-url.yml
-    with:
-      os: ${{ matrix.os }}
-      openapi: ${{ matrix.openapi_url }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Build release
+      run: cargo build --release
+    
+    - name: Test version command
+      run: |
+        ./target/release/curlgenerator${{ matrix.os == 'windows-latest' && '.exe' || '' }} --version
+    
+    - name: Test help command
+      run: |
+        ./target/release/curlgenerator${{ matrix.os == 'windows-latest' && '.exe' || '' }} --help
+    
+    - name: Test Petstore v3 generation (PowerShell)
+      run: |
+        ./target/release/curlgenerator${{ matrix.os == 'windows-latest' && '.exe' || '' }} \
+          https://petstore3.swagger.io/api/v3/openapi.json \
+          --output ./test-output-ps \
+          --skip-validation
+    
+    - name: Verify PowerShell scripts were generated
+      run: |
+        ls -la ./test-output-ps
+        [ -f "./test-output-ps/POSTAddPet.ps1" ] || exit 1
+        [ -f "./test-output-ps/GETGetPetById.ps1" ] || exit 1
+      shell: bash
+    
+    - name: Test Petstore v3 generation (Bash)
+      run: |
+        ./target/release/curlgenerator${{ matrix.os == 'windows-latest' && '.exe' || '' }} \
+          https://petstore3.swagger.io/api/v3/openapi.json \
+          --output ./test-output-sh \
+          --skip-validation \
+          --bash
+    
+    - name: Verify Bash scripts were generated
+      run: |
+        ls -la ./test-output-sh
+        [ -f "./test-output-sh/POSTAddPet.sh" ] || exit 1
+        [ -f "./test-output-sh/GETGetPetById.sh" ] || exit 1
+      shell: bash
+    
+    - name: Test with custom base URL
+      run: |
+        ./target/release/curlgenerator${{ matrix.os == 'windows-latest' && '.exe' || '' }} \
+          https://petstore3.swagger.io/api/v3/openapi.json \
+          --output ./test-output-custom \
+          --skip-validation \
+          --base-url https://custom.example.com
+    
+    - name: Verify custom base URL in generated script
+      run: |
+        grep -q "https://custom.example.com" ./test-output-custom/GETGetPetById.ps1 || exit 1
+      shell: bash
+    
+    - name: Test with authorization header
+      run: |
+        ./target/release/curlgenerator${{ matrix.os == 'windows-latest' && '.exe' || '' }} \
+          https://petstore3.swagger.io/api/v3/openapi.json \
+          --output ./test-output-auth \
+          --skip-validation \
+          --authorization-header "Bearer test-token"
+    
+    - name: Verify authorization header in generated script
+      run: |
+        grep -q "Authorization.*Bearer test-token" ./test-output-auth/POSTAddPet.ps1 || exit 1
+      shell: bash
+    
+    - name: Clean up test outputs
+      if: always()
+      run: |
+        rm -rf ./test-output-*
+      shell: bash

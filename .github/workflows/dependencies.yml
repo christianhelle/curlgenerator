@@ -1,0 +1,35 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Update dependencies
+      run: cargo update
+    
+    - name: Run tests
+      run: cargo test --release
+    
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: Update Cargo dependencies
+        title: 'chore: Update Cargo dependencies'
+        body: |
+          Automated dependency update.
+          
+          This PR updates all Cargo dependencies to their latest compatible versions.
+        branch: update-dependencies
+        delete-branch: true
