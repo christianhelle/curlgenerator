@@ -28,3 +28,10 @@ chrono = "0.4"
 embed-resource = "2.4"
 image = "0.25"
 ico = "0.3"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
