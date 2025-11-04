@@ -1,4 +1,4 @@
-use chrono::Utc;
+use time::OffsetDateTime;
 use std::process::Command;
 #[cfg(windows)]
 use std::path::Path;
@@ -24,7 +24,12 @@ fn main() {
     let git_commit_display = git_commit.unwrap_or_else(|| "unknown".to_string());
 
     // Get current timestamp
-    let build_date = Utc::now().format("%Y-%m-%d %H:%M:%S UTC").to_string();
+    let now = OffsetDateTime::now_utc();
+    let build_date = format!(
+        "{:04}-{:02}-{:02} {:02}:{:02}:{:02} UTC",
+        now.year(), now.month() as u8, now.day(),
+        now.hour(), now.minute(), now.second()
+    );
 
     // Set environment variables for build
     println!("cargo:rustc-env=VERSION={}", version);
