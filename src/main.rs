@@ -23,21 +23,14 @@ fn main() -> Result<()> {
     
     let start = Instant::now();
     
-    // Display header
     display_header();
-    
-    // Display configuration
     display_configuration(&cli);
     
-    // Load OpenAPI document
     let document = openapi::load_document(openapi_path)?;
-    
-    // Display statistics
     if !cli.skip_validation {
         display_statistics(&document);
     }
     
-    // Generate scripts
     let settings = generator::GeneratorSettings {
         authorization_header: cli.authorization_header.clone(),
         content_type: cli.content_type.clone(),
@@ -47,12 +40,10 @@ fn main() -> Result<()> {
     
     let result = generator::generate(&document, &settings)?;
     
-    // Create output directory if it doesn't exist
     if !std::path::Path::new(&cli.output).exists() {
         std::fs::create_dir_all(&cli.output)?;
     }
     
-    // Write files
     for file in &result.files {
         let path = std::path::Path::new(&cli.output).join(&file.filename);
         std::fs::write(&path, &file.content)?;
@@ -65,25 +56,25 @@ fn main() -> Result<()> {
 }
 
 fn display_header() {
-    println!("╔════════════════════════════════════════════════════════════╗");
-    println!("║  {} {}                          ║", "🔧 cURL Request Generator".green().bold(), "v0.1.0".cyan());
-    println!("╚════════════════════════════════════════════════════════════╝");
+    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    println!("{}", "🔧  cURL Request Generator".green().bold());
+    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     println!();
 }
 
 fn display_configuration(cli: &Cli) {
-    println!("{}", "📋 Configuration".yellow().bold());
-    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("  {} {}", "📁 OpenAPI Source:".bold(), cli.openapi_path.as_ref().unwrap().cyan());
-    println!("  {} {}", "📂 Output Folder:".bold(), cli.output.cyan());
-    println!("  {} {}", "🌐 Content Type:".bold(), cli.content_type.cyan());
+    println!("{}", "📋  Configuration".yellow().bold());
+    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    println!("  {} {}", "📁  OpenAPI Source:".bold(), cli.openapi_path.as_ref().unwrap().cyan());
+    println!("  {} {}", "📂  Output Folder:".bold(), cli.output.cyan());
+    println!("  {} {}", "🌐  Content Type:".bold(), cli.content_type.cyan());
     
     if let Some(base_url) = &cli.base_url {
         println!("  {} {}", "🔗 Base URL:".bold(), base_url.cyan());
     }
     
     if cli.bash {
-        println!("  {} {}", "🐚 Bash Scripts:".bold(), "✓ Enabled".green());
+        println!("  {} {}", "🐚  Bash Scripts:".bold(), "✓ Enabled".green());
     }
     
     if cli.skip_validation {
@@ -91,7 +82,7 @@ fn display_configuration(cli: &Cli) {
     }
     
     if cli.authorization_header.is_some() {
-        println!("  {} {}", "🔐 Authorization:".bold(), "Present".dimmed());
+        println!("  {} {}", "🔐  Authorization:".bold(), "Present".dimmed());
     }
     
     println!();
@@ -115,27 +106,27 @@ fn display_statistics(document: &openapiv3::OpenAPI) {
         .map(|c| c.schemas.len())
         .unwrap_or(0);
     
-    println!("{}", "📊 OpenAPI Statistics".blue().bold());
-    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("  {} {}", "📝 Path Items:".bold(), path_count.to_string().blue());
+    println!("{}", "📊  OpenAPI Statistics".blue().bold());
+    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    println!("  {} {}", "📝  Path Items:".bold(), path_count.to_string().blue());
     println!("  {} {}", "⚙️  Operations:".bold(), operation_count.to_string().blue());
-    println!("  {} {}", "📝 Parameters:".bold(), parameter_count.to_string().blue());
-    println!("  {} {}", "📝 Schemas:".bold(), schema_count.to_string().blue());
+    println!("  {} {}", "📝  Parameters:".bold(), parameter_count.to_string().blue());
+    println!("  {} {}", "📝  Schemas:".bold(), schema_count.to_string().blue());
     println!();
 }
 
 fn display_results(result: &generator::GeneratorResult, duration: std::time::Duration, output: &str) {
     println!("{}", "✅ Generation Complete".green().bold());
-    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("  {} {}", "📄 Files Generated:".bold(), result.files.len().to_string().green());
+    println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    println!("  {} {}", "📄  Files Generated:".bold(), result.files.len().to_string().green());
     println!("  {} {}ms", "⏱️  Duration:".bold(), duration.as_millis().to_string().green());
     
     let full_path = std::fs::canonicalize(output).unwrap_or_else(|_| std::path::PathBuf::from(output));
-    println!("  {} {}", "📁 Output Location:".bold(), full_path.display().to_string().cyan());
+    println!("  {} {}", "📁  Output Location:".bold(), full_path.display().to_string().cyan());
     println!();
     
     if !result.files.is_empty() {
-        println!("{}", "📁 Generated Files:".yellow().bold());
+        println!("{}", "📁  Generated Files:".yellow().bold());
         for file in &result.files {
             let size = file.content.len();
             let size_str = if size < 1024 {
@@ -143,10 +134,10 @@ fn display_results(result: &generator::GeneratorResult, duration: std::time::Dur
             } else {
                 format!("{:.1} KB", size as f64 / 1024.0)
             };
-            println!("  📝 {} {}", file.filename.cyan(), format!("({})", size_str).dimmed());
+            println!("  📝  {} {}", file.filename.cyan(), format!("({})", size_str).dimmed());
         }
     }
     
     println!();
-    println!("{}", "🎉 Done!".green().bold());
+    println!("{}", "🎉  Done!".green().bold());
 }
