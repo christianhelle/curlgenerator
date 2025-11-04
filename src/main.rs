@@ -57,7 +57,7 @@ fn main() -> Result<()> {
 
 fn display_header() {
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("{}", "🔧  cURL Request Generator".green().bold());
+    println!("{} {}", "🔧  cURL Request Generator".green().bold(), env!("VERSION").green().bold());
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     println!();
 }
@@ -118,11 +118,9 @@ fn display_statistics(document: &openapiv3::OpenAPI) {
 fn display_results(result: &generator::GeneratorResult, duration: std::time::Duration, output: &str) {
     println!("{}", "✅  Generation Complete".green().bold());
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("  {} {}", "📄  Files Generated:".bold(), result.files.len().to_string().green());
-    println!("  {} {}ms", "⏱️  Duration:".bold(), duration.as_millis().to_string().green());
-    
-    let full_path = std::fs::canonicalize(output).unwrap_or_else(|_| std::path::PathBuf::from(output));
-    println!("  {} {}", "📁  Output Location:".bold(), full_path.display().to_string().cyan());
+    println!("  {} {}", "📄  Files Generated:".bold(), result.files.len().to_string());
+    println!("  {} {}ms", "⏱️  Duration:".bold(), duration.as_millis().to_string());
+    println!("  {} {}", "📁  Output Location:".bold(), output);
     println!();
     
     if !result.files.is_empty() {
