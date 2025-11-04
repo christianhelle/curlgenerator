@@ -39,7 +39,7 @@ fn main() -> Result<()> {
     };
     
     let result = generator::generate(&document, &settings)?;
-    
+
     if !std::path::Path::new(&cli.output).exists() {
         std::fs::create_dir_all(&cli.output)?;
     }
@@ -68,7 +68,7 @@ fn display_configuration(cli: &Cli) {
     println!("  {} {}", "📁  OpenAPI Source:".bold(), cli.openapi_path.as_ref().unwrap().cyan());
     println!("  {} {}", "📂  Output Folder:".bold(), cli.output.cyan());
     println!("  {} {}", "🌐  Content Type:".bold(), cli.content_type.cyan());
-    
+
     if let Some(base_url) = &cli.base_url {
         println!("  {} {}", "🔗 Base URL:".bold(), base_url.cyan());
     }
@@ -116,7 +116,7 @@ fn display_statistics(document: &openapiv3::OpenAPI) {
 }
 
 fn display_results(result: &generator::GeneratorResult, duration: std::time::Duration, output: &str) {
-    println!("{}", "✅ Generation Complete".green().bold());
+    println!("{}", "✅  Generation Complete".green().bold());
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     println!("  {} {}", "📄  Files Generated:".bold(), result.files.len().to_string().green());
     println!("  {} {}ms", "⏱️  Duration:".bold(), duration.as_millis().to_string().green());
