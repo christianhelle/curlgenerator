@@ -1,5 +1,7 @@
 use chrono::Utc;
 use std::process::Command;
+#[cfg(windows)]
+use std::path::Path;
 
 fn main() {
     // Get Cargo.toml version as fallback
@@ -38,7 +40,6 @@ fn main() {
     // Convert PNG to ICO and embed icon on Windows
     #[cfg(windows)]
     {
-        use std::path::Path;
         let png_path = Path::new("resources/icon.png");
         let ico_path = Path::new("resources/icon.ico");
         
