@@ -666,3 +666,311 @@ fn convert_swagger_v2_using_api(spec: &serde_json::Value) -> Result<OpenAPI> {
 fn is_http_url(path: &str) -> bool {
     path.starts_with("http://") || path.starts_with("https://")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use openapiv3::ReferenceOr;
+
+    #[test]
+    fn test_is_http_url_with_http() {
+        assert!(is_http_url("http://example.com"));
+    }
+
+    #[test]
+    fn test_is_http_url_with_https() {
+        assert!(is_http_url("https://api.example.com/openapi.json"));
+    }
+
+    #[test]
+    fn test_is_http_url_with_file_path() {
+        assert!(!is_http_url("/path/to/file.yaml"));
+        assert!(!is_http_url("./relative/path.json"));
+        assert!(!is_http_url("file.yaml"));
+    }
+
+    #[test]
+    fn test_parse_openapi_v3_json() {
+        let content = r#"{
+            "openapi": "3.0.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {}
+        }"#;
+        
+        let result = parse_openapi(content);
+        assert!(result.is_ok());
+        let spec = result.unwrap();
+        assert_eq!(spec.openapi, "3.0.0");
+        assert_eq!(spec.info.title, "Test API");
+    }
+
+    #[test]
+    fn test_parse_openapi_v3_yaml() {
+        let content = r#"
+openapi: 3.0.0
+info:
+  title: Test API
+  version: 1.0.0
+paths: {}
+"#;
+        
+        let result = parse_openapi(content);
+        assert!(result.is_ok());
+        let spec = result.unwrap();
+        assert_eq!(spec.openapi, "3.0.0");
+        assert_eq!(spec.info.title, "Test API");
+    }
+
+    #[test]
+    fn test_parse_openapi_swagger_v2_json() {
+        let content = r#"{
+            "swagger": "2.0",
+            "info": {
+                "title": "Swagger API",
+                "version": "1.0.0"
+            },
+            "host": "api.example.com",
+            "basePath": "/v1",
+            "schemes": ["https"],
+            "paths": {}
+        }"#;
+        
+        let result = parse_openapi(content);
+        assert!(result.is_ok());
+        let spec = result.unwrap();
+        assert_eq!(spec.info.title, "Swagger API");
+    }
+
+    #[test]
+    fn test_parse_openapi_invalid_content() {
+        let content = "not valid json or yaml";
+        let result = parse_openapi(content);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_convert_parameter_v2_to_v3_with_type() {
+        let mut param = serde_json::json!({
+            "name": "userId",
+            "in": "query",
+            "type": "string",
+            "description": "User ID"
+        });
+        
+        convert_parameter_v2_to_v3(&mut param);
+        
+        assert!(param.get("schema").is_some());
+        let schema = param.get("schema").unwrap();
+        assert_eq!(schema.get("type").unwrap(), "string");
+    }
+
+    #[test]
+    fn test_convert_parameter_v2_to_v3_with_format() {
+        let mut param = serde_json::json!({
+            "name": "date",
+            "in": "query",
+            "type": "string",
+            "format": "date-time"
+        });
+        
+        convert_parameter_v2_to_v3(&mut param);
+        
+        let schema = param.get("schema").unwrap();
+        assert_eq!(schema.get("format").unwrap(), "date-time");
+    }
+
+    #[test]
+    fn test_convert_parameter_v2_to_v3_without_type() {
+        let mut param = serde_json::json!({
+            "name": "param",
+            "in": "header"
+        });
+        
+        convert_parameter_v2_to_v3(&mut param);
+        
+        assert!(param.get("schema").is_some());
+    }
+
+    #[test]
+    fn test_update_refs_definitions_to_schemas() {
+        let mut value = serde_json::json!({
+            "$ref": "#/definitions/User"
+        });
+        
+        let result = update_refs(&mut value).unwrap();
+        assert_eq!(result.get("$ref").unwrap(), "#/components/schemas/User");
+    }
+
+    #[test]
+    fn test_update_refs_nested() {
+        let mut value = serde_json::json!({
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/User"
+                }
+            }
+        });
+        
+        let result = update_refs(&mut value).unwrap();
+        let user_ref = result
+            .get("properties")
+            .unwrap()
+            .get("user")
+            .unwrap()
+            .get("$ref")
+            .unwrap();
+        assert_eq!(user_ref, "#/components/schemas/User");
+    }
+
+    #[test]
+    fn test_update_refs_array() {
+        let mut value = serde_json::json!([
+            {"$ref": "#/definitions/User"},
+            {"$ref": "#/definitions/Post"}
+        ]);
+        
+        let result = update_refs(&mut value).unwrap();
+        assert!(result.is_array());
+        let arr = result.as_array().unwrap();
+        assert_eq!(arr[0].get("$ref").unwrap(), "#/components/schemas/User");
+        assert_eq!(arr[1].get("$ref").unwrap(), "#/components/schemas/Post");
+    }
+
+    #[test]
+    fn test_convert_swagger_v2_manual_basic() {
+        let spec = serde_json::json!({
+            "swagger": "2.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "host": "api.example.com",
+            "basePath": "/v1",
+            "schemes": ["https"],
+            "paths": {}
+        });
+        
+        let result = convert_swagger_v2_manual(&spec);
+        assert!(result.is_ok());
+        let openapi = result.unwrap();
+        assert!(!openapi.servers.is_empty());
+        assert!(openapi.servers[0].url.contains("api.example.com"));
+    }
+
+    #[test]
+    fn test_convert_swagger_v2_manual_with_definitions() {
+        let spec = serde_json::json!({
+            "swagger": "2.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {},
+            "definitions": {
+                "User": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "name": {"type": "string"}
+                    }
+                }
+            }
+        });
+        
+        let result = convert_swagger_v2_manual(&spec);
+        assert!(result.is_ok());
+        let openapi = result.unwrap();
+        assert!(openapi.components.is_some());
+    }
+
+    #[test]
+    fn test_convert_operation_parameters_v2_to_v3_body_param() {
+        let mut operation = serde_json::json!({
+            "parameters": [{
+                "in": "body",
+                "name": "user",
+                "required": true,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"}
+                    }
+                }
+            }]
+        });
+        
+        let op_obj = operation.as_object_mut().unwrap();
+        convert_operation_parameters_v2_to_v3(op_obj);
+        
+        assert!(op_obj.get("requestBody").is_some());
+        let request_body = op_obj.get("requestBody").unwrap();
+        assert!(request_body.get("content").is_some());
+    }
+
+    #[test]
+    fn test_convert_operation_parameters_v2_to_v3_query_param() {
+        let mut operation = serde_json::json!({
+            "parameters": [{
+                "in": "query",
+                "name": "limit",
+                "type": "integer"
+            }]
+        });
+        
+        let op_obj = operation.as_object_mut().unwrap();
+        convert_operation_parameters_v2_to_v3(op_obj);
+        
+        let params = op_obj.get("parameters").unwrap().as_array().unwrap();
+        assert_eq!(params.len(), 1);
+        assert!(params[0].get("schema").is_some());
+    }
+
+    #[test]
+    fn test_convert_operation_parameters_v2_to_v3_form_data() {
+        let mut operation = serde_json::json!({
+            "parameters": [{
+                "in": "formData",
+                "name": "file",
+                "type": "string",
+                "required": true
+            }]
+        });
+        
+        let op_obj = operation.as_object_mut().unwrap();
+        convert_operation_parameters_v2_to_v3(op_obj);
+        
+        assert!(op_obj.get("requestBody").is_some());
+        let request_body = op_obj.get("requestBody").unwrap();
+        let content = request_body.get("content").unwrap();
+        assert!(content.get("application/x-www-form-urlencoded").is_some());
+    }
+
+    #[test]
+    fn test_load_document_from_file() {
+        let test_content = r#"
+openapi: 3.0.0
+info:
+  title: Test API
+  version: 1.0.0
+paths: {}
+"#;
+        let temp_path = "test_temp_spec.yaml";
+        fs::write(temp_path, test_content).unwrap();
+        
+        let result = load_document(temp_path);
+        
+        let _ = fs::remove_file(temp_path);
+        
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_load_document_file_not_found() {
+        let result = load_document("nonexistent_file.yaml");
+        assert!(result.is_err());
+    }
+}
