@@ -406,3 +406,316 @@ fn to_pascal_case(s: &str) -> String {
 fn to_snake_case(s: &str) -> String {
     s.replace("-", "_").to_lowercase()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_capitalize_first() {
+        assert_eq!(capitalize_first("hello"), "Hello");
+        assert_eq!(capitalize_first("HELLO"), "HELLO");
+        assert_eq!(capitalize_first("h"), "H");
+        assert_eq!(capitalize_first(""), "");
+    }
+
+    #[test]
+    fn test_to_pascal_case() {
+        assert_eq!(to_pascal_case("hello_world"), "HelloWorld");
+        assert_eq!(to_pascal_case("get_user_by_id"), "GetUserById");
+        assert_eq!(to_pascal_case("_leading_underscore"), "LeadingUnderscore");
+        assert_eq!(to_pascal_case("trailing_"), "Trailing");
+        assert_eq!(to_pascal_case(""), "");
+    }
+
+    #[test]
+    fn test_to_snake_case() {
+        assert_eq!(to_snake_case("Hello-World"), "hello_world");
+        assert_eq!(to_snake_case("user-id"), "user_id");
+        assert_eq!(to_snake_case("UPPER-CASE"), "upper_case");
+        assert_eq!(to_snake_case("already_snake"), "already_snake");
+    }
+
+    #[test]
+    fn test_generator_settings_clone() {
+        let settings = GeneratorSettings {
+            authorization_header: Some("Bearer token".to_string()),
+            content_type: "application/json".to_string(),
+            base_url: Some("http://api.test".to_string()),
+            generate_bash_scripts: true,
+        };
+        let cloned = settings.clone();
+        assert_eq!(settings.content_type, cloned.content_type);
+        assert_eq!(settings.generate_bash_scripts, cloned.generate_bash_scripts);
+    }
+
+    #[test]
+    fn test_determine_base_url_with_settings() {
+        let document = create_minimal_openapi();
+        let settings = GeneratorSettings {
+            authorization_header: None,
+            content_type: "application/json".to_string(),
+            base_url: Some("http://custom.com".to_string()),
+            generate_bash_scripts: false,
+        };
+        assert_eq!(determine_base_url(&document, &settings), "http://custom.com");
+    }
+
+    #[test]
+    fn test_determine_base_url_from_document() {
+        let mut document = create_minimal_openapi();
+        document.servers = vec![openapiv3::Server {
+            url: "http://api.example.com".to_string(),
+            description: None,
+            variables: Default::default(),
+            extensions: Default::default(),
+        }];
+        let settings = GeneratorSettings {
+            authorization_header: None,
+            content_type: "application/json".to_string(),
+            base_url: None,
+            generate_bash_scripts: false,
+        };
+        assert_eq!(determine_base_url(&document, &settings), "http://api.example.com");
+    }
+
+    #[test]
+    fn test_determine_base_url_default() {
+        let document = create_minimal_openapi();
+        let settings = GeneratorSettings {
+            authorization_header: None,
+            content_type: "application/json".to_string(),
+            base_url: None,
+            generate_bash_scripts: false,
+        };
+        assert_eq!(determine_base_url(&document, &settings), "http://localhost");
+    }
+
+    #[test]
+    fn test_generate_operation_name_with_operation_id() {
+        let operation = Operation {
+            operation_id: Some("get-user-by-id".to_string()),
+            ..Default::default()
+        };
+        let name = generate_operation_name("GET", "/users/{id}", &operation);
+        assert_eq!(name, "GETGet_user_by_id");
+    }
+
+    #[test]
+    fn test_generate_operation_name_from_path() {
+        let operation = Operation::default();
+        let name = generate_operation_name("POST", "/users", &operation);
+        assert_eq!(name, "POSTUsers");
+    }
+
+    #[test]
+    fn test_generate_operation_name_with_path_params() {
+        let operation = Operation::default();
+        let name = generate_operation_name("DELETE", "/users/{id}/posts/{postId}", &operation);
+        assert_eq!(name, "DELETEUsersIdPostsPostId");
+    }
+
+    #[test]
+    fn test_extract_path_parameters() {
+        let param_data = openapiv3::ParameterData {
+            name: "userId".to_string(),
+            description: Some("User ID".to_string()),
+            required: true,
+            deprecated: None,
+            format: ParameterSchemaOrContent::Schema(ReferenceOr::Item(Schema {
+                schema_data: Default::default(),
+                schema_kind: SchemaKind::Type(Type::String(Default::default())),
+            })),
+            example: None,
+            examples: Default::default(),
+            explode: None,
+            extensions: Default::default(),
+        };
+        
+        let operation = Operation {
+            parameters: vec![ReferenceOr::Item(Parameter::Path {
+                parameter_data: param_data.clone(),
+                style: Default::default(),
+            })],
+            ..Default::default()
+        };
+        
+        let params = extract_path_parameters(&operation);
+        assert_eq!(params.len(), 1);
+        assert_eq!(params[0].name, "userId");
+    }
+
+    #[test]
+    fn test_extract_query_parameters() {
+        let param_data = openapiv3::ParameterData {
+            name: "limit".to_string(),
+            description: Some("Limit results".to_string()),
+            required: false,
+            deprecated: None,
+            format: ParameterSchemaOrContent::Schema(ReferenceOr::Item(Schema {
+                schema_data: Default::default(),
+                schema_kind: SchemaKind::Type(Type::Integer(Default::default())),
+            })),
+            example: None,
+            examples: Default::default(),
+            explode: None,
+            extensions: Default::default(),
+        };
+        
+        let operation = Operation {
+            parameters: vec![ReferenceOr::Item(Parameter::Query {
+                parameter_data: param_data.clone(),
+                allow_reserved: false,
+                style: Default::default(),
+                allow_empty_value: None,
+            })],
+            ..Default::default()
+        };
+        
+        let params = extract_query_parameters(&operation);
+        assert_eq!(params.len(), 1);
+        assert_eq!(params[0].name, "limit");
+    }
+
+    #[test]
+    fn test_schema_to_json_value_string() {
+        let document = create_minimal_openapi();
+        let schema = Schema {
+            schema_data: Default::default(),
+            schema_kind: SchemaKind::Type(Type::String(Default::default())),
+        };
+        let value = schema_to_json_value(&schema, &document);
+        assert_eq!(value, serde_json::Value::String("string".to_string()));
+    }
+
+    #[test]
+    fn test_schema_to_json_value_integer() {
+        let document = create_minimal_openapi();
+        let schema = Schema {
+            schema_data: Default::default(),
+            schema_kind: SchemaKind::Type(Type::Integer(Default::default())),
+        };
+        let value = schema_to_json_value(&schema, &document);
+        assert_eq!(value, serde_json::Value::Number(0.into()));
+    }
+
+    #[test]
+    fn test_schema_to_json_value_boolean() {
+        let document = create_minimal_openapi();
+        let schema = Schema {
+            schema_data: Default::default(),
+            schema_kind: SchemaKind::Type(Type::Boolean(Default::default())),
+        };
+        let value = schema_to_json_value(&schema, &document);
+        assert_eq!(value, serde_json::Value::Bool(false));
+    }
+
+    #[test]
+    fn test_schema_to_json_value_array() {
+        let document = create_minimal_openapi();
+        let schema = Schema {
+            schema_data: Default::default(),
+            schema_kind: SchemaKind::Type(Type::Array(openapiv3::ArrayType {
+                items: Some(ReferenceOr::boxed_item(Schema {
+                    schema_data: Default::default(),
+                    schema_kind: SchemaKind::Type(Type::String(Default::default())),
+                })),
+                min_items: None,
+                max_items: None,
+                unique_items: false,
+            })),
+        };
+        let value = schema_to_json_value(&schema, &document);
+        assert!(value.is_array());
+    }
+
+    #[test]
+    fn test_generate_with_simple_operation() {
+        let mut document = create_minimal_openapi();
+        document.paths.paths.insert(
+            "/test".to_string(),
+            ReferenceOr::Item(openapiv3::PathItem {
+                get: Some(Operation {
+                    operation_id: Some("getTest".to_string()),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+        );
+        
+        let settings = GeneratorSettings {
+            authorization_header: None,
+            content_type: "application/json".to_string(),
+            base_url: Some("http://api.test".to_string()),
+            generate_bash_scripts: false,
+        };
+        
+        let result = generate(&document, &settings).unwrap();
+        assert_eq!(result.files.len(), 1);
+        assert!(result.files[0].filename.ends_with(".ps1"));
+    }
+
+    #[test]
+    fn test_generate_bash_script() {
+        let mut document = create_minimal_openapi();
+        document.paths.paths.insert(
+            "/users".to_string(),
+            ReferenceOr::Item(openapiv3::PathItem {
+                post: Some(Operation::default()),
+                ..Default::default()
+            }),
+        );
+        
+        let settings = GeneratorSettings {
+            authorization_header: Some("Bearer test".to_string()),
+            content_type: "application/json".to_string(),
+            base_url: None,
+            generate_bash_scripts: true,
+        };
+        
+        let result = generate(&document, &settings).unwrap();
+        assert_eq!(result.files.len(), 1);
+        assert!(result.files[0].filename.ends_with(".sh"));
+        assert!(result.files[0].content.contains("curl"));
+    }
+
+    #[test]
+    fn test_generate_with_authorization() {
+        let mut document = create_minimal_openapi();
+        document.paths.paths.insert(
+            "/secure".to_string(),
+            ReferenceOr::Item(openapiv3::PathItem {
+                get: Some(Operation::default()),
+                ..Default::default()
+            }),
+        );
+        
+        let settings = GeneratorSettings {
+            authorization_header: Some("Bearer secret_token".to_string()),
+            content_type: "application/json".to_string(),
+            base_url: None,
+            generate_bash_scripts: false,
+        };
+        
+        let result = generate(&document, &settings).unwrap();
+        assert!(result.files[0].content.contains("secret_token"));
+    }
+
+    fn create_minimal_openapi() -> OpenAPI {
+        OpenAPI {
+            openapi: "3.0.0".to_string(),
+            info: openapiv3::Info {
+                title: "Test API".to_string(),
+                version: "1.0.0".to_string(),
+                ..Default::default()
+            },
+            servers: vec![],
+            paths: openapiv3::Paths::default(),
+            components: None,
+            security: None,
+            tags: vec![],
+            external_docs: None,
+            extensions: Default::default(),
+        }
+    }
+}
