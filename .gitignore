@@ -12,3 +12,4 @@ tests/output/
 test/output/
 **/obj
 **/bin
+test/petstore
