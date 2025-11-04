@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Christian Helle"]
 description = "Generate cURL requests from OpenAPI specifications v2.0 and v3.0"
 license = "MIT"
-repository = "https://github.com/christianhelle/curlgenerator-rs"
+repository = "https://github.com/christianhelle/curlgenerator"
 
 [[bin]]
 name = "curlgenerator"
@@ -13,7 +13,6 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
-serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"
 reqwest = { version = "0.12", features = ["blocking", "json"] }
@@ -23,7 +22,6 @@ colored = "2.1"
 chrono = { version = "0.4", features = ["serde"] }
 openapiv3 = "2.0"
 sw4rm-rs = "0.2.0"
-openapi = "0.1.5"
 
 [build-dependencies]
 chrono = "0.4"
