@@ -21,6 +21,8 @@ param(
   [string]$Binary = ""
 )
 
+cargo build --release
+
 $ErrorActionPreference = "Stop"
 $startTime = Get-Date
 
@@ -28,18 +30,15 @@ $startTime = Get-Date
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 
-# Build the project in release mode
-cargo build
-
 # Set default binary path based on detected project root
 if ([string]::IsNullOrEmpty($Binary))
 {
   if ($IsWindows -or $env:OS -match "Windows")
   {
-    $Binary = Join-Path $projectRoot ".\target\debug\curlgenerator.exe"
+    $Binary = Join-Path $projectRoot ".\target\release\curlgenerator.exe"
   } else
   {
-    $Binary = Join-Path $projectRoot "target/debug/curlgenerator"
+    $Binary = Join-Path $projectRoot "target/release/curlgenerator"
   }
 }
 
