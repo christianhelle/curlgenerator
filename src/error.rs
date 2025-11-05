@@ -33,7 +33,10 @@ mod tests {
     #[test]
     fn test_openapi_parse_error() {
         let err = CurlGeneratorError::OpenApiParseError("test error".to_string());
-        assert_eq!(err.to_string(), "Failed to parse OpenAPI document: test error");
+        assert_eq!(
+            err.to_string(),
+            "Failed to parse OpenAPI document: test error"
+        );
     }
 
     #[test]

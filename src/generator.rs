@@ -1,6 +1,8 @@
 use crate::script::ScriptFile;
 use anyhow::Result;
-use openapiv3::{OpenAPI, Operation, Parameter, ParameterSchemaOrContent, ReferenceOr, Schema, SchemaKind, Type};
+use openapiv3::{
+    OpenAPI, Operation, Parameter, ParameterSchemaOrContent, ReferenceOr, Schema, SchemaKind, Type,
+};
 
 #[derive(Debug, Clone)]
 pub struct GeneratorSettings {
@@ -35,7 +37,9 @@ pub fn generate(document: &OpenAPI, settings: &GeneratorSettings) -> Result<Gene
                 let content = if settings.generate_bash_scripts {
                     generate_bash_script(&verb, path, operation, &base_url, settings, document)
                 } else {
-                    generate_powershell_script(&verb, path, operation, &base_url, settings, document)
+                    generate_powershell_script(
+                        &verb, path, operation, &base_url, settings, document,
+                    )
                 };
 
                 files.push(ScriptFile::new(filename, content));
@@ -62,9 +66,7 @@ fn determine_base_url(document: &OpenAPI, settings: &GeneratorSettings) -> Strin
 
 fn generate_operation_name(verb: &str, path: &str, operation: &Operation) -> String {
     if let Some(operation_id) = &operation.operation_id {
-        let cleaned = operation_id
-            .replace("-", "_")
-            .replace(" ", "_");
+        let cleaned = operation_id.replace("-", "_").replace(" ", "_");
         return format!("{}{}", verb, capitalize_first(&cleaned));
     }
 
@@ -73,7 +75,7 @@ fn generate_operation_name(verb: &str, path: &str, operation: &Operation) -> Str
         .replace("{", "")
         .replace("}", "")
         .replace("-", "_");
-    
+
     format!("{}{}", verb, to_pascal_case(&cleaned))
 }
 
@@ -104,7 +106,7 @@ fn generate_powershell_script(
 
     if !path_params.is_empty() || !query_params.is_empty() {
         script.push_str("param(\n");
-        
+
         for param in path_params.iter().chain(query_params.iter()) {
             if let Some(desc) = &param.description {
                 script.push_str(&format!("   <# {} #>\n", desc));
@@ -113,13 +115,13 @@ fn generate_powershell_script(
             script.push_str(&format!("   [String] ${}\n", to_snake_case(&param.name)));
             script.push_str(",\n");
         }
-        
+
         // Remove trailing comma
         if script.ends_with(",\n") {
             script.truncate(script.len() - 2);
             script.push('\n');
         }
-        
+
         script.push_str(")\n\n");
     }
 
@@ -144,7 +146,10 @@ fn generate_powershell_script(
     // Generate curl command
     script.push_str(&format!("curl -X {} {} `\n", verb, url));
     script.push_str(&format!("  -H 'Accept: {}' `\n", settings.content_type));
-    script.push_str(&format!("  -H 'Content-Type: {}' `\n", settings.content_type));
+    script.push_str(&format!(
+        "  -H 'Content-Type: {}' `\n",
+        settings.content_type
+    ));
 
     if let Some(auth) = &settings.authorization_header {
         script.push_str(&format!("  -H 'Authorization: {}' `\n", auth));
@@ -219,7 +224,11 @@ fn generate_bash_script(
     if !query_params.is_empty() {
         url.push('?');
         for param in &query_params {
-            url.push_str(&format!("{}=${{{}}}&", param.name, to_snake_case(&param.name)));
+            url.push_str(&format!(
+                "{}=${{{}}}&",
+                param.name,
+                to_snake_case(&param.name)
+            ));
         }
         url.pop(); // Remove trailing &
     }
@@ -458,7 +467,10 @@ mod tests {
             base_url: Some("http://custom.com".to_string()),
             generate_bash_scripts: false,
         };
-        assert_eq!(determine_base_url(&document, &settings), "http://custom.com");
+        assert_eq!(
+            determine_base_url(&document, &settings),
+            "http://custom.com"
+        );
     }
 
     #[test]
@@ -476,7 +488,10 @@ mod tests {
             base_url: None,
             generate_bash_scripts: false,
         };
-        assert_eq!(determine_base_url(&document, &settings), "http://api.example.com");
+        assert_eq!(
+            determine_base_url(&document, &settings),
+            "http://api.example.com"
+        );
     }
 
     #[test]
@@ -531,7 +546,7 @@ mod tests {
             explode: None,
             extensions: Default::default(),
         };
-        
+
         let operation = Operation {
             parameters: vec![ReferenceOr::Item(Parameter::Path {
                 parameter_data: param_data.clone(),
@@ -539,7 +554,7 @@ mod tests {
             })],
             ..Default::default()
         };
-        
+
         let params = extract_path_parameters(&operation);
         assert_eq!(params.len(), 1);
         assert_eq!(params[0].name, "userId");
@@ -561,7 +576,7 @@ mod tests {
             explode: None,
             extensions: Default::default(),
         };
-        
+
         let operation = Operation {
             parameters: vec![ReferenceOr::Item(Parameter::Query {
                 parameter_data: param_data.clone(),
@@ -571,7 +586,7 @@ mod tests {
             })],
             ..Default::default()
         };
-        
+
         let params = extract_query_parameters(&operation);
         assert_eq!(params.len(), 1);
         assert_eq!(params[0].name, "limit");
@@ -642,14 +657,14 @@ mod tests {
                 ..Default::default()
             }),
         );
-        
+
         let settings = GeneratorSettings {
             authorization_header: None,
             content_type: "application/json".to_string(),
             base_url: Some("http://api.test".to_string()),
             generate_bash_scripts: false,
         };
-        
+
         let result = generate(&document, &settings).unwrap();
         assert_eq!(result.files.len(), 1);
         assert!(result.files[0].filename.ends_with(".ps1"));
@@ -665,14 +680,14 @@ mod tests {
                 ..Default::default()
             }),
         );
-        
+
         let settings = GeneratorSettings {
             authorization_header: Some("Bearer test".to_string()),
             content_type: "application/json".to_string(),
             base_url: None,
             generate_bash_scripts: true,
         };
-        
+
         let result = generate(&document, &settings).unwrap();
         assert_eq!(result.files.len(), 1);
         assert!(result.files[0].filename.ends_with(".sh"));
@@ -689,14 +704,14 @@ mod tests {
                 ..Default::default()
             }),
         );
-        
+
         let settings = GeneratorSettings {
             authorization_header: Some("Bearer secret_token".to_string()),
             content_type: "application/json".to_string(),
             base_url: None,
             generate_bash_scripts: false,
         };
-        
+
         let result = generate(&document, &settings).unwrap();
         assert!(result.files[0].content.contains("secret_token"));
     }

@@ -46,7 +46,7 @@ fn parse_openapi(content: &str) -> Result<OpenAPI> {
             // Try local conversion first for speed, fallback to API if it fails
             return match convert_swagger_v2_manual(&json_value) {
                 Ok(spec) => Ok(spec),
-                Err(_) => convert_swagger_v2_using_api(&json_value)
+                Err(_) => convert_swagger_v2_using_api(&json_value),
             };
         }
     }
@@ -117,7 +117,8 @@ fn convert_operation_parameters_v2_to_v3(op_obj: &mut serde_json::Map<String, se
                             "application/json".to_string(),
                             serde_json::Value::Object(media_type),
                         );
-                        request_body.insert("content".to_string(), serde_json::Value::Object(content));
+                        request_body
+                            .insert("content".to_string(), serde_json::Value::Object(content));
                     }
 
                     request_body_to_add = Some(serde_json::Value::Object(request_body));
@@ -160,7 +161,10 @@ fn convert_operation_parameters_v2_to_v3(op_obj: &mut serde_json::Map<String, se
                 }
 
                 schema.insert("type".to_string(), serde_json::json!("object"));
-                schema.insert("properties".to_string(), serde_json::Value::Object(properties));
+                schema.insert(
+                    "properties".to_string(),
+                    serde_json::Value::Object(properties),
+                );
                 if !required.is_empty() {
                     schema.insert("required".to_string(), serde_json::Value::Array(required));
                 }
@@ -196,7 +200,7 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
     // Serialize sw4rm Spec to JSON and then deserialize to openapiv3::OpenAPI
     // This works because sw4rm-rs already handles v2 to v3 conversion internally
     let json_value = serde_json::to_value(spec)?;
-    
+
     // Convert Swagger v2.0 fields to OpenAPI v3 if necessary
     let json_obj = if let serde_json::Value::Object(mut obj) = json_value {
         // Convert swagger field to openapi
@@ -204,15 +208,15 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
         if let Some(swagger_version) = version {
             if swagger_version.as_str() == Some("2.0") {
                 obj.insert("openapi".to_string(), serde_json::json!("3.0.0"));
-                
+
                 // Convert host, basePath, schemes to servers
                 let host = obj.remove("host");
                 let base_path = obj.remove("basePath");
                 let schemes = obj.remove("schemes");
-                
+
                 if host.is_some() || base_path.is_some() || schemes.is_some() {
                     let mut server_url = String::new();
-                    
+
                     // Build server URL from v2 fields
                     if let Some(schemes_arr) = schemes {
                         if let Some(scheme) = schemes_arr.as_array().and_then(|a| a.first()) {
@@ -223,15 +227,15 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
                     } else {
                         server_url.push_str("http");
                     }
-                    
+
                     server_url.push_str("://");
-                    
+
                     if let Some(host_val) = host {
                         server_url.push_str(host_val.as_str().unwrap_or("localhost"));
                     } else {
                         server_url.push_str("localhost");
                     }
-                    
+
                     if let Some(base_path_val) = base_path {
                         let path = base_path_val.as_str().unwrap_or("");
                         if !path.is_empty() && !path.starts_with('/') {
@@ -239,10 +243,13 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
                         }
                         server_url.push_str(path);
                     }
-                    
-                    obj.insert("servers".to_string(), serde_json::json!([{"url": server_url}]));
+
+                    obj.insert(
+                        "servers".to_string(),
+                        serde_json::json!([{"url": server_url}]),
+                    );
                 }
-                
+
                 // Convert paths parameters from v2 to v3
                 if let Some(paths) = obj.get_mut("paths") {
                     if let Some(paths_obj) = paths.as_object_mut() {
@@ -251,24 +258,32 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
                                 for (_method, operation) in path_obj.iter_mut() {
                                     if let Some(op_obj) = operation.as_object_mut() {
                                         let mut request_body_to_add = None;
-                                        
+
                                         if let Some(params) = op_obj.get_mut("parameters") {
                                             if let Some(params_arr) = params.as_array_mut() {
                                                 let mut body_param = None;
                                                 let mut form_params = Vec::new();
                                                 let mut non_body_params = Vec::new();
-                                                
+
                                                 // Separate body and non-body parameters
                                                 for param in params_arr.drain(..) {
                                                     if let Some(param_obj) = param.as_object() {
-                                                        if let Some(in_val) = param_obj.get("in").and_then(|v| v.as_str()) {
+                                                        if let Some(in_val) = param_obj
+                                                            .get("in")
+                                                            .and_then(|v| v.as_str())
+                                                        {
                                                             match in_val {
                                                                 "body" => body_param = Some(param),
-                                                                "formData" => form_params.push(param),
+                                                                "formData" => {
+                                                                    form_params.push(param)
+                                                                }
                                                                 _ => {
                                                                     let mut converted_param = param;
-                                                                    convert_parameter_v2_to_v3(&mut converted_param);
-                                                                    non_body_params.push(converted_param);
+                                                                    convert_parameter_v2_to_v3(
+                                                                        &mut converted_param,
+                                                                    );
+                                                                    non_body_params
+                                                                        .push(converted_param);
                                                                 }
                                                             }
                                                         } else {
@@ -276,34 +291,61 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
                                                         }
                                                     }
                                                 }
-                                                
+
                                                 // Update parameters array with non-body parameters
                                                 *params_arr = non_body_params;
-                                                
+
                                                 // Build requestBody for body parameter
                                                 if let Some(body) = body_param {
                                                     if let Some(body_obj) = body.as_object() {
-                                                        let mut request_body = serde_json::Map::new();
-                                                        
-                                                        if let Some(desc) = body_obj.get("description") {
-                                                            request_body.insert("description".to_string(), desc.clone());
+                                                        let mut request_body =
+                                                            serde_json::Map::new();
+
+                                                        if let Some(desc) =
+                                                            body_obj.get("description")
+                                                        {
+                                                            request_body.insert(
+                                                                "description".to_string(),
+                                                                desc.clone(),
+                                                            );
                                                         }
-                                                        if let Some(required) = body_obj.get("required") {
-                                                            request_body.insert("required".to_string(), required.clone());
+                                                        if let Some(required) =
+                                                            body_obj.get("required")
+                                                        {
+                                                            request_body.insert(
+                                                                "required".to_string(),
+                                                                required.clone(),
+                                                            );
                                                         }
-                                                        
-                                                        if let Some(schema) = body_obj.get("schema") {
-                                                            let mut content = serde_json::Map::new();
-                                                            let mut media_type = serde_json::Map::new();
-                                                            media_type.insert("schema".to_string(), schema.clone());
-                                                            content.insert("application/json".to_string(), serde_json::Value::Object(media_type));
-                                                            request_body.insert("content".to_string(), serde_json::Value::Object(content));
+
+                                                        if let Some(schema) = body_obj.get("schema")
+                                                        {
+                                                            let mut content =
+                                                                serde_json::Map::new();
+                                                            let mut media_type =
+                                                                serde_json::Map::new();
+                                                            media_type.insert(
+                                                                "schema".to_string(),
+                                                                schema.clone(),
+                                                            );
+                                                            content.insert(
+                                                                "application/json".to_string(),
+                                                                serde_json::Value::Object(
+                                                                    media_type,
+                                                                ),
+                                                            );
+                                                            request_body.insert(
+                                                                "content".to_string(),
+                                                                serde_json::Value::Object(content),
+                                                            );
                                                         }
-                                                        
-                                                        request_body_to_add = Some(serde_json::Value::Object(request_body));
+
+                                                        request_body_to_add = Some(
+                                                            serde_json::Value::Object(request_body),
+                                                        );
                                                     }
                                                 }
-                                                
+
                                                 // Build requestBody for formData parameters
                                                 if !form_params.is_empty() {
                                                     let mut request_body = serde_json::Map::new();
@@ -312,49 +354,102 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
                                                     let mut schema = serde_json::Map::new();
                                                     let mut properties = serde_json::Map::new();
                                                     let mut required = Vec::new();
-                                                    
+
                                                     for form_param in form_params {
-                                                        if let Some(param_obj) = form_param.as_object() {
-                                                            if let Some(name) = param_obj.get("name").and_then(|v| v.as_str()) {
-                                                                let mut prop = serde_json::Map::new();
-                                                                if let Some(t) = param_obj.get("type") {
-                                                                    prop.insert("type".to_string(), t.clone());
+                                                        if let Some(param_obj) =
+                                                            form_param.as_object()
+                                                        {
+                                                            if let Some(name) = param_obj
+                                                                .get("name")
+                                                                .and_then(|v| v.as_str())
+                                                            {
+                                                                let mut prop =
+                                                                    serde_json::Map::new();
+                                                                if let Some(t) =
+                                                                    param_obj.get("type")
+                                                                {
+                                                                    prop.insert(
+                                                                        "type".to_string(),
+                                                                        t.clone(),
+                                                                    );
                                                                 }
-                                                                if let Some(f) = param_obj.get("format") {
-                                                                    prop.insert("format".to_string(), f.clone());
+                                                                if let Some(f) =
+                                                                    param_obj.get("format")
+                                                                {
+                                                                    prop.insert(
+                                                                        "format".to_string(),
+                                                                        f.clone(),
+                                                                    );
                                                                 }
-                                                                if let Some(d) = param_obj.get("description") {
-                                                                    prop.insert("description".to_string(), d.clone());
+                                                                if let Some(d) =
+                                                                    param_obj.get("description")
+                                                                {
+                                                                    prop.insert(
+                                                                        "description".to_string(),
+                                                                        d.clone(),
+                                                                    );
                                                                 }
-                                                                properties.insert(name.to_string(), serde_json::Value::Object(prop));
-                                                                
-                                                                if param_obj.get("required").and_then(|v| v.as_bool()).unwrap_or(false) {
-                                                                    required.push(serde_json::Value::String(name.to_string()));
+                                                                properties.insert(
+                                                                    name.to_string(),
+                                                                    serde_json::Value::Object(prop),
+                                                                );
+
+                                                                if param_obj
+                                                                    .get("required")
+                                                                    .and_then(|v| v.as_bool())
+                                                                    .unwrap_or(false)
+                                                                {
+                                                                    required.push(
+                                                                        serde_json::Value::String(
+                                                                            name.to_string(),
+                                                                        ),
+                                                                    );
                                                                 }
                                                             }
                                                         }
                                                     }
-                                                    
-                                                    schema.insert("type".to_string(), serde_json::json!("object"));
-                                                    schema.insert("properties".to_string(), serde_json::Value::Object(properties));
+
+                                                    schema.insert(
+                                                        "type".to_string(),
+                                                        serde_json::json!("object"),
+                                                    );
+                                                    schema.insert(
+                                                        "properties".to_string(),
+                                                        serde_json::Value::Object(properties),
+                                                    );
                                                     if !required.is_empty() {
-                                                        schema.insert("required".to_string(), serde_json::Value::Array(required));
+                                                        schema.insert(
+                                                            "required".to_string(),
+                                                            serde_json::Value::Array(required),
+                                                        );
                                                     }
-                                                    
-                                                    media_type.insert("schema".to_string(), serde_json::Value::Object(schema));
-                                                    content.insert("application/x-www-form-urlencoded".to_string(), serde_json::Value::Object(media_type));
-                                                    request_body.insert("content".to_string(), serde_json::Value::Object(content));
-                                                    
-                                                    request_body_to_add = Some(serde_json::Value::Object(request_body));
+
+                                                    media_type.insert(
+                                                        "schema".to_string(),
+                                                        serde_json::Value::Object(schema),
+                                                    );
+                                                    content.insert(
+                                                        "application/x-www-form-urlencoded"
+                                                            .to_string(),
+                                                        serde_json::Value::Object(media_type),
+                                                    );
+                                                    request_body.insert(
+                                                        "content".to_string(),
+                                                        serde_json::Value::Object(content),
+                                                    );
+
+                                                    request_body_to_add = Some(
+                                                        serde_json::Value::Object(request_body),
+                                                    );
                                                 }
-                                                
+
                                                 // Remove parameters array if empty
                                                 if params_arr.is_empty() {
                                                     op_obj.remove("parameters");
                                                 }
                                             }
                                         }
-                                        
+
                                         // Add requestBody after we're done with parameters
                                         if let Some(request_body) = request_body_to_add {
                                             op_obj.insert("requestBody".to_string(), request_body);
@@ -365,54 +460,58 @@ fn convert_spec_to_openapi_v3(spec: &Spec) -> Result<OpenAPI> {
                         }
                     }
                 }
-                
+
                 // Convert definitions to components/schemas
                 if let Some(definitions) = obj.remove("definitions") {
-                    let components = obj.entry("components".to_string())
+                    let components = obj
+                        .entry("components".to_string())
                         .or_insert_with(|| serde_json::json!({}));
                     if let Some(comp_obj) = components.as_object_mut() {
                         comp_obj.insert("schemas".to_string(), definitions);
                     }
                 }
-                
+
                 // Convert parameters to components/parameters
                 if let Some(parameters) = obj.remove("parameters") {
-                    let components = obj.entry("components".to_string())
+                    let components = obj
+                        .entry("components".to_string())
                         .or_insert_with(|| serde_json::json!({}));
                     if let Some(comp_obj) = components.as_object_mut() {
                         comp_obj.insert("parameters".to_string(), parameters);
                     }
                 }
-                
+
                 // Convert responses to components/responses
                 if let Some(responses) = obj.remove("responses") {
-                    let components = obj.entry("components".to_string())
+                    let components = obj
+                        .entry("components".to_string())
                         .or_insert_with(|| serde_json::json!({}));
                     if let Some(comp_obj) = components.as_object_mut() {
                         comp_obj.insert("responses".to_string(), responses);
                     }
                 }
-                
+
                 // Convert securityDefinitions to components/securitySchemes
                 if let Some(security_defs) = obj.remove("securityDefinitions") {
-                    let components = obj.entry("components".to_string())
+                    let components = obj
+                        .entry("components".to_string())
                         .or_insert_with(|| serde_json::json!({}));
                     if let Some(comp_obj) = components.as_object_mut() {
                         comp_obj.insert("securitySchemes".to_string(), security_defs);
                     }
                 }
-                
+
                 // Remove v2-specific fields
                 obj.remove("consumes");
                 obj.remove("produces");
             }
         }
-        
+
         serde_json::Value::Object(obj)
     } else {
         json_value
     };
-    
+
     // Parse as OpenAPI v3
     let openapi: OpenAPI = serde_json::from_value(json_obj)?;
     Ok(openapi)
@@ -438,10 +537,10 @@ fn convert_parameter_v2_to_v3(param: &mut serde_json::Value) {
             let min_length = param_obj.remove("minLength");
             let max_length = param_obj.remove("maxLength");
             let pattern = param_obj.remove("pattern");
-            
+
             // Build schema object
             let mut schema = serde_json::Map::new();
-            
+
             if let Some(t) = param_type {
                 schema.insert("type".to_string(), t);
             }
@@ -472,7 +571,7 @@ fn convert_parameter_v2_to_v3(param: &mut serde_json::Value) {
             if let Some(p) = pattern {
                 schema.insert("pattern".to_string(), p);
             }
-            
+
             // Only add schema if it's not empty
             if !schema.is_empty() {
                 param_obj.insert("schema".to_string(), serde_json::Value::Object(schema));
@@ -480,7 +579,7 @@ fn convert_parameter_v2_to_v3(param: &mut serde_json::Value) {
                 // Default schema for parameters without type
                 param_obj.insert("schema".to_string(), serde_json::json!({"type": "string"}));
             }
-            
+
             // Remove v2-specific fields
             param_obj.remove("collectionFormat");
         } else {
@@ -498,7 +597,8 @@ fn update_refs(value: &mut serde_json::Value) -> Result<serde_json::Value> {
                 if key == "$ref" {
                     if let Some(ref_str) = val.as_str() {
                         if ref_str.starts_with("#/definitions/") {
-                            let new_ref = ref_str.replace("#/definitions/", "#/components/schemas/");
+                            let new_ref =
+                                ref_str.replace("#/definitions/", "#/components/schemas/");
                             new_obj.insert(key.clone(), serde_json::Value::String(new_ref));
                             continue;
                         }
@@ -588,7 +688,7 @@ fn convert_swagger_v2_manual(spec: &serde_json::Value) -> Result<OpenAPI> {
                             }
                         }
                     }
-                    
+
                     // Convert operation-level parameters
                     for (_method, operation) in path_obj.iter_mut() {
                         if let Some(op_obj) = operation.as_object_mut() {
@@ -607,7 +707,10 @@ fn convert_swagger_v2_manual(spec: &serde_json::Value) -> Result<OpenAPI> {
             .and_then(|v| v.as_object().cloned())
             .unwrap_or_default();
         components.insert("schemas".to_string(), definitions);
-        json_obj.insert("components".to_string(), serde_json::Value::Object(components));
+        json_obj.insert(
+            "components".to_string(),
+            serde_json::Value::Object(components),
+        );
     }
 
     // Update all $ref paths from #/definitions/ to #/components/schemas/
@@ -641,14 +744,15 @@ fn convert_swagger_v2_using_api(spec: &serde_json::Value) -> Result<OpenAPI> {
         .send()?;
 
     if !response.status().is_success() {
-        return Err(CurlGeneratorError::OpenApiParseError(
-            format!("Converter API failed with status: {}", response.status()),
-        )
+        return Err(CurlGeneratorError::OpenApiParseError(format!(
+            "Converter API failed with status: {}",
+            response.status()
+        ))
         .into());
     }
 
     let converted_text = response.text()?;
-    
+
     // Try to parse as OpenAPI v3
     if let Ok(openapi) = serde_json::from_str::<OpenAPI>(&converted_text) {
         return Ok(openapi);
@@ -670,8 +774,8 @@ fn is_http_url(path: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
     use openapiv3::ReferenceOr;
+    use std::fs;
 
     #[test]
     fn test_is_http_url_with_http() {
@@ -700,7 +804,7 @@ mod tests {
             },
             "paths": {}
         }"#;
-        
+
         let result = parse_openapi(content);
         assert!(result.is_ok());
         let spec = result.unwrap();
@@ -717,7 +821,7 @@ info:
   version: 1.0.0
 paths: {}
 "#;
-        
+
         let result = parse_openapi(content);
         assert!(result.is_ok());
         let spec = result.unwrap();
@@ -738,7 +842,7 @@ paths: {}
             "schemes": ["https"],
             "paths": {}
         }"#;
-        
+
         let result = parse_openapi(content);
         assert!(result.is_ok());
         let spec = result.unwrap();
@@ -760,9 +864,9 @@ paths: {}
             "type": "string",
             "description": "User ID"
         });
-        
+
         convert_parameter_v2_to_v3(&mut param);
-        
+
         assert!(param.get("schema").is_some());
         let schema = param.get("schema").unwrap();
         assert_eq!(schema.get("type").unwrap(), "string");
@@ -776,9 +880,9 @@ paths: {}
             "type": "string",
             "format": "date-time"
         });
-        
+
         convert_parameter_v2_to_v3(&mut param);
-        
+
         let schema = param.get("schema").unwrap();
         assert_eq!(schema.get("format").unwrap(), "date-time");
     }
@@ -789,9 +893,9 @@ paths: {}
             "name": "param",
             "in": "header"
         });
-        
+
         convert_parameter_v2_to_v3(&mut param);
-        
+
         assert!(param.get("schema").is_some());
     }
 
@@ -800,7 +904,7 @@ paths: {}
         let mut value = serde_json::json!({
             "$ref": "#/definitions/User"
         });
-        
+
         let result = update_refs(&mut value).unwrap();
         assert_eq!(result.get("$ref").unwrap(), "#/components/schemas/User");
     }
@@ -814,7 +918,7 @@ paths: {}
                 }
             }
         });
-        
+
         let result = update_refs(&mut value).unwrap();
         let user_ref = result
             .get("properties")
@@ -832,7 +936,7 @@ paths: {}
             {"$ref": "#/definitions/User"},
             {"$ref": "#/definitions/Post"}
         ]);
-        
+
         let result = update_refs(&mut value).unwrap();
         assert!(result.is_array());
         let arr = result.as_array().unwrap();
@@ -853,7 +957,7 @@ paths: {}
             "schemes": ["https"],
             "paths": {}
         });
-        
+
         let result = convert_swagger_v2_manual(&spec);
         assert!(result.is_ok());
         let openapi = result.unwrap();
@@ -880,7 +984,7 @@ paths: {}
                 }
             }
         });
-        
+
         let result = convert_swagger_v2_manual(&spec);
         assert!(result.is_ok());
         let openapi = result.unwrap();
@@ -902,10 +1006,10 @@ paths: {}
                 }
             }]
         });
-        
+
         let op_obj = operation.as_object_mut().unwrap();
         convert_operation_parameters_v2_to_v3(op_obj);
-        
+
         assert!(op_obj.get("requestBody").is_some());
         let request_body = op_obj.get("requestBody").unwrap();
         assert!(request_body.get("content").is_some());
@@ -920,10 +1024,10 @@ paths: {}
                 "type": "integer"
             }]
         });
-        
+
         let op_obj = operation.as_object_mut().unwrap();
         convert_operation_parameters_v2_to_v3(op_obj);
-        
+
         let params = op_obj.get("parameters").unwrap().as_array().unwrap();
         assert_eq!(params.len(), 1);
         assert!(params[0].get("schema").is_some());
@@ -939,10 +1043,10 @@ paths: {}
                 "required": true
             }]
         });
-        
+
         let op_obj = operation.as_object_mut().unwrap();
         convert_operation_parameters_v2_to_v3(op_obj);
-        
+
         assert!(op_obj.get("requestBody").is_some());
         let request_body = op_obj.get("requestBody").unwrap();
         let content = request_body.get("content").unwrap();
@@ -960,11 +1064,11 @@ paths: {}
 "#;
         let temp_path = "test_temp_spec.yaml";
         fs::write(temp_path, test_content).unwrap();
-        
+
         let result = load_document(temp_path);
-        
+
         let _ = fs::remove_file(temp_path);
-        
+
         assert!(result.is_ok());
     }
 

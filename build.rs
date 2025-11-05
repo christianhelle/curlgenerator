@@ -1,7 +1,7 @@
-use time::OffsetDateTime;
-use std::process::Command;
 #[cfg(windows)]
 use std::path::Path;
+use std::process::Command;
+use time::OffsetDateTime;
 
 fn main() {
     // Get Cargo.toml version as fallback
@@ -27,8 +27,12 @@ fn main() {
     let now = OffsetDateTime::now_utc();
     let build_date = format!(
         "{:04}-{:02}-{:02} {:02}:{:02}:{:02} UTC",
-        now.year(), now.month() as u8, now.day(),
-        now.hour(), now.minute(), now.second()
+        now.year(),
+        now.month() as u8,
+        now.day(),
+        now.hour(),
+        now.minute(),
+        now.second()
     );
 
     // Set environment variables for build
@@ -47,7 +51,7 @@ fn main() {
     {
         let png_path = Path::new("resources/icon.png");
         let ico_path = Path::new("resources/icon.ico");
-        
+
         // Convert PNG to ICO if the ICO doesn't exist or PNG is newer
         if !ico_path.exists() || needs_rebuild(png_path, ico_path) {
             println!("cargo:warning=Converting icon.png to icon.ico");
@@ -55,7 +59,7 @@ fn main() {
                 println!("cargo:warning=Failed to convert icon: {}", e);
             }
         }
-        
+
         // Embed the icon
         if ico_path.exists() {
             println!("cargo:rerun-if-changed=resources/icon.png");
@@ -84,7 +88,7 @@ fn get_git_output(args: &[&str]) -> Option<String> {
 #[cfg(windows)]
 fn needs_rebuild(src: &Path, dest: &Path) -> bool {
     use std::fs;
-    
+
     if let (Ok(src_meta), Ok(dest_meta)) = (fs::metadata(src), fs::metadata(dest)) {
         if let (Ok(src_time), Ok(dest_time)) = (src_meta.modified(), dest_meta.modified()) {
             return src_time > dest_time;
@@ -95,31 +99,27 @@ fn needs_rebuild(src: &Path, dest: &Path) -> bool {
 
 #[cfg(windows)]
 fn convert_png_to_ico(png_path: &Path, ico_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
-    use image::ImageReader;
     use ico::{IconDir, IconImage, ResourceType};
-    
+    use image::ImageReader;
+
     // Load PNG
     let img = ImageReader::open(png_path)?.decode()?;
-    
+
     // Create icon directory
     let mut icon_dir = IconDir::new(ResourceType::Icon);
-    
+
     // Resize to common icon sizes and add to icon directory
     for size in [16, 32, 48, 64, 128, 256] {
-        let resized = img.resize_exact(
-            size,
-            size,
-            image::imageops::FilterType::Lanczos3,
-        );
-        
+        let resized = img.resize_exact(size, size, image::imageops::FilterType::Lanczos3);
+
         let rgba = resized.to_rgba8();
         let icon_image = IconImage::from_rgba_data(size, size, rgba.into_raw());
         icon_dir.add_entry(ico::IconDirEntry::encode(&icon_image)?);
     }
-    
+
     // Write ICO file
     let file = std::fs::File::create(ico_path)?;
     icon_dir.write(file)?;
-    
+
     Ok(())
 }
