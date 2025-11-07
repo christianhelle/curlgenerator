@@ -14,7 +14,7 @@ fn main() {
         get_git_output(&["git", "rev-parse", "--short", "HEAD"]).filter(|s| !s.is_empty());
 
     // Determine version: prefer git tag, fallback to Cargo.toml version
-    let version = if let Some(ref tag) = &git_tag {
+    let version = if let Some(tag) = &git_tag {
         tag.strip_prefix('v').unwrap_or(tag).to_string()
     } else {
         cargo_version.to_string()
