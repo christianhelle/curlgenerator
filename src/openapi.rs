@@ -28,7 +28,7 @@ fn parse_openapi(content: &str) -> Result<OpenAPI> {
         return Ok(spec);
     }
 
-    // Try to detect if this is a Swagger 2.0 spec
+    // Try to detect if this is a Swagger 2.0 or OpenAPI 3.1 spec
     let json_value: serde_json::Value = if let Ok(v) = serde_json::from_str(content) {
         v
     } else if let Ok(v) = serde_yaml::from_str(content) {
@@ -39,6 +39,13 @@ fn parse_openapi(content: &str) -> Result<OpenAPI> {
         )
         .into());
     };
+
+    // Check if it's OpenAPI 3.1
+    if let Some(openapi) = json_value.get("openapi").and_then(|v| v.as_str()) {
+        if openapi.starts_with("3.1") {
+            return convert_openapi_v31_to_v30(&json_value);
+        }
+    }
 
     // Check if it's Swagger 2.0
     if let Some(swagger) = json_value.get("swagger").and_then(|v| v.as_str()) {
@@ -61,9 +68,168 @@ fn parse_openapi(content: &str) -> Result<OpenAPI> {
 
     eprintln!("DEBUG: Failed to parse with any method");
     Err(CurlGeneratorError::OpenApiParseError(
-        "Failed to parse as OpenAPI v2.0 or v3.x (JSON or YAML)".to_string(),
+        "Failed to parse as OpenAPI v2.0, v3.0, or v3.1 (JSON or YAML)".to_string(),
     )
     .into())
+}
+
+fn convert_openapi_v31_to_v30(spec: &serde_json::Value) -> Result<OpenAPI> {
+    // Convert OpenAPI 3.1 to 3.0 format
+    let mut json_obj = if let serde_json::Value::Object(obj) = spec {
+        obj.clone()
+    } else {
+        return Err(CurlGeneratorError::OpenApiParseError(
+            "Invalid OpenAPI specification structure".to_string(),
+        )
+        .into());
+    };
+
+    // Change openapi version from 3.1.x to 3.0.3
+    json_obj.insert("openapi".to_string(), serde_json::json!("3.0.3"));
+
+    // Convert info.license from 3.1 to 3.0 format
+    // In 3.1, license can use SPDX identifiers, but 3.0 doesn't support this
+    if let Some(info) = json_obj.get_mut("info") {
+        if let Some(info_obj) = info.as_object_mut() {
+            if let Some(license) = info_obj.get_mut("license") {
+                if let Some(license_obj) = license.as_object_mut() {
+                    // In 3.1, 'identifier' is used instead of 'name' for SPDX licenses
+                    if let Some(identifier) = license_obj.remove("identifier") {
+                        // If no name exists, use identifier as name
+                        if !license_obj.contains_key("name") {
+                            license_obj.insert("name".to_string(), identifier);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Handle webhooks - in 3.1, webhooks are top-level, but 3.0 doesn't support them
+    // We can either skip them or convert them to paths with a special prefix
+    if let Some(webhooks) = json_obj.remove("webhooks") {
+        // For now, we'll add them to paths with a "webhook:" prefix
+        let paths = json_obj
+            .entry("paths".to_string())
+            .or_insert_with(|| serde_json::json!({}));
+        
+        if let Some(paths_obj) = paths.as_object_mut() {
+            if let Some(webhooks_obj) = webhooks.as_object() {
+                for (webhook_name, webhook_item) in webhooks_obj {
+                    paths_obj.insert(
+                        format!("/webhooks/{}", webhook_name),
+                        webhook_item.clone(),
+                    );
+                }
+            }
+        }
+    }
+
+    // Ensure paths object exists (in 3.1 it's optional, in 3.0 it's required)
+    if !json_obj.contains_key("paths") {
+        json_obj.insert("paths".to_string(), serde_json::json!({}));
+    }
+
+    // Ensure all operations have responses (required in 3.0, optional in 3.1)
+    if let Some(paths) = json_obj.get_mut("paths") {
+        if let Some(paths_obj) = paths.as_object_mut() {
+            for (_, path_item) in paths_obj.iter_mut() {
+                if let Some(path_obj) = path_item.as_object_mut() {
+                    for method in ["get", "post", "put", "patch", "delete", "options", "head", "trace"] {
+                        if let Some(operation) = path_obj.get_mut(method) {
+                            if let Some(op_obj) = operation.as_object_mut() {
+                                // Add default responses if missing
+                                if !op_obj.contains_key("responses") {
+                                    op_obj.insert(
+                                        "responses".to_string(),
+                                        serde_json::json!({
+                                            "default": {
+                                                "description": "Default response"
+                                            }
+                                        }),
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Convert schemas: In 3.1, schemas can use JSON Schema features not in 3.0
+    // We'll do basic conversion of the most common differences
+    if let Some(components) = json_obj.get_mut("components") {
+        if let Some(components_obj) = components.as_object_mut() {
+            if let Some(schemas) = components_obj.get_mut("schemas") {
+                convert_schemas_v31_to_v30(schemas);
+            }
+        }
+    }
+
+    // Try to deserialize to OpenAPI v3.0
+    let openapi_spec: OpenAPI = serde_json::from_value(serde_json::Value::Object(json_obj))?;
+    Ok(openapi_spec)
+}
+
+fn convert_schemas_v31_to_v30(schemas: &mut serde_json::Value) {
+    // Recursively convert JSON Schema 2020-12 features to OpenAPI 3.0 compatible format
+    match schemas {
+        serde_json::Value::Object(obj) => {
+            // Handle 'const' - in 3.1 it's a keyword, in 3.0 use enum with single value
+            if let Some(const_value) = obj.remove("const") {
+                obj.insert("enum".to_string(), serde_json::json!([const_value]));
+            }
+
+            // Handle 'null' type - in 3.1 type can be null, in 3.0 use nullable: true
+            if let Some(type_value) = obj.get_mut("type") {
+                if let Some(type_str) = type_value.as_str() {
+                    if type_str == "null" {
+                        obj.insert("nullable".to_string(), serde_json::json!(true));
+                        obj.remove("type");
+                    }
+                } else if let Some(type_array) = type_value.as_array() {
+                    // Handle type: [string, null] format
+                    let non_null_types: Vec<_> = type_array
+                        .iter()
+                        .filter(|t| t.as_str() != Some("null"))
+                        .cloned()
+                        .collect();
+                    
+                    if non_null_types.len() < type_array.len() {
+                        obj.insert("nullable".to_string(), serde_json::json!(true));
+                        if non_null_types.len() == 1 {
+                            obj.insert("type".to_string(), non_null_types[0].clone());
+                        } else if !non_null_types.is_empty() {
+                            obj.insert("type".to_string(), serde_json::Value::Array(non_null_types));
+                        } else {
+                            obj.remove("type");
+                        }
+                    }
+                }
+            }
+
+            // Handle 'examples' - in 3.1 it's an array, in 3.0 use example (singular)
+            if let Some(examples) = obj.remove("examples") {
+                if let Some(examples_array) = examples.as_array() {
+                    if let Some(first_example) = examples_array.first() {
+                        obj.insert("example".to_string(), first_example.clone());
+                    }
+                }
+            }
+
+            // Recursively process nested objects
+            for (_, value) in obj.iter_mut() {
+                convert_schemas_v31_to_v30(value);
+            }
+        }
+        serde_json::Value::Array(arr) => {
+            for item in arr.iter_mut() {
+                convert_schemas_v31_to_v30(item);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn convert_operation_parameters_v2_to_v3(op_obj: &mut serde_json::Map<String, serde_json::Value>) {
@@ -1076,5 +1242,138 @@ paths: {}
     fn test_load_document_file_not_found() {
         let result = load_document("nonexistent_file.yaml");
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_convert_openapi_v31_to_v30_basic() {
+        let spec = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "paths": {
+                "/test": {
+                    "get": {
+                        "responses": {
+                            "200": {
+                                "description": "Success"
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        let result = convert_openapi_v31_to_v30(&spec);
+        assert!(result.is_ok());
+        let openapi = result.unwrap();
+        assert_eq!(openapi.openapi, "3.0.3");
+    }
+
+    #[test]
+    fn test_convert_openapi_v31_to_v30_with_webhooks() {
+        let spec = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {
+                "title": "Test API",
+                "version": "1.0.0"
+            },
+            "webhooks": {
+                "newPet": {
+                    "post": {
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "description": "Success"
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        let result = convert_openapi_v31_to_v30(&spec);
+        assert!(result.is_ok());
+        let openapi = result.unwrap();
+        assert!(!openapi.paths.paths.is_empty());
+    }
+
+    #[test]
+    fn test_convert_schemas_v31_to_v30_const() {
+        let mut schema = serde_json::json!({
+            "const": "fixed-value"
+        });
+
+        convert_schemas_v31_to_v30(&mut schema);
+
+        assert!(schema.get("const").is_none());
+        assert_eq!(schema.get("enum").unwrap(), &serde_json::json!(["fixed-value"]));
+    }
+
+    #[test]
+    fn test_convert_schemas_v31_to_v30_null_type() {
+        let mut schema = serde_json::json!({
+            "type": "null"
+        });
+
+        convert_schemas_v31_to_v30(&mut schema);
+
+        assert!(schema.get("nullable").is_some());
+        assert_eq!(schema.get("nullable").unwrap(), &serde_json::json!(true));
+    }
+
+    #[test]
+    fn test_convert_schemas_v31_to_v30_nullable_string() {
+        let mut schema = serde_json::json!({
+            "type": ["string", "null"]
+        });
+
+        convert_schemas_v31_to_v30(&mut schema);
+
+        assert_eq!(schema.get("type").unwrap(), "string");
+        assert_eq!(schema.get("nullable").unwrap(), &serde_json::json!(true));
+    }
+
+    #[test]
+    fn test_convert_schemas_v31_to_v30_examples() {
+        let mut schema = serde_json::json!({
+            "type": "string",
+            "examples": ["example1", "example2"]
+        });
+
+        convert_schemas_v31_to_v30(&mut schema);
+
+        assert!(schema.get("examples").is_none());
+        assert_eq!(schema.get("example").unwrap(), "example1");
+    }
+
+    #[test]
+    fn test_parse_openapi_v31_yaml() {
+        let content = r#"
+openapi: 3.1.0
+info:
+  title: Test API
+  version: 1.0.0
+paths:
+  /test:
+    get:
+      responses:
+        "200":
+          description: Success
+"#;
+
+        let result = parse_openapi(content);
+        assert!(result.is_ok());
+        let spec = result.unwrap();
+        assert_eq!(spec.info.title, "Test API");
     }
 }
