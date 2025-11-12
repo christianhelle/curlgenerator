@@ -4,7 +4,7 @@
 
 # cURL Request Generator
 
-Generate cURL requests from OpenAPI specifications v2.0 and v3.0
+Generate cURL requests from OpenAPI specifications v2.0, v3.0, and v3.1
 
 > **⚠️ IMPORTANT: This repository has been rewritten in Rust**
 >
@@ -38,7 +38,7 @@ cargo install curlgenerator
 ## Usage
 
 ```bash
-Generate cURL requests from OpenAPI specifications v2.0 and v3.0
+Generate cURL requests from OpenAPI specifications v2.0, v3.0, and v3.1
 
 Usage: curlgenerator [OPTIONS] [URL or input file]
 
@@ -86,6 +86,9 @@ curlgenerator https://petstore3.swagger.io/api/v3/openapi.json --base-url https:
 
 # With authorization header
 curlgenerator ./openapi.json --authorization-header "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# OpenAPI 3.1 with webhooks
+curlgenerator ./openapi-v3.1.json
 ```
 
 ## Example
@@ -182,7 +185,7 @@ curl -X GET https://petstore3.swagger.io/api/v3/pet/$petId `
 
 ## Features
 
-- ✅ OpenAPI v2.0 and v3.0 support
+- ✅ OpenAPI v2.0, v3.0, and v3.1 support
 - ✅ Generate PowerShell scripts (default)
 - ✅ Generate Bash scripts
 - ✅ Load OpenAPI specs from file or URL
