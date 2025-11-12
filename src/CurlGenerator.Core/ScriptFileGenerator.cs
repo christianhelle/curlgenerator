@@ -1,4 +1,4 @@
-﻿namespace CurlGenerator.Core;
+namespace CurlGenerator.Core;
 
 using System;
 using System.Collections.Generic;
@@ -120,10 +120,20 @@ public static class ScriptFileGenerator
             if (contentType == "application/x-www-form-urlencoded" || contentType == "multipart/form-data")
             {
                 var formData = operation.RequestBody.Content[contentType].Schema.Properties
-                    .Select(p => $"-F \"{p.Key}=${{{p.Key}}}\"");
-                foreach (var formField in formData)
+                    .Select(p => $"-F \"{p.Key}=${{{p.Key}}}\"")
+                    .ToList();
+                
+                for (int i = 0; i < formData.Count; i++)
                 {
-                    code.AppendLine(formField + " \\");
+                    // Only add trailing backslash if not the last item
+                    if (i < formData.Count - 1)
+                    {
+                        code.AppendLine(formData[i] + " \\");
+                    }
+                    else
+                    {
+                        code.AppendLine(formData[i]);
+                    }
                 }
             }
             else if (contentType == "application/octet-stream")
@@ -139,8 +149,13 @@ public static class ScriptFileGenerator
         }
         else
         {
-            // Remove the trailing backslash if there is no request body
-            code.Length -= 2; // Remove the last backslash and newline
+            // Remove the trailing backslash and newline if there is no request body
+            var currentCode = code.ToString();
+            if (currentCode.EndsWith(" \\\n") || currentCode.EndsWith(" \\\r\n"))
+            {
+                code.Length -= (currentCode.EndsWith("\r\n") ? 4 : 3); // Remove " \\\n" or " \\\r\n"
+                code.AppendLine(); // Add back just the newline
+            }
         }
 
         TryLog($"Generated bash request: {code}");
@@ -216,7 +231,12 @@ public static class ScriptFileGenerator
 
         if (!string.IsNullOrWhiteSpace(operation.Description))
         {
-            code.AppendLine($"# Description: {operation.Description}");
+            // Handle multiline descriptions by prefixing each line with #
+            var descriptionLines = operation.Description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in descriptionLines)
+            {
+                code.AppendLine($"# {line.Trim()}");
+            }
         }
 
         code.AppendLine("#");
