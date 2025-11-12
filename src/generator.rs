@@ -66,7 +66,10 @@ fn determine_base_url(document: &OpenAPI, settings: &GeneratorSettings) -> Strin
 
 fn generate_operation_name(verb: &str, path: &str, operation: &Operation) -> String {
     if let Some(operation_id) = &operation.operation_id {
-        let cleaned = operation_id.replace("-", "_").replace(" ", "_");
+        let cleaned = operation_id
+            .replace("-", "_")
+            .replace("/", "_")
+            .replace(" ", "_");
         return format!("{}{}", verb, capitalize_first(&cleaned));
     }
 
@@ -714,6 +717,18 @@ mod tests {
 
         let result = generate(&document, &settings).unwrap();
         assert!(result.files[0].content.contains("secret_token"));
+    }
+
+    #[test]
+    fn test_generate_operation_name_with_slashes() {
+        let mut operation = Operation::default();
+        operation.operation_id = Some("post-/events/v3/send".to_string());
+        
+        let name = generate_operation_name("POST", "/test", &operation);
+        
+        // Should replace slashes with underscores to avoid path issues
+        assert_eq!(name, "POSTPost__events_v3_send");
+        assert!(!name.contains("/"));
     }
 
     fn create_minimal_openapi() -> OpenAPI {
