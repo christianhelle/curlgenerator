@@ -65,7 +65,8 @@ $testSpecs = @{
   )
   "v3.1" = @(
     "non-oauth-scopes",
-    "webhook-example"
+    "webhook-example",
+    "petstore"
   )
 }
 
