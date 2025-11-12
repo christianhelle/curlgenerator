@@ -164,7 +164,41 @@ fn convert_openapi_v31_to_v30(spec: &serde_json::Value) -> Result<OpenAPI> {
             if let Some(schemas) = components_obj.get_mut("schemas") {
                 convert_schemas_v31_to_v30(schemas);
             }
+            
+            // Convert security schemes: mutualTLS is new in 3.1
+            if let Some(security_schemes) = components_obj.get_mut("securitySchemes") {
+                if let Some(schemes_obj) = security_schemes.as_object_mut() {
+                    for (_, scheme) in schemes_obj.iter_mut() {
+                        if let Some(scheme_obj) = scheme.as_object_mut() {
+                            // Convert mutualTLS to http with client certificate description
+                            if let Some(type_val) = scheme_obj.get("type") {
+                                if type_val.as_str() == Some("mutualTLS") {
+                                    scheme_obj.insert("type".to_string(), serde_json::json!("http"));
+                                    scheme_obj.insert("scheme".to_string(), serde_json::json!("bearer"));
+                                    let desc = scheme_obj.get("description")
+                                        .and_then(|v| v.as_str())
+                                        .unwrap_or("")
+                                        .to_string();
+                                    scheme_obj.insert(
+                                        "description".to_string(),
+                                        serde_json::json!(format!(
+                                            "{}{}Mutual TLS authentication (converted from OpenAPI 3.1)",
+                                            desc,
+                                            if desc.is_empty() { "" } else { " - " }
+                                        ))
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    // Convert inline schemas in paths (requestBody, responses, parameters)
+    if let Some(paths) = json_obj.get_mut("paths") {
+        convert_schemas_v31_to_v30(paths);
     }
 
     // Try to deserialize to OpenAPI v3.0
@@ -179,6 +213,23 @@ fn convert_schemas_v31_to_v30(schemas: &mut serde_json::Value) {
             // Handle 'const' - in 3.1 it's a keyword, in 3.0 use enum with single value
             if let Some(const_value) = obj.remove("const") {
                 obj.insert("enum".to_string(), serde_json::json!([const_value]));
+            }
+
+            // Handle exclusiveMinimum/exclusiveMaximum
+            // In 3.1: exclusiveMinimum/exclusiveMaximum are numeric values
+            // In 3.0: they are boolean flags used with minimum/maximum
+            if let Some(exclusive_min) = obj.remove("exclusiveMinimum") {
+                if let Some(min_value) = exclusive_min.as_i64().or_else(|| exclusive_min.as_f64().map(|f| f as i64)) {
+                    obj.insert("minimum".to_string(), serde_json::json!(min_value));
+                    obj.insert("exclusiveMinimum".to_string(), serde_json::json!(true));
+                }
+            }
+            
+            if let Some(exclusive_max) = obj.remove("exclusiveMaximum") {
+                if let Some(max_value) = exclusive_max.as_i64().or_else(|| exclusive_max.as_f64().map(|f| f as i64)) {
+                    obj.insert("maximum".to_string(), serde_json::json!(max_value));
+                    obj.insert("exclusiveMaximum".to_string(), serde_json::json!(true));
+                }
             }
 
             // Handle 'null' type - in 3.1 type can be null, in 3.0 use nullable: true
@@ -1354,6 +1405,32 @@ paths: {}
 
         assert!(schema.get("examples").is_none());
         assert_eq!(schema.get("example").unwrap(), "example1");
+    }
+
+    #[test]
+    fn test_convert_schemas_v31_to_v30_exclusive_minimum() {
+        let mut schema = serde_json::json!({
+            "type": "integer",
+            "exclusiveMinimum": 1
+        });
+
+        convert_schemas_v31_to_v30(&mut schema);
+
+        assert_eq!(schema.get("minimum").unwrap(), &serde_json::json!(1));
+        assert_eq!(schema.get("exclusiveMinimum").unwrap(), &serde_json::json!(true));
+    }
+
+    #[test]
+    fn test_convert_schemas_v31_to_v30_exclusive_maximum() {
+        let mut schema = serde_json::json!({
+            "type": "integer",
+            "exclusiveMaximum": 10
+        });
+
+        convert_schemas_v31_to_v30(&mut schema);
+
+        assert_eq!(schema.get("maximum").unwrap(), &serde_json::json!(10));
+        assert_eq!(schema.get("exclusiveMaximum").unwrap(), &serde_json::json!(true));
     }
 
     #[test]
