@@ -3,7 +3,7 @@ name = "curlgenerator"
 version = "0.1.0"
 edition = "2024"
 authors = ["Christian Helle"]
-description = "Generate cURL requests from OpenAPI specifications v2.0 and v3.0"
+description = "Generate cURL requests from OpenAPI specifications v2.0, v3.0, and v3.1"
 license = "MIT"
 repository = "https://github.com/christianhelle/curlgenerator"
 

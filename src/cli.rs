@@ -14,7 +14,7 @@ const LONG_VERSION: &str = concat!(
 #[command(name = "curlgenerator")]
 #[command(version = env!("VERSION"))]
 #[command(long_version = LONG_VERSION)]
-#[command(about = "Generate cURL requests from OpenAPI specifications v2.0 and v3.0", long_about = None)]
+#[command(about = "Generate cURL requests from OpenAPI specifications v2.0, v3.0, and v3.1", long_about = None)]
 pub struct Cli {
     /// URL or file path to OpenAPI Specification file
     #[arg(value_name = "URL or input file")]
