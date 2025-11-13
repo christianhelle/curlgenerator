@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Azure.Core.Diagnostics;
 using CurlGenerator.Core;
 using CurlGenerator.Validation;
@@ -164,7 +164,12 @@ public class GenerateCommand : AsyncCommand<Settings>
         try
         {
             // Escape markup characters in the error message to prevent markup interpretation
-            var escapedError = error.ToString().Replace("[", "[[").Replace("]", "]]");
+            // Square brackets and curly braces need escaping for Spectre.Console markup
+            var escapedError = error.ToString()
+                .Replace("[", "[[")
+                .Replace("]", "]]")
+                .Replace("{", "{{")
+                .Replace("}", "}}");
             AnsiConsole.MarkupLine($"[{color}]{label}:{Crlf}{escapedError}{Crlf}[/]");
         }
         catch
