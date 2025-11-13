@@ -4,8 +4,15 @@
 
 [Full Changelog](https://github.com/christianhelle/curlgenerator/compare/0.4.1.1-preview...HEAD)
 
+**Implemented enhancements:**
+
+- Migrate NuGet publishing in release workflows to Trusted Publishing [\#243](https://github.com/christianhelle/curlgenerator/issues/243)
+- bug ?  [\#117](https://github.com/christianhelle/curlgenerator/issues/117)
+- fix: escape curly braces and handle multiline descriptions in bash scripts [\#256](https://github.com/christianhelle/curlgenerator/pull/256) ([ESearcy](https://github.com/ESearcy))
+
 **Merged pull requests:**
 
+- chore\(deps\): update actions/upload-artifact action to v5 [\#251](https://github.com/christianhelle/curlgenerator/pull/251) ([renovate[bot]](https://github.com/apps/renovate))
 - Fix Code Coverage workflow [\#248](https://github.com/christianhelle/curlgenerator/pull/248) ([christianhelle](https://github.com/christianhelle))
 - Bump Spectre.Console.Cli from 0.51.1 to 0.52.0 [\#247](https://github.com/christianhelle/curlgenerator/pull/247) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency ruby to v3.4.7 [\#245](https://github.com/christianhelle/curlgenerator/pull/245) ([renovate[bot]](https://github.com/apps/renovate))
