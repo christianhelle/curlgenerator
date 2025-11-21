@@ -12,6 +12,7 @@
 
 **Merged pull requests:**
 
+- chore\(deps\): update actions/checkout action to v6 [\#261](https://github.com/christianhelle/curlgenerator/pull/261) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update actions/upload-artifact action to v5 [\#251](https://github.com/christianhelle/curlgenerator/pull/251) ([renovate[bot]](https://github.com/apps/renovate))
 - Fix Code Coverage workflow [\#248](https://github.com/christianhelle/curlgenerator/pull/248) ([christianhelle](https://github.com/christianhelle))
 - Bump Spectre.Console.Cli from 0.51.1 to 0.52.0 [\#247](https://github.com/christianhelle/curlgenerator/pull/247) ([dependabot[bot]](https://github.com/apps/dependabot))
