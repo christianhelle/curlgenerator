@@ -1,6 +1,7 @@
 ﻿using System.Net;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Reader;
+using Microsoft.OpenApi.YamlReader;
 
 namespace CurlGenerator.Core;
 
@@ -9,6 +10,8 @@ namespace CurlGenerator.Core;
 /// </summary>
 public static class OpenApiDocumentFactory
 {
+    public static readonly Uri Uri = new Uri("http://example.org/");
+
     /// <summary>
     /// Creates a new instance of the <see cref="OpenApiDocument"/> class asynchronously.
     /// </summary>
@@ -17,19 +20,20 @@ public static class OpenApiDocumentFactory
     {
         try
         {
+            var settings = new OpenApiReaderSettings();
             if (IsHttp(openApiPath))
             {
                 var content = await GetHttpContent(openApiPath);
-                var reader = new OpenApiStringReader();
-                var readResult = reader.Read(content, out var diagnostic);
-                return readResult;
+                var reader = new OpenApiYamlReader();
+                var readResult = await reader.ReadAsync(content, Uri,settings);
+                return readResult.Document!;
             }
             else 
             {
                 using var stream = File.OpenRead(openApiPath);
-                var reader = new OpenApiStreamReader();
-                var readResult = reader.Read(stream, out var diagnostic);
-                return readResult;
+                var reader = new OpenApiYamlReader();
+                var readResult = await reader.ReadAsync(stream, Uri, settings);
+                return readResult.Document!;
             }
         }
         catch (Exception)
@@ -57,7 +61,8 @@ public static class OpenApiDocumentFactory
             string content;
             if (IsHttp(openApiPath))
             {
-                content = await GetHttpContent(openApiPath);
+                using StreamReader reader = new(await GetHttpContent(openApiPath));
+                content = await reader.ReadToEndAsync();
             }
             else
             {
@@ -95,13 +100,13 @@ public static class OpenApiDocumentFactory
     /// Gets the content of the URI as a string and decompresses it if necessary. 
     /// </summary>
     /// <returns>The content of the HTTP request.</returns>
-    private static async Task<string> GetHttpContent(string openApiPath)
+    private static async Task<Stream> GetHttpContent(string openApiPath)
     {
         var httpMessageHandler = new HttpClientHandler();
         httpMessageHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
         httpMessageHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
         using var http = new HttpClient(httpMessageHandler);
-        var content = await http.GetStringAsync(openApiPath);
+        var content = await http.GetStreamAsync(openApiPath);
         return content;
     }
 

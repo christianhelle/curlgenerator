@@ -1,7 +1,9 @@
 ﻿using System.Net;
 using System.Security;
-using Microsoft.OpenApi.Readers;
-using Microsoft.OpenApi.Services;
+using CurlGenerator.Core;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Reader;
+using Microsoft.OpenApi.YamlReader;
 
 namespace CurlGenerator.Validation;
 
@@ -13,10 +15,10 @@ public static class OpenApiValidator
 
         var statsVisitor = new OpenApiStats();
         var walker = new OpenApiWalker(statsVisitor);
-        walker.Walk(result.OpenApiDocument);
+        walker.Walk(result.Document);
 
         return new(
-            result.OpenApiDiagnostic,
+            result.Diagnostic,
             statsVisitor);
     }
 
@@ -72,7 +74,7 @@ public static class OpenApiValidator
         };
 
         await using var stream = await GetStream(openApiFile, CancellationToken.None);
-        var reader = new OpenApiStreamReader(openApiReaderSettings);
-        return await reader.ReadAsync(stream, CancellationToken.None);
+        var reader = new OpenApiYamlReader();
+        return await reader.ReadAsync(stream, OpenApiDocumentFactory.Uri, openApiReaderSettings, CancellationToken.None);
     }
 }
