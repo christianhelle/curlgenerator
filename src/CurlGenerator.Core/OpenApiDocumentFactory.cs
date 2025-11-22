@@ -10,8 +10,6 @@ namespace CurlGenerator.Core;
 /// </summary>
 public static class OpenApiDocumentFactory
 {
-    public static readonly Uri DefaultDocumentUri = new("http://example.org/");
-
     /// <summary>
     /// Creates a new instance of the <see cref="OpenApiDocument"/> class asynchronously.
     /// </summary>
@@ -23,14 +21,14 @@ public static class OpenApiDocumentFactory
         {
             var content = await GetHttpContent(openApiPath);
             var reader = new OpenApiYamlReader();
-            var readResult = await reader.ReadAsync(content, DefaultDocumentUri, settings);
+            var readResult = await reader.ReadAsync(content, new Uri(openApiPath), settings);
             return readResult.Document!;
         }
         else
         {
             using var stream = File.OpenRead(openApiPath);
             var reader = new OpenApiYamlReader();
-            var readResult = await reader.ReadAsync(stream, DefaultDocumentUri, settings);
+            var readResult = await reader.ReadAsync(stream, new Uri($"file://{openApiPath}"), settings);
             return readResult.Document!;
         }
     }

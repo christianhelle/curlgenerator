@@ -73,8 +73,12 @@ public static class OpenApiValidator
                 : new Uri($"file://{directoryName}{Path.DirectorySeparatorChar}")
         };
 
+        var uri = openApiFile.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? new Uri(openApiFile)
+            : new Uri($"file://{openApiFile}");
+
         await using var stream = await GetStream(openApiFile, CancellationToken.None);
         var reader = new OpenApiYamlReader();
-        return await reader.ReadAsync(stream, OpenApiDocumentFactory.DefaultDocumentUri, openApiReaderSettings, CancellationToken.None);
+        return await reader.ReadAsync(stream, uri, openApiReaderSettings, CancellationToken.None);
     }
 }
