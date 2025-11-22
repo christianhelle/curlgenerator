@@ -123,20 +123,24 @@ public static class ScriptFileGenerator
         {
             if (contentType == "application/x-www-form-urlencoded" || contentType == "multipart/form-data")
             {
-                var formData = operation.RequestBody.Content[contentType].Schema!.Properties
-                    .Select(p => $"-F \"{p.Key}=${{{p.Key}}}\"")
-                    .ToList();
-
-                for (int i = 0; i < formData.Count; i++)
+                var schema = operation.RequestBody.Content[contentType].Schema;
+                if (schema is not null)
                 {
-                    // Only add trailing backslash if not the last item
-                    if (i < formData.Count - 1)
+                    var formData = schema.Properties
+                        .Select(p => $"-F \"{p.Key}=${{{p.Key}}}\"")
+                        .ToList();
+
+                    for (int i = 0; i < formData.Count; i++)
                     {
-                        code.AppendLine(formData[i] + " \\");
-                    }
-                    else
-                    {
-                        code.AppendLine(formData[i]);
+                        // Only add trailing backslash if not the last item
+                        if (i < formData.Count - 1)
+                        {
+                            code.AppendLine(formData[i] + " \\");
+                        }
+                        else
+                        {
+                            code.AppendLine(formData[i]);
+                        }
                     }
                 }
             }
@@ -212,11 +216,14 @@ public static class ScriptFileGenerator
             TryLog($"Request body content type for operation {operation.OperationId}: {contentType}");
             if (contentType == "application/x-www-form-urlencoded" || contentType == "multipart/form-data")
             {
-                var formData = operation.RequestBody.Content[contentType].Schema!.Properties
-                    .Select(p => $"{p.Key}=\"\"");
-                foreach (var formField in formData)
-                {
-                    code.AppendLine(formField);
+                var schema = operation.RequestBody.Content[contentType].Schema;
+                if (schema is not null) {
+                    var formData = schema.Properties
+                        .Select(p => $"{p.Key}=\"\"");
+                    foreach (var formField in formData)
+                    {
+                        code.AppendLine(formField);
+                    }
                 }
             }
         }
