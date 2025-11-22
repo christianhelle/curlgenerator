@@ -26,7 +26,7 @@ public static class ScriptFileGenerator
 
         var baseUrl = settings.BaseUrl + document.Servers?.FirstOrDefault()?.Url;
         if (!Uri.IsWellFormedUriString(baseUrl, UriKind.Absolute) &&
-            settings.OpenApiPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            OpenApiDocumentFactory.IsHttp(settings.OpenApiPath))
         {
             baseUrl = new Uri(settings.OpenApiPath)
                           .GetLeftPart(UriPartial.Authority) +

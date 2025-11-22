@@ -17,15 +17,13 @@ public static class OpenApiDocumentFactory
     public static async Task<OpenApiDocument> CreateAsync(string openApiPath)
     {
         var fileInfo = new FileInfo(openApiPath);
-        var settings = new OpenApiReaderSettings
-        {
-            BaseUrl = openApiPath.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                ? new Uri(openApiPath)
-                : new Uri($"file://{fileInfo.DirectoryName}{Path.DirectorySeparatorChar}")
-        };
-
         if (IsHttp(openApiPath))
         {
+            var settings = new OpenApiReaderSettings
+            {
+                BaseUrl = new Uri(openApiPath)
+            };
+
             using var content = await GetHttpContent(openApiPath);
             var reader = new OpenApiYamlReader();
             var readResult = await reader.ReadAsync(content, new Uri(openApiPath), settings);
@@ -33,6 +31,11 @@ public static class OpenApiDocumentFactory
         }
         else
         {
+            var settings = new OpenApiReaderSettings
+            {
+                BaseUrl = new Uri($"file://{fileInfo.DirectoryName}{Path.DirectorySeparatorChar}")
+            };
+
             using var stream = File.OpenRead(openApiPath);
             var reader = new OpenApiYamlReader();
             var readResult = await reader.ReadAsync(stream, new Uri($"file://{fileInfo.FullName}"), settings);
@@ -59,7 +62,7 @@ public static class OpenApiDocumentFactory
     /// </summary>
     /// <param name="path">The path to check.</param>
     /// <returns>True if the path is an HTTP URL, otherwise false.</returns>
-    private static bool IsHttp(string path)
+    public static bool IsHttp(string path)
     {
         return path.StartsWith("http://") || path.StartsWith("https://");
     }
