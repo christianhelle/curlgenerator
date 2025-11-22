@@ -56,14 +56,4 @@ public static class OpenApiDocumentFactory
     {
         return path.StartsWith("http://") || path.StartsWith("https://");
     }
-
-    /// <summary>
-    /// Determines whether the specified path is a YAML file.
-    /// </summary>
-    /// <param name="path">The path to check.</param>
-    /// <returns>True if the path is a YAML file, otherwise false.</returns>
-    private static bool IsYaml(string path)
-    {
-        return path.EndsWith("yaml") || path.EndsWith("yml");
-    }
 }
