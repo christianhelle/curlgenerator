@@ -95,10 +95,12 @@ public static class ScriptFileGenerator
         var route = kv.Key.Replace("{", "$").Replace("}", null);
 
         // Add query parameters directly to the URL if there are any
-        var queryParams = operation.Parameters
-            .Where(p => p.In == ParameterLocation.Query)
-            .Select(p => $"{p.Name}=${{{p.Name!.ConvertKebabCaseToSnakeCase()}}}")
-            .ToList();
+        var queryParams = operation.Parameters is not null
+            ? operation.Parameters
+                .Where(p => p.In == ParameterLocation.Query)
+                .Select(p => $"{p.Name}=${{{p.Name!.ConvertKebabCaseToSnakeCase()}}}")
+                .ToList()
+            : [];
 
         var queryString = queryParams.Any() ? $"?{string.Join("&", queryParams)}" : string.Empty;
         code.AppendLine($"curl -X {verb.ToUpperInvariant()} \"{baseUrl}{route}{queryString}\" \\");
@@ -124,7 +126,7 @@ public static class ScriptFileGenerator
                 var formData = operation.RequestBody.Content[contentType].Schema!.Properties
                     .Select(p => $"-F \"{p.Key}=${{{p.Key}}}\"")
                     .ToList();
-                
+
                 for (int i = 0; i < formData.Count; i++)
                 {
                     // Only add trailing backslash if not the last item
@@ -171,6 +173,11 @@ public static class ScriptFileGenerator
         OpenApiOperation operation,
         StringBuilder code)
     {
+        if (operation.Parameters is null)
+        {
+            return;
+        }
+
         var parameters = operation.Parameters
             .Where(p =>
                 p.In == ParameterLocation.Path ||
@@ -343,7 +350,8 @@ public static class ScriptFileGenerator
 
     private static object? ConvertOpenApiAnyToObject(JsonNode? jsonNode)
     {
-        if(jsonNode is null){
+        if (jsonNode is null)
+        {
             return null;
         }
         return jsonNode.GetValueKind() switch
@@ -421,6 +429,10 @@ public static class ScriptFileGenerator
         OpenApiOperation operation,
         StringBuilder code)
     {
+        if (operation.Parameters is null)
+        {
+            return [];
+        }
         var parameters = operation
             .Parameters
             .Where(c => c.In is ParameterLocation.Path or ParameterLocation.Query)

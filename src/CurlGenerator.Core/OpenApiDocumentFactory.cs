@@ -18,64 +18,20 @@ public static class OpenApiDocumentFactory
     /// <returns>A new instance of the <see cref="OpenApiDocument"/> class.</returns>
     public static async Task<OpenApiDocument> CreateAsync(string openApiPath)
     {
-        try
+        var settings = new OpenApiReaderSettings();
+        if (IsHttp(openApiPath))
         {
-            var settings = new OpenApiReaderSettings();
-            if (IsHttp(openApiPath))
-            {
-                var content = await GetHttpContent(openApiPath);
-                var reader = new OpenApiYamlReader();
-                var readResult = await reader.ReadAsync(content, Uri,settings);
-                return readResult.Document!;
-            }
-            else 
-            {
-                using var stream = File.OpenRead(openApiPath);
-                var reader = new OpenApiYamlReader();
-                var readResult = await reader.ReadAsync(stream, Uri, settings);
-                return readResult.Document!;
-            }
+            var content = await GetHttpContent(openApiPath);
+            var reader = new OpenApiYamlReader();
+            var readResult = await reader.ReadAsync(content, Uri, settings);
+            return readResult.Document!;
         }
-        catch (Exception)
+        else
         {
-            // Check if this is likely an OpenAPI v3.1 spec that Microsoft.OpenApi doesn't support
-            if (await IsOpenApiV31Spec(openApiPath))
-            {
-                // Return a minimal document that allows the process to continue
-                // This maintains compatibility with tests that expect v3.1 specs to work
-                return CreateMinimalDocument();
-            }
-            
-            // Re-throw the original exception for other cases
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Checks if the OpenAPI specification is version 3.1
-    /// </summary>
-    private static async Task<bool> IsOpenApiV31Spec(string openApiPath)
-    {
-        try
-        {
-            string content;
-            if (IsHttp(openApiPath))
-            {
-                using StreamReader reader = new(await GetHttpContent(openApiPath));
-                content = await reader.ReadToEndAsync();
-            }
-            else
-            {
-                content = File.ReadAllText(openApiPath);
-            }
-            
-            // Simple check for OpenAPI 3.1.x version
-            return content.Contains("\"openapi\": \"3.1") || content.Contains("openapi: 3.1") || 
-                   content.Contains("\"openapi\":\"3.1") || content.Contains("openapi:3.1");
-        }
-        catch
-        {
-            return false;
+            using var stream = File.OpenRead(openApiPath);
+            var reader = new OpenApiYamlReader();
+            var readResult = await reader.ReadAsync(stream, Uri, settings);
+            return readResult.Document!;
         }
     }
 
