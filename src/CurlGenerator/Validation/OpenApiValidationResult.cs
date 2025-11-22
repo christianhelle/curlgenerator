@@ -1,13 +1,13 @@
-﻿using Microsoft.OpenApi.Readers;
+﻿using Microsoft.OpenApi.Reader;
 
 namespace CurlGenerator.Validation;
 
 public record OpenApiValidationResult(
-    OpenApiDiagnostic Diagnostics,
+    OpenApiDiagnostic? Diagnostics,
     OpenApiStats Statistics)
 {
-    public bool IsValid => Diagnostics.Errors.Count == 0;
-    
+    public bool IsValid => Diagnostics is null || Diagnostics.Errors.Count == 0;
+
     public void ThrowIfInvalid()
     {
         if (!IsValid)

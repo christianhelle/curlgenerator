@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 public static class ScriptFileGenerator
 {
@@ -24,7 +26,7 @@ public static class ScriptFileGenerator
 
         var baseUrl = settings.BaseUrl + document.Servers?.FirstOrDefault()?.Url;
         if (!Uri.IsWellFormedUriString(baseUrl, UriKind.Absolute) &&
-            settings.OpenApiPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            OpenApiDocumentFactory.IsHttp(settings.OpenApiPath))
         {
             baseUrl = new Uri(settings.OpenApiPath)
                           .GetLeftPart(UriPartial.Authority) +
@@ -46,7 +48,7 @@ public static class ScriptFileGenerator
         foreach (var kv in document.Paths)
         {
             TryLog($"Processing path: {kv.Key}");
-            foreach (var operations in kv.Value.Operations)
+            foreach (var operations in kv.Value.Operations ?? [])
             {
                 TryLog($"Processing operation: {operations.Key}");
 
@@ -81,7 +83,7 @@ public static class ScriptFileGenerator
         GeneratorSettings settings,
         string baseUrl,
         string verb,
-        KeyValuePair<string, OpenApiPathItem> kv,
+        KeyValuePair<string, IOpenApiPathItem> kv,
         OpenApiOperation operation)
     {
         TryLog($"Generating bash request for operation: {operation.OperationId}");
@@ -93,10 +95,12 @@ public static class ScriptFileGenerator
         var route = kv.Key.Replace("{", "$").Replace("}", null);
 
         // Add query parameters directly to the URL if there are any
-        var queryParams = operation.Parameters
-            .Where(p => p.In == ParameterLocation.Query)
-            .Select(p => $"{p.Name}=${{{p.Name.ConvertKebabCaseToSnakeCase()}}}")
-            .ToList();
+        var queryParams = operation.Parameters is not null
+            ? operation.Parameters
+                .Where(p => p.In == ParameterLocation.Query)
+                .Select(p => $"{p.Name}=${{{p.Name!.ConvertKebabCaseToSnakeCase()}}}")
+                .ToList()
+            : [];
 
         var queryString = queryParams.Any() ? $"?{string.Join("&", queryParams)}" : string.Empty;
         code.AppendLine($"curl -X {verb.ToUpperInvariant()} \"{baseUrl}{route}{queryString}\" \\");
@@ -119,20 +123,24 @@ public static class ScriptFileGenerator
         {
             if (contentType == "application/x-www-form-urlencoded" || contentType == "multipart/form-data")
             {
-                var formData = operation.RequestBody.Content[contentType].Schema.Properties
-                    .Select(p => $"-F \"{p.Key}=${{{p.Key}}}\"")
-                    .ToList();
-                
-                for (int i = 0; i < formData.Count; i++)
+                var schema = operation.RequestBody.Content[contentType].Schema;
+                if (schema is not null)
                 {
-                    // Only add trailing backslash if not the last item
-                    if (i < formData.Count - 1)
+                    var formData = schema.Properties
+                        .Select(p => $"-F \"{p.Key}=${{{p.Key}}}\"")
+                        .ToList();
+
+                    for (int i = 0; i < formData.Count; i++)
                     {
-                        code.AppendLine(formData[i] + " \\");
-                    }
-                    else
-                    {
-                        code.AppendLine(formData[i]);
+                        // Only add trailing backslash if not the last item
+                        if (i < formData.Count - 1)
+                        {
+                            code.AppendLine(formData[i] + " \\");
+                        }
+                        else
+                        {
+                            code.AppendLine(formData[i]);
+                        }
                     }
                 }
             }
@@ -165,10 +173,15 @@ public static class ScriptFileGenerator
 
     private static void AppendBashParameters(
         string verb,
-        KeyValuePair<string, OpenApiPathItem> kv,
+        KeyValuePair<string, IOpenApiPathItem> kv,
         OpenApiOperation operation,
         StringBuilder code)
     {
+        if (operation.Parameters is null)
+        {
+            return;
+        }
+
         var parameters = operation.Parameters
             .Where(p =>
                 p.In == ParameterLocation.Path ||
@@ -187,7 +200,7 @@ public static class ScriptFileGenerator
 
         foreach (var parameter in parameters)
         {
-            var name = parameter.Name.ConvertKebabCaseToSnakeCase();
+            var name = parameter.Name!.ConvertKebabCaseToSnakeCase();
             code.AppendLine(
                 parameter.Description is null
                     ? $"# {parameter.In.ToString().ToLowerInvariant()} parameter: {name}"
@@ -203,11 +216,14 @@ public static class ScriptFileGenerator
             TryLog($"Request body content type for operation {operation.OperationId}: {contentType}");
             if (contentType == "application/x-www-form-urlencoded" || contentType == "multipart/form-data")
             {
-                var formData = operation.RequestBody.Content[contentType].Schema.Properties
-                    .Select(p => $"{p.Key}=\"\"");
-                foreach (var formField in formData)
-                {
-                    code.AppendLine(formField);
+                var schema = operation.RequestBody.Content[contentType].Schema;
+                if (schema is not null) {
+                    var formData = schema.Properties
+                        .Select(p => $"{p.Key}=\"\"");
+                    foreach (var formField in formData)
+                    {
+                        code.AppendLine(formField);
+                    }
                 }
             }
         }
@@ -217,7 +233,7 @@ public static class ScriptFileGenerator
 
     private static void AppendBashSummary(
         string verb,
-        KeyValuePair<string, OpenApiPathItem> kv,
+        KeyValuePair<string, IOpenApiPathItem> kv,
         OpenApiOperation operation,
         StringBuilder code)
     {
@@ -232,7 +248,7 @@ public static class ScriptFileGenerator
         if (!string.IsNullOrWhiteSpace(operation.Description))
         {
             // Handle multiline descriptions by prefixing each line with #
-            var descriptionLines = operation.Description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var descriptionLines = operation.Description!.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var line in descriptionLines)
             {
                 code.AppendLine($"# {line.Trim()}");
@@ -272,7 +288,7 @@ public static class ScriptFileGenerator
         }
     }
 
-    private static string GenerateSampleJsonFromSchema(OpenApiSchema? schema)
+    private static string GenerateSampleJsonFromSchema(IOpenApiSchema? schema)
     {
         if (schema == null)
             return "{}";
@@ -288,7 +304,7 @@ public static class ScriptFileGenerator
         }
     }
 
-    private static object GenerateSampleObjectFromSchema(OpenApiSchema schema)
+    private static object? GenerateSampleObjectFromSchema(IOpenApiSchema schema)
     {
         if (schema.Example != null)
         {
@@ -297,8 +313,8 @@ public static class ScriptFileGenerator
 
         switch (schema.Type)
         {
-            case "object":
-                var obj = new Dictionary<string, object>();
+            case JsonSchemaType.Object:
+                var obj = new Dictionary<string, object?>();
                 if (schema.Properties != null)
                 {
                     foreach (var prop in schema.Properties)
@@ -308,14 +324,14 @@ public static class ScriptFileGenerator
                 }
                 return obj;
 
-            case "array":
+            case JsonSchemaType.Array:
                 if (schema.Items != null)
                 {
                     return new[] { GenerateSampleObjectFromSchema(schema.Items) };
                 }
                 return new object[0];
 
-            case "string":
+            case JsonSchemaType.String:
                 return schema.Format switch
                 {
                     "date" => DateTime.Today.ToString("yyyy-MM-dd"),
@@ -325,13 +341,13 @@ public static class ScriptFileGenerator
                     _ => "string"
                 };
 
-            case "integer":
+            case JsonSchemaType.Integer:
                 return 0;
 
-            case "number":
+            case JsonSchemaType.Number:
                 return 0.0;
 
-            case "boolean":
+            case JsonSchemaType.Boolean:
                 return false;
 
             default:
@@ -339,20 +355,22 @@ public static class ScriptFileGenerator
         }
     }
 
-    private static object ConvertOpenApiAnyToObject(Microsoft.OpenApi.Any.IOpenApiAny openApiAny)
+    private static object? ConvertOpenApiAnyToObject(JsonNode? jsonNode)
     {
-        return openApiAny switch
+        if (jsonNode is null)
         {
-            Microsoft.OpenApi.Any.OpenApiString str => str.Value,
-            Microsoft.OpenApi.Any.OpenApiInteger integer => integer.Value,
-            Microsoft.OpenApi.Any.OpenApiLong longVal => longVal.Value,
-            Microsoft.OpenApi.Any.OpenApiFloat floatVal => floatVal.Value,
-            Microsoft.OpenApi.Any.OpenApiDouble doubleVal => doubleVal.Value,
-            Microsoft.OpenApi.Any.OpenApiBoolean boolVal => boolVal.Value,
-            Microsoft.OpenApi.Any.OpenApiDateTime dateTime => dateTime.Value,
-            Microsoft.OpenApi.Any.OpenApiObject obj => obj.ToDictionary(kv => kv.Key, kv => ConvertOpenApiAnyToObject(kv.Value)),
-            Microsoft.OpenApi.Any.OpenApiArray array => array.Select(ConvertOpenApiAnyToObject).ToArray(),
-            _ => openApiAny.ToString() ?? "value"
+            return null;
+        }
+        return jsonNode.GetValueKind() switch
+        {
+            JsonValueKind.String => jsonNode.GetValue<string>(),
+            JsonValueKind.Number => jsonNode.GetValue<double>(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Null => null,
+            JsonValueKind.Object => jsonNode.AsObject().ToDictionary(kv => kv.Key, kv => ConvertOpenApiAnyToObject(kv.Value)),
+            JsonValueKind.Array => jsonNode.AsArray().Select(ConvertOpenApiAnyToObject).ToArray(),
+            _ => jsonNode.ToString() ?? "value"
         };
     }
 
@@ -361,7 +379,7 @@ public static class ScriptFileGenerator
         GeneratorSettings settings,
         string baseUrl,
         string verb,
-        KeyValuePair<string, OpenApiPathItem> kv,
+        KeyValuePair<string, IOpenApiPathItem> kv,
         OpenApiOperation operation)
     {
         var code = new StringBuilder();
@@ -414,10 +432,14 @@ public static class ScriptFileGenerator
 
     private static Dictionary<string, string> AppendParameters(
         string verb,
-        KeyValuePair<string, OpenApiPathItem> kv,
+        KeyValuePair<string, IOpenApiPathItem> kv,
         OpenApiOperation operation,
         StringBuilder code)
     {
+        if (operation.Parameters is null)
+        {
+            return [];
+        }
         var parameters = operation
             .Parameters
             .Where(c => c.In is ParameterLocation.Path or ParameterLocation.Query)
@@ -434,7 +456,7 @@ public static class ScriptFileGenerator
         var parameterNameMap = new Dictionary<string, string>();
         foreach (var parameter in parameters)
         {
-            var name = parameter.Name.ConvertKebabCaseToSnakeCase();
+            var name = parameter.Name!.ConvertKebabCaseToSnakeCase();
             code.AppendLine(
                 parameter.Description is null
                     ? $"""
@@ -447,7 +469,7 @@ public static class ScriptFileGenerator
                           [String] ${name},
                        """);
             code.AppendLine();
-            parameterNameMap[parameter.Name] = name;
+            parameterNameMap[parameter.Name!] = name;
         }
         code.Remove(code.Length - 5, 3);
 
@@ -459,7 +481,7 @@ public static class ScriptFileGenerator
 
     private static void AppendSummary(
         string verb,
-        KeyValuePair<string, OpenApiPathItem> kv,
+        KeyValuePair<string, IOpenApiPathItem> kv,
         OpenApiOperation operation,
         StringBuilder code)
     {

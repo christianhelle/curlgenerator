@@ -69,7 +69,7 @@ public class OpenApiValidatorTests
     [Theory, AutoNSubstituteData]
     public void ThrowIfInvalid_Does_Nothing(OpenApiValidationResult sut)
     {
-        sut.Diagnostics.Errors.Clear();
+        sut.Diagnostics?.Errors.Clear();
         new Action(sut.ThrowIfInvalid)
             .Should()
             .NotThrow();

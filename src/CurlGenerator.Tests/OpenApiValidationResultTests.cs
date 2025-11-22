@@ -1,8 +1,8 @@
 
 using CurlGenerator.Validation;
 using FluentAssertions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Reader;
 
 namespace CurlGenerator.Tests;
 

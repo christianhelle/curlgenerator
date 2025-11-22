@@ -1,8 +1,7 @@
 
 using CurlGenerator.Validation;
 using FluentAssertions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Services;
+using Microsoft.OpenApi;
 
 namespace CurlGenerator.Tests;
 
@@ -18,31 +17,31 @@ public class OpenApiStatsTests
             {
                 ["/test"] = new OpenApiPathItem
                 {
-                    Operations = new Dictionary<OperationType, OpenApiOperation>
+                    Operations = new Dictionary<HttpMethod, OpenApiOperation>
                     {
-                        [OperationType.Get] = new OpenApiOperation
+                        [HttpMethod.Get] = new OpenApiOperation
                         {
-                            Parameters = { new OpenApiParameter { In = ParameterLocation.Query, Name = "param1" } },
+                            Parameters = [new OpenApiParameter { In = ParameterLocation.Query, Name = "param1" }],
                             RequestBody = new OpenApiRequestBody(),
                             Responses = new OpenApiResponses
                             {
                                 ["200"] = new OpenApiResponse
                                 {
-                                    Headers = new Dictionary<string, OpenApiHeader>
+                                    Headers = new Dictionary<string, IOpenApiHeader>
                                     {
                                         ["X-Rate-Limit"] = new OpenApiHeader()
                                     }
                                 }
                             },
-                            Callbacks = new Dictionary<string, OpenApiCallback> { ["onData"] = new OpenApiCallback() }
+                            Callbacks = new Dictionary<string, IOpenApiCallback> { ["onData"] = new OpenApiCallback() }
                         }
                     }
                 }
             },
             Components = new OpenApiComponents
             {
-                Schemas = { ["mySchema"] = new OpenApiSchema() },
-                Links = { ["myLink"] = new OpenApiLink() }
+                Schemas = new Dictionary<string, IOpenApiSchema> { ["mySchema"] = new OpenApiSchema() },
+                Links = new Dictionary<string, IOpenApiLink> { ["myLink"] = new OpenApiLink() }
             }
         };
 

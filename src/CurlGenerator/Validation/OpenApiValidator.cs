@@ -1,7 +1,9 @@
 ﻿using System.Net;
 using System.Security;
-using Microsoft.OpenApi.Readers;
-using Microsoft.OpenApi.Services;
+using CurlGenerator.Core;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Reader;
+using Microsoft.OpenApi.YamlReader;
 
 namespace CurlGenerator.Validation;
 
@@ -13,10 +15,10 @@ public static class OpenApiValidator
 
         var statsVisitor = new OpenApiStats();
         var walker = new OpenApiWalker(statsVisitor);
-        walker.Walk(result.OpenApiDocument);
+        walker.Walk(result.Document);
 
         return new(
-            result.OpenApiDiagnostic,
+            result.Diagnostic,
             statsVisitor);
     }
 
@@ -24,7 +26,7 @@ public static class OpenApiValidator
         string input,
         CancellationToken cancellationToken)
     {
-        if (input.StartsWith("http"))
+        if (OpenApiDocumentFactory.IsHttp(input))
         {
             try
             {
@@ -63,16 +65,20 @@ public static class OpenApiValidator
 
     private static async Task<ReadResult> ParseOpenApi(string openApiFile)
     {
-        var directoryName = new FileInfo(openApiFile).DirectoryName;
+        var fileInfo = new FileInfo(openApiFile);
         var openApiReaderSettings = new OpenApiReaderSettings
         {
-            BaseUrl = openApiFile.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            BaseUrl = OpenApiDocumentFactory.IsHttp(openApiFile)
                 ? new Uri(openApiFile)
-                : new Uri($"file://{directoryName}{Path.DirectorySeparatorChar}")
+                : new Uri($"file://{fileInfo.DirectoryName}{Path.DirectorySeparatorChar}")
         };
 
+        var uri = OpenApiDocumentFactory.IsHttp(openApiFile)
+            ? new Uri(openApiFile)
+            : new Uri($"file://{fileInfo.FullName}");
+
         await using var stream = await GetStream(openApiFile, CancellationToken.None);
-        var reader = new OpenApiStreamReader(openApiReaderSettings);
-        return await reader.ReadAsync(stream, CancellationToken.None);
+        var reader = new OpenApiYamlReader();
+        return await reader.ReadAsync(stream, uri, openApiReaderSettings, CancellationToken.None);
     }
 }

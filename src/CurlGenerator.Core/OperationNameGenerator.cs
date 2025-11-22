@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace CurlGenerator.Core;
 
@@ -35,7 +35,7 @@ public class OperationNameGenerator : IOperationNameGenerator
             // Try to use operationId if available
             if (!string.IsNullOrWhiteSpace(operation.OperationId))
             {
-                return operation.OperationId
+                return operation.OperationId!
                     .CapitalizeFirstCharacter()
                     .ConvertKebabCaseToPascalCase()
                     .ConvertRouteToCamelCase()
@@ -66,7 +66,7 @@ public class OperationNameGenerator : IOperationNameGenerator
         List<string> operationNames = new();
         foreach (var kv in document.Paths)
         {
-            foreach (var operations in kv.Value.Operations)
+            foreach (var operations in kv.Value.Operations ?? [])
             {
                 var operation = operations.Value;
                 operationNames.Add(

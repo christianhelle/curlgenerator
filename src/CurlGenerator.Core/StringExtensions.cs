@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace CurlGenerator.Core;
 
 public static class StringExtensions
