@@ -24,12 +24,6 @@ public class OpenApiStats : OpenApiVisitorBase
         SchemaCount++;
     }
 
-
-    public override void Visit(IDictionary<string, IOpenApiHeader> headers)
-    {
-        HeaderCount++;
-    }
-
     public override void Visit(IOpenApiHeader header)
     {
         HeaderCount++;
