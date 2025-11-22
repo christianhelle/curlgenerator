@@ -19,7 +19,7 @@ public static class OpenApiDocumentFactory
         var settings = new OpenApiReaderSettings();
         if (IsHttp(openApiPath))
         {
-            var content = await GetHttpContent(openApiPath);
+            using var content = await GetHttpContent(openApiPath);
             var reader = new OpenApiYamlReader();
             var readResult = await reader.ReadAsync(content, new Uri(openApiPath), settings);
             return readResult.Document!;
