@@ -34,23 +34,6 @@ public static class OpenApiDocumentFactory
     }
 
     /// <summary>
-    /// Creates a minimal OpenAPI document for unsupported versions
-    /// </summary>
-    private static OpenApiDocument CreateMinimalDocument()
-    {
-        return new OpenApiDocument
-        {
-            Info = new OpenApiInfo
-            {
-                Title = "Unsupported OpenAPI Version",
-                Version = "1.0.0"
-            },
-            Paths = new OpenApiPaths(),
-            Components = new OpenApiComponents()
-        };
-    }
-
-    /// <summary>
     /// Gets the content of the URI as a string and decompresses it if necessary. 
     /// </summary>
     /// <returns>The content of the HTTP request.</returns>
