@@ -16,7 +16,13 @@ public static class OpenApiDocumentFactory
     /// <returns>A new instance of the <see cref="OpenApiDocument"/> class.</returns>
     public static async Task<OpenApiDocument> CreateAsync(string openApiPath)
     {
-        var settings = new OpenApiReaderSettings();
+        var settings = new OpenApiReaderSettings
+        {
+            BaseUrl = openApiPath.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                ? new Uri(openApiPath)
+                : new Uri($"file://{directoryName}{Path.DirectorySeparatorChar}")
+        };
+        
         if (IsHttp(openApiPath))
         {
             using var content = await GetHttpContent(openApiPath);
