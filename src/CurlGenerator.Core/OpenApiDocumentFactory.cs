@@ -64,6 +64,6 @@ public static class OpenApiDocumentFactory
     /// <returns>True if the path is an HTTP URL, otherwise false.</returns>
     public static bool IsHttp(string path)
     {
-        return path.StartsWith("http://") || path.StartsWith("https://");
+        return path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 }
