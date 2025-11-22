@@ -16,12 +16,12 @@ public static class OpenApiDocumentFactory
     /// <returns>A new instance of the <see cref="OpenApiDocument"/> class.</returns>
     public static async Task<OpenApiDocument> CreateAsync(string openApiPath)
     {
-        var directoryName = new FileInfo(openApiPath).DirectoryName;
+        var fileInfo = new FileInfo(openApiPath);
         var settings = new OpenApiReaderSettings
         {
             BaseUrl = openApiPath.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                 ? new Uri(openApiPath)
-                : new Uri($"file://{directoryName}{Path.DirectorySeparatorChar}")
+                : new Uri($"file://{fileInfo.DirectoryName}{Path.DirectorySeparatorChar}")
         };
 
         if (IsHttp(openApiPath))
@@ -35,7 +35,7 @@ public static class OpenApiDocumentFactory
         {
             using var stream = File.OpenRead(openApiPath);
             var reader = new OpenApiYamlReader();
-            var readResult = await reader.ReadAsync(stream, new Uri($"file://{openApiPath}"), settings);
+            var readResult = await reader.ReadAsync(stream, new Uri($"file://{fileInfo.FullName}"), settings);
             return readResult.Document!;
         }
     }
