@@ -1,9 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Azure.Core.Diagnostics;
 using CurlGenerator.Core;
 using CurlGenerator.Validation;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers.Exceptions;
+using Microsoft.OpenApi;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -13,23 +12,23 @@ public class GenerateCommand : AsyncCommand<Settings>
 {
     private static readonly string Crlf = Environment.NewLine;
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (!settings.NoLogging)
-            Analytics.Configure();        try
+            Analytics.Configure(); try
         {
             var stopwatch = Stopwatch.StartNew();
-            
+
             // Display improved header
             DisplayHeader(settings);
-            
+
             // Display configuration
             DisplayConfiguration(settings);
 
             if (!settings.SkipValidation)
                 await ValidateOpenApiSpec(settings);
 
-            await AcquireAzureEntraIdToken(settings);
+            await AcquireAzureEntraIdToken(settings, cancellationToken);
 
             var generatorSettings = new GeneratorSettings
             {
@@ -44,7 +43,7 @@ public class GenerateCommand : AsyncCommand<Settings>
             await Analytics.LogFeatureUsage(settings);
 
             if (!string.IsNullOrWhiteSpace(settings.OutputFolder) && !Directory.Exists(settings.OutputFolder))
-                Directory.CreateDirectory(settings.OutputFolder);            await Task.WhenAll(
+                Directory.CreateDirectory(settings.OutputFolder); await Task.WhenAll(
                 result.Files.Select(
                     file => File.WriteAllTextAsync(
                         Path.Combine(settings.OutputFolder, file.Filename),
@@ -72,7 +71,7 @@ public class GenerateCommand : AsyncCommand<Settings>
                 // Escape markup characters in exception messages
                 var escapedMessage = exception.Message.Replace("[", "[[").Replace("]", "]]");
                 var escapedStackTrace = exception.StackTrace?.Replace("[", "[[").Replace("]", "]]") ?? "";
-                
+
                 AnsiConsole.MarkupLine($"{Crlf}[red]Error:{Crlf}{escapedMessage}[/]");
                 AnsiConsole.MarkupLine($"[red]Exception:{Crlf}{exception.GetType()}[/]");
                 AnsiConsole.MarkupLine($"[yellow]Stack Trace:{Crlf}{escapedStackTrace}[/]");
@@ -83,14 +82,15 @@ public class GenerateCommand : AsyncCommand<Settings>
         }
     }
 
-    private static async Task AcquireAzureEntraIdToken(Settings settings)
+    private static async Task AcquireAzureEntraIdToken(Settings settings, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrWhiteSpace(settings.AuthorizationHeader) ||
             (string.IsNullOrWhiteSpace(settings.AzureScope) &&
              string.IsNullOrWhiteSpace(settings.AzureTenantId)))
         {
             return;
-        }        try
+        }
+        try
         {
             AnsiConsole.MarkupLine("[green]🔐 Acquiring authorization header from Azure Entra ID...[/]");
             using var listener = AzureEventSourceListener.CreateConsoleLogger();
@@ -98,7 +98,7 @@ public class GenerateCommand : AsyncCommand<Settings>
                 .TryGetAccessTokenAsync(
                     settings.AzureTenantId!,
                     settings.AzureScope!,
-                    CancellationToken.None);
+                    cancellationToken);
 
             if (!string.IsNullOrWhiteSpace(token))
             {
@@ -115,25 +115,30 @@ public class GenerateCommand : AsyncCommand<Settings>
 
     private static async Task ValidateOpenApiSpec(Settings settings)
     {
-        var validationResult = await OpenApiValidator.Validate(settings.OpenApiPath!);
+        var validationResult = await Validation.OpenApiValidator.Validate(settings.OpenApiPath!);
         if (!validationResult.IsValid)
         {
             AnsiConsole.MarkupLine($"[red]{Crlf}OpenAPI validation failed:{Crlf}[/]");
 
-            foreach (var error in validationResult.Diagnostics.Errors)
+            if (validationResult.Diagnostics is not null)
             {
-                TryWriteLine(error, "red", "Error");
+                foreach (var error in validationResult.Diagnostics.Errors)
+                {
+                    TryWriteLine(error, "red", "Error");
+                }
+
+                foreach (var warning in validationResult.Diagnostics.Warnings)
+                {
+                    TryWriteLine(warning, "yellow", "Warning");
+                }
             }
 
-            foreach (var warning in validationResult.Diagnostics.Warnings)
-            {
-                TryWriteLine(warning, "yellow", "Warning");
-            }
-
-            validationResult.ThrowIfInvalid();        }
+            validationResult.ThrowIfInvalid();
+        }
 
         DisplayOpenApiStatistics(validationResult.Statistics);
-    }    private static void DisplayOpenApiStatistics(OpenApiStats statistics)
+    }
+    private static void DisplayOpenApiStatistics(OpenApiStats statistics)
     {
         var statsTable = new Table()
             .BorderColor(Color.Blue)
@@ -183,17 +188,17 @@ public class GenerateCommand : AsyncCommand<Settings>
         // Create a fancy header panel
         var version = typeof(GenerateCommand).Assembly.GetName().Version!.ToString();
         var headerText = new Text($"🔧 cURL Request Generator v{version}", new Style(Color.Green, decoration: Decoration.Bold));
-        
+
         var panel = new Panel(headerText)
             .BorderColor(Color.Green)
             .Padding(1, 0)
             .Expand();
-            
+
         AnsiConsole.Write(panel);
         AnsiConsole.WriteLine();
-        
+
         // Support key info
-        var supportKey = settings.NoLogging 
+        var supportKey = settings.NoLogging
             ? "[yellow]⚠️  Unavailable when logging is disabled[/]"
             : $"[green]🔑 Support key: {SupportInformation.GetSupportKey()}[/]";
         AnsiConsole.MarkupLine(supportKey);
@@ -210,20 +215,20 @@ public class GenerateCommand : AsyncCommand<Settings>
         configTable.AddRow("📁 OpenAPI Source", $"[cyan]{settings.OpenApiPath}[/]");
         configTable.AddRow("📂 Output Folder", $"[cyan]{settings.OutputFolder}[/]");
         configTable.AddRow("🌐 Content Type", $"[cyan]{settings.ContentType}[/]");
-        
+
         if (!string.IsNullOrWhiteSpace(settings.BaseUrl))
             configTable.AddRow("🔗 Base URL", $"[cyan]{settings.BaseUrl}[/]");
-            
+
         if (settings.GenerateBashScripts)
             configTable.AddRow("🐚 Bash Scripts", "[green]✓ Enabled[/]");
-            
+
         if (settings.SkipValidation)
             configTable.AddRow("⚠️  Validation", "[yellow]⚠️  Skipped[/]");
 
         if (!string.IsNullOrWhiteSpace(settings.AuthorizationHeader))
         {
-            var authHeader = settings.AuthorizationHeader.Length > 50 
-                ? settings.AuthorizationHeader[..47] + "..." 
+            var authHeader = settings.AuthorizationHeader.Length > 50
+                ? settings.AuthorizationHeader[..47] + "..."
                 : settings.AuthorizationHeader;
             configTable.AddRow("🔐 Authorization", $"[dim]{authHeader}[/]");
         }
@@ -277,7 +282,7 @@ public class GenerateCommand : AsyncCommand<Settings>
                 .BorderColor(Color.Yellow)
                 .Padding(1, 0));
         }
-        
+
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold green]🎉 Done![/]");
     }

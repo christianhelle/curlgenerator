@@ -1,7 +1,7 @@
 
 using CurlGenerator.Core;
 using FluentAssertions;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace CurlGenerator.Tests;
 
@@ -15,13 +15,13 @@ public class OperationNameGeneratorTests
         document.Paths = new OpenApiPaths();
         document.Paths.Add("/my-path", new OpenApiPathItem
         {
-            Operations = new Dictionary<OperationType, OpenApiOperation>
+            Operations = new Dictionary<HttpMethod, OpenApiOperation>
             {
-                { OperationType.Get, new OpenApiOperation { OperationId = "my-operation" } }
+                { HttpMethod.Get, new OpenApiOperation { OperationId = "my-operation" } }
             }
         });
 
-        var operation = document.Paths["/my-path"].Operations[OperationType.Get];
+        var operation = document.Paths["/my-path"].Operations![HttpMethod.Get];
 
         var result = generator.GetOperationName(document, "/my-path", "get", operation);
 
@@ -36,13 +36,13 @@ public class OperationNameGeneratorTests
         document.Paths = new OpenApiPaths();
         document.Paths.Add("/my-path", new OpenApiPathItem
         {
-            Operations = new Dictionary<OperationType, OpenApiOperation>
+            Operations = new Dictionary<HttpMethod, OpenApiOperation>
             {
-                { OperationType.Get, new OpenApiOperation { OperationId = null } }
+                { HttpMethod.Get, new OpenApiOperation { OperationId = null } }
             }
         });
 
-        var operation = document.Paths["/my-path"].Operations[OperationType.Get];
+        var operation = document.Paths["/my-path"].Operations![HttpMethod.Get];
 
         var result = generator.GetOperationName(document, "/my-path", "get", operation);
 
@@ -57,16 +57,16 @@ public class OperationNameGeneratorTests
         document.Paths = new OpenApiPaths();
         document.Paths.Add("/my-path", new OpenApiPathItem
         {
-            Operations = new Dictionary<OperationType, OpenApiOperation>
+            Operations = new Dictionary<HttpMethod, OpenApiOperation>
             {
-                { OperationType.Get, new OpenApiOperation { OperationId = "my-operation" } }
+                { HttpMethod.Get, new OpenApiOperation { OperationId = "my-operation" } }
             }
         });
         document.Paths.Add("/my-other-path", new OpenApiPathItem
         {
-            Operations = new Dictionary<OperationType, OpenApiOperation>
+            Operations = new Dictionary<HttpMethod, OpenApiOperation>
             {
-                { OperationType.Get, new OpenApiOperation { OperationId = "my-other-operation" } }
+                { HttpMethod.Get, new OpenApiOperation { OperationId = "my-other-operation" } }
             }
         });
 
@@ -83,16 +83,16 @@ public class OperationNameGeneratorTests
         document.Paths = new OpenApiPaths();
         document.Paths.Add("/my-path", new OpenApiPathItem
         {
-            Operations = new Dictionary<OperationType, OpenApiOperation>
+            Operations = new Dictionary<HttpMethod, OpenApiOperation>
             {
-                { OperationType.Get, new OpenApiOperation { OperationId = "my-operation" } }
+                { HttpMethod.Get, new OpenApiOperation { OperationId = "my-operation" } }
             }
         });
         document.Paths.Add("/my-other-path", new OpenApiPathItem
         {
-            Operations = new Dictionary<OperationType, OpenApiOperation>
+            Operations = new Dictionary<HttpMethod, OpenApiOperation>
             {
-                { OperationType.Get, new OpenApiOperation { OperationId = "my-operation" } }
+                { HttpMethod.Get, new OpenApiOperation { OperationId = "my-operation" } }
             }
         });
 
