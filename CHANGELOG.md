@@ -13,6 +13,8 @@
 
 **Merged pull requests:**
 
+- Fix bugs in EmbeddedResources and StringExtensions [\#266](https://github.com/christianhelle/curlgenerator/pull/266) ([Copilot](https://github.com/apps/copilot-swe-agent))
+- Add OpenAPI v3.1 examples for smoke tests [\#263](https://github.com/christianhelle/curlgenerator/pull/263) ([christianhelle](https://github.com/christianhelle))
 - chore\(deps\): update actions/checkout action to v6 [\#261](https://github.com/christianhelle/curlgenerator/pull/261) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency microsoft.extensions.azure to 1.13.1 [\#260](https://github.com/christianhelle/curlgenerator/pull/260) ([renovate[bot]](https://github.com/apps/renovate))
 - chore\(deps\): update dependency microsoft.openapi.odata to v3 [\#257](https://github.com/christianhelle/curlgenerator/pull/257) ([renovate[bot]](https://github.com/apps/renovate))
