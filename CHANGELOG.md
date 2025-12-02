@@ -13,6 +13,7 @@
 
 **Merged pull requests:**
 
+- Update xunit-dotnet monorepo to 3.2.1 [\#267](https://github.com/christianhelle/curlgenerator/pull/267) ([renovate[bot]](https://github.com/apps/renovate))
 - Fix bugs in EmbeddedResources and StringExtensions [\#266](https://github.com/christianhelle/curlgenerator/pull/266) ([Copilot](https://github.com/apps/copilot-swe-agent))
 - Add OpenAPI v3.1 examples for smoke tests [\#263](https://github.com/christianhelle/curlgenerator/pull/263) ([christianhelle](https://github.com/christianhelle))
 - chore\(deps\): update actions/checkout action to v6 [\#261](https://github.com/christianhelle/curlgenerator/pull/261) ([renovate[bot]](https://github.com/apps/renovate))
