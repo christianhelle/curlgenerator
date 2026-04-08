@@ -13,7 +13,12 @@
 
 **Merged pull requests:**
 
+- Update dependency coverlet.collector to v8 [\#297](https://github.com/christianhelle/curlgenerator/pull/297) ([renovate[bot]](https://github.com/apps/renovate))
+- Update codecov/codecov-action action to v6 [\#296](https://github.com/christianhelle/curlgenerator/pull/296) ([renovate[bot]](https://github.com/apps/renovate))
+- Update actions/deploy-pages action to v5 [\#295](https://github.com/christianhelle/curlgenerator/pull/295) ([renovate[bot]](https://github.com/apps/renovate))
+- Update actions/configure-pages action to v6 [\#294](https://github.com/christianhelle/curlgenerator/pull/294) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.NET.Test.Sdk to 18.4.0 [\#292](https://github.com/christianhelle/curlgenerator/pull/292) ([renovate[bot]](https://github.com/apps/renovate))
+- Update actions/upload-artifact action to v7 [\#272](https://github.com/christianhelle/curlgenerator/pull/272) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo to 3.2.1 [\#267](https://github.com/christianhelle/curlgenerator/pull/267) ([renovate[bot]](https://github.com/apps/renovate))
 - Fix bugs in EmbeddedResources and StringExtensions [\#266](https://github.com/christianhelle/curlgenerator/pull/266) ([Copilot](https://github.com/apps/copilot-swe-agent))
 - Add OpenAPI v3.1 examples for smoke tests [\#263](https://github.com/christianhelle/curlgenerator/pull/263) ([christianhelle](https://github.com/christianhelle))
