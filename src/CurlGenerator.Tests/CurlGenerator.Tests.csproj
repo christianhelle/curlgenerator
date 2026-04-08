@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Atc.Test" Version="2.0.16" />
     <PackageReference Include="FluentAssertions" Version="7.2.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
     <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="3.0.1" />
     <PackageReference Include="xunit.v3" Version="3.2.1" />
     <PackageReference Include="xunit.v3.runner.console" Version="3.2.1">
