@@ -18,6 +18,7 @@
 - Update actions/deploy-pages action to v5 [\#295](https://github.com/christianhelle/curlgenerator/pull/295) ([renovate[bot]](https://github.com/apps/renovate))
 - Update actions/configure-pages action to v6 [\#294](https://github.com/christianhelle/curlgenerator/pull/294) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.NET.Test.Sdk to 18.4.0 [\#292](https://github.com/christianhelle/curlgenerator/pull/292) ([renovate[bot]](https://github.com/apps/renovate))
+- Bump xunit.v3.runner.console from 3.2.1 to 3.2.2 [\#281](https://github.com/christianhelle/curlgenerator/pull/281) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency ruby to v4 [\#276](https://github.com/christianhelle/curlgenerator/pull/276) ([renovate[bot]](https://github.com/apps/renovate))
 - Update actions/upload-artifact action to v7 [\#272](https://github.com/christianhelle/curlgenerator/pull/272) ([renovate[bot]](https://github.com/apps/renovate))
 - Update xunit-dotnet monorepo to 3.2.1 [\#267](https://github.com/christianhelle/curlgenerator/pull/267) ([renovate[bot]](https://github.com/apps/renovate))
