@@ -13,6 +13,7 @@
 
 **Merged pull requests:**
 
+- Upgrade Spectre.Console.Cli from 0.53.0 to 0.55.0 [\#301](https://github.com/christianhelle/curlgenerator/pull/301) ([christianhelle](https://github.com/christianhelle))
 - Bump Atc.Test and FluentAssertions [\#299](https://github.com/christianhelle/curlgenerator/pull/299) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update actions/github-script action to v9 [\#298](https://github.com/christianhelle/curlgenerator/pull/298) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency coverlet.collector to v8 [\#297](https://github.com/christianhelle/curlgenerator/pull/297) ([renovate[bot]](https://github.com/apps/renovate))
