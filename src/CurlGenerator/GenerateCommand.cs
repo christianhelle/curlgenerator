@@ -12,7 +12,7 @@ public class GenerateCommand : AsyncCommand<Settings>
 {
     private static readonly string Crlf = Environment.NewLine;
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (!settings.NoLogging)
             Analytics.Configure(); try
