@@ -13,6 +13,8 @@
 
 **Merged pull requests:**
 
+- Bump Atc.Test and FluentAssertions [\#299](https://github.com/christianhelle/curlgenerator/pull/299) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update actions/github-script action to v9 [\#298](https://github.com/christianhelle/curlgenerator/pull/298) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency coverlet.collector to v8 [\#297](https://github.com/christianhelle/curlgenerator/pull/297) ([renovate[bot]](https://github.com/apps/renovate))
 - Update codecov/codecov-action action to v6 [\#296](https://github.com/christianhelle/curlgenerator/pull/296) ([renovate[bot]](https://github.com/apps/renovate))
 - Update actions/deploy-pages action to v5 [\#295](https://github.com/christianhelle/curlgenerator/pull/295) ([renovate[bot]](https://github.com/apps/renovate))
