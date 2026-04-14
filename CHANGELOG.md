@@ -13,6 +13,8 @@
 
 **Merged pull requests:**
 
+- Update dependency Microsoft.SourceLink.GitHub to 10.0.202 [\#304](https://github.com/christianhelle/curlgenerator/pull/304) ([renovate[bot]](https://github.com/apps/renovate))
+- Update actions/upload-pages-artifact action to v5 [\#302](https://github.com/christianhelle/curlgenerator/pull/302) ([renovate[bot]](https://github.com/apps/renovate))
 - Upgrade Spectre.Console.Cli from 0.53.0 to 0.55.0 [\#301](https://github.com/christianhelle/curlgenerator/pull/301) ([christianhelle](https://github.com/christianhelle))
 - Bump Atc.Test and FluentAssertions [\#299](https://github.com/christianhelle/curlgenerator/pull/299) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update actions/github-script action to v9 [\#298](https://github.com/christianhelle/curlgenerator/pull/298) ([renovate[bot]](https://github.com/apps/renovate))
