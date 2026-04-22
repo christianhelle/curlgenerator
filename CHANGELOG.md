@@ -13,6 +13,11 @@
 
 **Merged pull requests:**
 
+- Update dependency Microsoft.NET.Test.Sdk to 18.5.0 [\#313](https://github.com/christianhelle/curlgenerator/pull/313) ([renovate[bot]](https://github.com/apps/renovate))
+- Bump Microsoft.SourceLink.GitHub from 10.0.202 to 10.0.203 [\#312](https://github.com/christianhelle/curlgenerator/pull/312) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Update dependency Microsoft.SourceLink.GitHub to 10.0.203 [\#309](https://github.com/christianhelle/curlgenerator/pull/309) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency ruby to v4.0.3 [\#308](https://github.com/christianhelle/curlgenerator/pull/308) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency coverlet.collector to v10 [\#307](https://github.com/christianhelle/curlgenerator/pull/307) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency Microsoft.SourceLink.GitHub to 10.0.202 [\#304](https://github.com/christianhelle/curlgenerator/pull/304) ([renovate[bot]](https://github.com/apps/renovate))
 - Update actions/upload-pages-artifact action to v5 [\#302](https://github.com/christianhelle/curlgenerator/pull/302) ([renovate[bot]](https://github.com/apps/renovate))
 - Upgrade Spectre.Console.Cli from 0.53.0 to 0.55.0 [\#301](https://github.com/christianhelle/curlgenerator/pull/301) ([christianhelle](https://github.com/christianhelle))
