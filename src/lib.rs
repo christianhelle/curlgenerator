@@ -14,3 +14,6 @@ pub mod validation;
 
 pub use generator::{generate, GeneratorResult, GeneratorSettings, ScriptFile};
 pub use validation::{validate, OpenApiStats, ValidationResult};
+
+#[cfg(test)]
+mod tests;

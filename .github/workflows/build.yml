@@ -9,7 +9,7 @@ on:
       - "!Cargo.toml"
       - "!Cargo.lock"
       - "!src/**/*.rs"
-      - "!tests/**/*"
+      - "!src/tests/resources/**/*"
     branches:
       - "*"
   pull_request:
@@ -19,7 +19,7 @@ on:
       - "!Cargo.toml"
       - "!Cargo.lock"
       - "!src/**/*.rs"
-      - "!tests/**/*"
+      - "!src/tests/resources/**/*"
     branches:
       - "*"
 

@@ -4,7 +4,7 @@
 //! must produce non-empty scripts that end in the expected extension, contain
 //! comment lines and reference the resolved base URL.
 
-use curlgenerator::{generate, validate, GeneratorSettings};
+use crate::{generate, validate, GeneratorSettings};
 
 fn settings(path: &str, bash: bool) -> GeneratorSettings {
     GeneratorSettings {
@@ -50,38 +50,38 @@ fn assert_scripts(path: &str, bash: bool) {
 
 #[test]
 fn generates_powershell_for_v2_json() {
-    assert_scripts("tests/resources/V2/SwaggerPetstore.json", false);
+    assert_scripts("src/tests/resources/V2/SwaggerPetstore.json", false);
 }
 
 #[test]
 fn generates_powershell_for_v2_yaml() {
-    assert_scripts("tests/resources/V2/SwaggerPetstore.yaml", false);
+    assert_scripts("src/tests/resources/V2/SwaggerPetstore.yaml", false);
 }
 
 #[test]
 fn generates_bash_for_v2_json() {
-    assert_scripts("tests/resources/V2/SwaggerPetstore.json", true);
+    assert_scripts("src/tests/resources/V2/SwaggerPetstore.json", true);
 }
 
 #[test]
 fn generates_powershell_for_v3_json() {
-    assert_scripts("tests/resources/V3/SwaggerPetstore.json", false);
+    assert_scripts("src/tests/resources/V3/SwaggerPetstore.json", false);
 }
 
 #[test]
 fn generates_powershell_for_v3_yaml() {
-    assert_scripts("tests/resources/V3/SwaggerPetstore.yaml", false);
+    assert_scripts("src/tests/resources/V3/SwaggerPetstore.yaml", false);
 }
 
 #[test]
 fn generates_bash_for_v3_json() {
-    assert_scripts("tests/resources/V3/SwaggerPetstore.json", true);
+    assert_scripts("src/tests/resources/V3/SwaggerPetstore.json", true);
 }
 
 #[test]
 fn generates_for_v3_with_different_headers() {
     assert_scripts(
-        "tests/resources/V3/SwaggerPetstoreWithDifferentHeaders.json",
+        "src/tests/resources/V3/SwaggerPetstoreWithDifferentHeaders.json",
         false,
     );
 }
@@ -89,19 +89,19 @@ fn generates_for_v3_with_different_headers() {
 #[test]
 fn generates_for_v31_webhook_example() {
     // A webhook-only spec has no paths, so generation succeeds but yields no files.
-    let result = generate(&settings("tests/resources/V31/webhook-example.json", false))
+    let result = generate(&settings("src/tests/resources/V31/webhook-example.json", false))
         .expect("generation should succeed");
     let _ = result;
 }
 
 #[test]
 fn generates_for_v31_non_oauth_scopes() {
-    assert_scripts("tests/resources/V31/non-oauth-scopes.json", false);
+    assert_scripts("src/tests/resources/V31/non-oauth-scopes.json", false);
 }
 
 #[test]
 fn applies_authorization_header() {
-    let mut s = settings("tests/resources/V3/SwaggerPetstore.json", false);
+    let mut s = settings("src/tests/resources/V3/SwaggerPetstore.json", false);
     s.authorization_header = Some("Bearer test-token".to_string());
     let result = generate(&s).expect("generation should succeed");
     assert!(
@@ -115,7 +115,7 @@ fn applies_authorization_header() {
 
 #[test]
 fn applies_base_url_override() {
-    let mut s = settings("tests/resources/V3/SwaggerPetstore.json", false);
+    let mut s = settings("src/tests/resources/V3/SwaggerPetstore.json", false);
     s.base_url = Some("https://example.test".to_string());
     let result = generate(&s).expect("generation should succeed");
     assert!(
@@ -129,7 +129,7 @@ fn applies_base_url_override() {
 
 #[test]
 fn validation_accepts_valid_spec() {
-    let result = validate("tests/resources/V3/SwaggerPetstore.json")
+    let result = validate("src/tests/resources/V3/SwaggerPetstore.json")
         .expect("valid spec should pass validation");
     assert!(
         result.statistics.path_item_count > 0,
@@ -153,6 +153,6 @@ fn validation_rejects_garbage() {
 
 #[test]
 fn missing_file_is_an_error() {
-    let result = generate(&settings("tests/resources/does-not-exist.json", false));
+    let result = generate(&settings("src/tests/resources/does-not-exist.json", false));
     assert!(result.is_err(), "missing file should produce an error");
 }
