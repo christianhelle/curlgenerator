@@ -97,11 +97,15 @@ pub fn compute_stats(root: &Value) -> OpenApiStats {
     }
 
     count_map(
-        root.pointer("/components/schemas").or_else(|| root.get("definitions")),
+        root.pointer("/components/schemas")
+            .or_else(|| root.get("definitions")),
         &mut stats.schema_count,
     );
     count_map(root.pointer("/components/links"), &mut stats.link_count);
-    count_map(root.pointer("/components/callbacks"), &mut stats.callback_count);
+    count_map(
+        root.pointer("/components/callbacks"),
+        &mut stats.callback_count,
+    );
     count_map(root.pointer("/components/headers"), &mut stats.header_count);
 
     stats

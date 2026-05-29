@@ -173,7 +173,10 @@ fn display_header(cli: &Cli) {
     );
 
     if cli.no_logging {
-        println!("{}", "Support key: unavailable when logging is disabled".yellow());
+        println!(
+            "{}",
+            "Support key: unavailable when logging is disabled".yellow()
+        );
     } else {
         println!(
             "{}",
@@ -198,7 +201,11 @@ fn display_configuration(cli: &Cli) {
     if cli.skip_validation {
         println!("  Validation     : {}", "Skipped".yellow());
     }
-    if let Some(auth) = cli.authorization_header.as_deref().filter(|s| !s.trim().is_empty()) {
+    if let Some(auth) = cli
+        .authorization_header
+        .as_deref()
+        .filter(|s| !s.trim().is_empty())
+    {
         let shown = if auth.len() > 50 {
             format!("{}...", &auth[..47])
         } else {

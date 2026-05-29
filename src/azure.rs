@@ -11,7 +11,10 @@ use serde_json::Value;
 /// Tries to acquire an access token for `scope` (and optional `tenant_id`).
 ///
 /// Returns `Ok(None)` when the Azure CLI is unavailable or returns no token.
-pub fn try_get_access_token(tenant_id: Option<&str>, scope: &str) -> Result<Option<String>, String> {
+pub fn try_get_access_token(
+    tenant_id: Option<&str>,
+    scope: &str,
+) -> Result<Option<String>, String> {
     let mut command = Command::new("az");
     command
         .arg("account")
@@ -32,7 +35,10 @@ pub fn try_get_access_token(tenant_id: Option<&str>, scope: &str) -> Result<Opti
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Azure CLI failed to acquire a token: {}", stderr.trim()));
+        return Err(format!(
+            "Azure CLI failed to acquire a token: {}",
+            stderr.trim()
+        ));
     }
 
     let parsed: Value = serde_json::from_slice(&output.stdout)

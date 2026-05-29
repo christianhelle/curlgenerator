@@ -43,10 +43,7 @@ pub fn convert_route_to_camel_case(value: &str) -> String {
 
 /// Converts a space separated string to PascalCase.
 pub fn convert_spaces_to_pascal_case(value: &str) -> String {
-    value
-        .split(' ')
-        .map(capitalize_first_character)
-        .collect()
+    value.split(' ').map(capitalize_first_character).collect()
 }
 
 /// Prepends `prefix` to `value` unless `value` already starts with it.
@@ -64,7 +61,10 @@ mod tests {
 
     #[test]
     fn convert_kebab_case_to_pascal_case_converts_correctly() {
-        assert_eq!(convert_kebab_case_to_pascal_case("kebab-case-string"), "KebabCaseString");
+        assert_eq!(
+            convert_kebab_case_to_pascal_case("kebab-case-string"),
+            "KebabCaseString"
+        );
         assert_eq!(
             convert_kebab_case_to_pascal_case("another-kebab-case.string"),
             "AnotherKebabCase_string"
@@ -74,7 +74,10 @@ mod tests {
 
     #[test]
     fn convert_kebab_case_to_snake_case_converts_correctly() {
-        assert_eq!(convert_kebab_case_to_snake_case("kebab-case-string"), "kebab_case_string");
+        assert_eq!(
+            convert_kebab_case_to_snake_case("kebab-case-string"),
+            "kebab_case_string"
+        );
         assert_eq!(
             convert_kebab_case_to_snake_case("another-kebab-case-string"),
             "another_kebab_case_string"
@@ -84,7 +87,10 @@ mod tests {
 
     #[test]
     fn convert_route_to_camel_case_converts_correctly() {
-        assert_eq!(convert_route_to_camel_case("/route/to/resource"), "RouteToResource");
+        assert_eq!(
+            convert_route_to_camel_case("/route/to/resource"),
+            "RouteToResource"
+        );
         assert_eq!(
             convert_route_to_camel_case("/another/route/to/another/resource"),
             "AnotherRouteToAnotherResource"
@@ -102,7 +108,10 @@ mod tests {
 
     #[test]
     fn convert_spaces_to_pascal_case_converts_correctly() {
-        assert_eq!(convert_spaces_to_pascal_case("space separated string"), "SpaceSeparatedString");
+        assert_eq!(
+            convert_spaces_to_pascal_case("space separated string"),
+            "SpaceSeparatedString"
+        );
         assert_eq!(
             convert_spaces_to_pascal_case("another space separated string"),
             "AnotherSpaceSeparatedString"

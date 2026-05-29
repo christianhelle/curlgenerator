@@ -55,18 +55,18 @@ pub fn generate(settings: &GeneratorSettings) -> Result<GeneratorResult, String>
 }
 
 /// Generates scripts from an already-loaded [`Document`].
-pub fn generate_from_document(settings: &GeneratorSettings, document: &Document) -> GeneratorResult {
+pub fn generate_from_document(
+    settings: &GeneratorSettings,
+    document: &Document,
+) -> GeneratorResult {
     let base_url = resolve_base_url(settings, document);
 
     let mut files = Vec::new();
     for path_item in &document.paths {
         for operation in &path_item.operations {
             let verb = capitalize_first_character(&operation.method);
-            let name = get_operation_name(
-                &path_item.path,
-                &verb,
-                operation.operation_id.as_deref(),
-            );
+            let name =
+                get_operation_name(&path_item.path, &verb, operation.operation_id.as_deref());
             let filename_base = capitalize_first_character(&name);
             let filename = if settings.generate_bash_scripts {
                 format!("{filename_base}.sh")
@@ -75,9 +75,23 @@ pub fn generate_from_document(settings: &GeneratorSettings, document: &Document)
             };
 
             let body = if settings.generate_bash_scripts {
-                generate_request_bash(settings, &base_url, &verb, &path_item.path, operation, &document.root)
+                generate_request_bash(
+                    settings,
+                    &base_url,
+                    &verb,
+                    &path_item.path,
+                    operation,
+                    &document.root,
+                )
             } else {
-                generate_request_powershell(settings, &base_url, &verb, &path_item.path, operation, &document.root)
+                generate_request_powershell(
+                    settings,
+                    &base_url,
+                    &verb,
+                    &path_item.path,
+                    operation,
+                    &document.root,
+                )
             };
 
             files.push(ScriptFile {
@@ -143,9 +157,17 @@ fn generate_request_powershell(
         url.pop();
     }
 
-    code.push_str(&format!("curl -X {} {}{} `\n", verb.to_uppercase(), base_url, url));
+    code.push_str(&format!(
+        "curl -X {} {}{} `\n",
+        verb.to_uppercase(),
+        base_url,
+        url
+    ));
     code.push_str(&format!("  -H 'Accept: {}' `\n", settings.content_type));
-    code.push_str(&format!("  -H 'Content-Type: {}' `\n", settings.content_type));
+    code.push_str(&format!(
+        "  -H 'Content-Type: {}' `\n",
+        settings.content_type
+    ));
 
     if let Some(auth) = nonempty(&settings.authorization_header) {
         code.push_str(&format!("  -H 'Authorization: {auth}' `\n"));
@@ -237,7 +259,13 @@ fn generate_request_bash(
         .parameters
         .iter()
         .filter(|p| p.location == "query")
-        .map(|p| format!("{}=${{{}}}", p.name, convert_kebab_case_to_snake_case(&p.name)))
+        .map(|p| {
+            format!(
+                "{}=${{{}}}",
+                p.name,
+                convert_kebab_case_to_snake_case(&p.name)
+            )
+        })
         .collect();
     let query_string = if query_params.is_empty() {
         String::new()
@@ -404,7 +432,10 @@ fn generate_sample_value(root: &Value, schema: &Value, depth: usize) -> Value {
             let mut object = serde_json::Map::new();
             if let Some(properties) = schema.get("properties").and_then(Value::as_object) {
                 for (key, property) in properties {
-                    object.insert(key.clone(), generate_sample_value(root, property, depth + 1));
+                    object.insert(
+                        key.clone(),
+                        generate_sample_value(root, property, depth + 1),
+                    );
                 }
             }
             Value::Object(object)
@@ -436,7 +467,9 @@ fn schema_type(schema: &Value) -> Option<&str> {
 fn sample_string(schema: &Value) -> String {
     match schema.get("format").and_then(Value::as_str) {
         Some("date") => chrono::Local::now().format("%Y-%m-%d").to_string(),
-        Some("date-time") => chrono::Local::now().format("%Y-%m-%dT%H:%M:%SZ").to_string(),
+        Some("date-time") => chrono::Local::now()
+            .format("%Y-%m-%dT%H:%M:%SZ")
+            .to_string(),
         Some("email") => "user@example.com".to_string(),
         Some("uri") => "https://example.com".to_string(),
         _ => "string".to_string(),
@@ -521,7 +554,9 @@ mod tests {
             .iter()
             .find(|f| f.filename == "GetPet.ps1")
             .unwrap();
-        assert!(get_pet.content.contains("http://petstore.swagger.io/api/pets/$id"));
+        assert!(get_pet
+            .content
+            .contains("http://petstore.swagger.io/api/pets/$id"));
         assert!(get_pet.content.contains("[Parameter(Mandatory=$True)]"));
         assert!(get_pet.content.contains("$id"));
     }
