@@ -65,6 +65,7 @@ mod tests {
             summary: None,
             description: None,
             parameters: Vec::new(),
+            declares_parameters: false,
             request_body: None,
         }
     }

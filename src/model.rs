@@ -59,6 +59,10 @@ pub struct Operation {
     pub summary: Option<String>,
     pub description: Option<String>,
     pub parameters: Vec<Parameter>,
+    /// Whether the operation declared an operation-level `parameters` array
+    /// (mirrors .NET's `operation.Parameters is null` check). A missing key or
+    /// an explicit `null` is `false`; an empty array `[]` is `true`.
+    pub declares_parameters: bool,
     pub request_body: Option<RequestBody>,
 }
 
@@ -273,6 +277,7 @@ fn parse_operation(
         summary: string_field(op, "summary"),
         description: string_field(op, "description"),
         parameters,
+        declares_parameters: op.get("parameters").and_then(Value::as_array).is_some(),
         request_body,
     }
 }

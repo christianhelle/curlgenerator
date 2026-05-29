@@ -212,7 +212,9 @@ fn append_parameters_powershell(operation: &Operation, code: &mut String) -> Vec
         .collect();
 
     if parameters.is_empty() {
-        code.push('\n');
+        if operation.declares_parameters {
+            code.push('\n');
+        }
         return Vec::new();
     }
 
@@ -355,7 +357,9 @@ fn append_summary_bash(verb: &str, path: &str, operation: &Operation, code: &mut
 
 fn append_parameters_bash(operation: &Operation, code: &mut String) {
     if operation.parameters.is_empty() {
-        code.push('\n');
+        if operation.declares_parameters {
+            code.push('\n');
+        }
         return;
     }
 
@@ -607,5 +611,78 @@ mod tests {
         let schema = serde_json::json!({ "$ref": "#/components/schemas/Pet" });
         let json = generate_sample_json(&root, Some(&schema));
         assert!(json.contains("\"name\": \"string\""));
+    }
+
+    #[test]
+    fn no_parameters_key_omits_blank_line_powershell() {
+        let doc = from_value(serde_json::json!({
+            "openapi": "3.0.0",
+            "servers": [{ "url": "http://x" }],
+            "paths": { "/ping": { "get": { "operationId": "ping" } } }
+        }));
+        let result = generate_from_document(&GeneratorSettings::default(), &doc);
+        let file = &result.files[0];
+        assert!(
+            file.content.contains("#>\ncurl"),
+            "no parameters key should omit the blank line: {}",
+            file.content
+        );
+        assert!(!file.content.contains("#>\n\ncurl"), "{}", file.content);
+    }
+
+    #[test]
+    fn empty_parameters_array_keeps_blank_line_powershell() {
+        let doc = from_value(serde_json::json!({
+            "openapi": "3.0.0",
+            "servers": [{ "url": "http://x" }],
+            "paths": { "/ping": { "get": { "operationId": "ping", "parameters": [] } } }
+        }));
+        let result = generate_from_document(&GeneratorSettings::default(), &doc);
+        let file = &result.files[0];
+        assert!(
+            file.content.contains("#>\n\ncurl"),
+            "present-but-empty parameters should keep the blank line: {}",
+            file.content
+        );
+    }
+
+    #[test]
+    fn no_parameters_key_omits_blank_line_bash() {
+        let doc = from_value(serde_json::json!({
+            "openapi": "3.0.0",
+            "servers": [{ "url": "http://x" }],
+            "paths": { "/ping": { "get": { "operationId": "ping" } } }
+        }));
+        let settings = GeneratorSettings {
+            generate_bash_scripts: true,
+            ..Default::default()
+        };
+        let result = generate_from_document(&settings, &doc);
+        let file = &result.files[0];
+        assert!(file.content.contains("#\ncurl"), "{}", file.content);
+        assert!(!file.content.contains("#\n\ncurl"), "{}", file.content);
+    }
+
+    #[test]
+    fn body_only_parameters_keep_blank_line_bash() {
+        let doc = from_value(serde_json::json!({
+            "swagger": "2.0",
+            "host": "x",
+            "paths": { "/pets": { "post": { "operationId": "addPet", "parameters": [
+                { "name": "body", "in": "body", "schema": {
+                    "type": "object", "properties": { "name": { "type": "string" } } } }
+            ] } } }
+        }));
+        let settings = GeneratorSettings {
+            generate_bash_scripts: true,
+            ..Default::default()
+        };
+        let result = generate_from_document(&settings, &doc);
+        let file = &result.files[0];
+        assert!(
+            file.content.contains("#\n\ncurl"),
+            "body-only operation should keep the blank line: {}",
+            file.content
+        );
     }
 }
