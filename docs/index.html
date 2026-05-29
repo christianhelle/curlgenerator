@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>cURL Request Generator - Generate cURL requests from OpenAPI specifications</title>
-    <meta name="description" content="Generate cURL requests from OpenAPI specifications v2.0 and v3.0. A .NET CLI tool for creating HTTP requests from Swagger/OpenAPI specs.">
+    <meta name="description" content="Generate cURL requests from OpenAPI specifications v2.0, v3.0 and v3.1. A Rust CLI tool for creating HTTP requests from Swagger/OpenAPI specs.">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="images/icon.png">
 </head>
@@ -30,16 +30,16 @@
         <div class="container">
             <section class="hero">
                 <h2>Overview</h2>
-                <p>Generate cURL requests from OpenAPI specifications v2.0 and v3.0. This .NET CLI tool makes it easy to create HTTP request scripts from your Swagger/OpenAPI documentation.</p>
+                <p>Generate cURL requests from OpenAPI specifications v2.0, v3.0 and v3.1. This Rust CLI tool makes it easy to create HTTP request scripts from your Swagger/OpenAPI documentation.</p>
             </section>
 
             <section class="installation">
                 <h2>Installation</h2>
-                <p>This tool is distributed as a .NET Tool on NuGet.org</p>
+                <p>This tool is distributed as a Rust crate on crates.io</p>
                 <p>To install, simply use the following command:</p>
                 <div class="code-block">
-                    <pre><code>dotnet tool install --global curlgenerator</code></pre>
-                    <button class="copy-btn" onclick="copyToClipboard('dotnet tool install --global curlgenerator')">Copy</button>
+                    <pre><code>cargo install curlgenerator</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('cargo install curlgenerator')">Copy</button>
                 </div>
             </section>
 
@@ -196,7 +196,7 @@ curl -X GET https://petstore3.swagger.io/api/v3/pet/$petId `
 }</code></pre>
                 </div>
 
-                <p>You can also use the <code>--azure-scope</code> and <code>--azure-tenant-id</code> arguments which internally use <code>DefaultAzureCredentials</code> from the <code>Microsoft.Extensions.Azure</code> NuGet package:</p>
+                <p>You can also use the <code>--azure-scope</code> and <code>--azure-tenant-id</code> arguments, which internally run <code>az account get-access-token</code> via the Azure CLI to retrieve an access token:</p>
                 <div class="code-block">
                     <pre><code>curlgenerator `
   https://api.example.com/swagger/v1/swagger.json `
