@@ -400,3 +400,7 @@ FodyWeavers.xsd
 test/Generated/
 test/openapi.json
 test/openapi.yaml
+
+# Rust
+/target/
+**/*.rs.bk

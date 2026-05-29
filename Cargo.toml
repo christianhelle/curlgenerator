@@ -1,0 +1,30 @@
+[package]
+name = "curlgenerator"
+version = "1.0.0"
+edition = "2021"
+description = "Generate cURL requests from OpenAPI specifications (v2.0, v3.0 and v3.1)"
+license = "GPL-3.0-only"
+repository = "https://github.com/christianhelle/curlgenerator"
+authors = ["Christian Resma Helle"]
+readme = "README.md"
+keywords = ["openapi", "swagger", "curl", "rest", "codegen"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+serde_yaml = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "gzip", "native-tls"] }
+regex = "1"
+sha2 = "0.10"
+base64 = "0.22"
+chrono = "0.4"
+owo-colors = "4"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+strip = true
+lto = true
