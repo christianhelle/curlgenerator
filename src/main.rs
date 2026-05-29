@@ -4,11 +4,14 @@ use std::path::Path;
 use std::process::ExitCode;
 
 use clap::Parser;
-use owo_colors::OwoColorize;
+use owo_colors::{OwoColorize, Style};
 
 use curlgenerator::generator::{self, GeneratorResult, GeneratorSettings};
 use curlgenerator::validation::{self, OpenApiStats};
 use curlgenerator::{azure, support};
+
+mod console;
+use console::{Align, Panel, Table};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -120,12 +123,18 @@ fn validate_spec(open_api_path: &str) -> Result<(), String> {
     let result = validation::validate(open_api_path)?;
 
     if !result.is_valid() {
-        println!("\n{}", "OpenAPI validation failed:".red());
+        println!(
+            "\n{}",
+            "OpenAPI validation failed:".style(Style::new().red())
+        );
         for error in &result.errors {
-            println!("{}", format!("Error: {error}").red());
+            println!("{}", format!("Error:\n{error}").style(Style::new().red()));
         }
         for warning in &result.warnings {
-            println!("{}", format!("Warning: {warning}").yellow());
+            println!(
+                "{}",
+                format!("Warning:\n{warning}").style(Style::new().yellow())
+            );
         }
         return Err("OpenAPI validation failed".to_string());
     }
@@ -149,57 +158,95 @@ fn acquire_azure_token(cli: &mut Cli) {
 
     println!(
         "{}",
-        "Acquiring authorization header from Azure Entra ID...".green()
+        "🔐 Acquiring authorization header from Azure Entra ID...".style(Style::new().green())
     );
 
     match azure::try_get_access_token(cli.azure_tenant_id.as_deref(), &scope) {
         Ok(Some(token)) => {
             cli.authorization_header = Some(format!("Bearer {token}"));
-            println!("{}", "Successfully acquired access token".green());
+            println!(
+                "{}",
+                "✅ Successfully acquired access token".style(Style::new().green())
+            );
         }
         Ok(None) => {
-            eprintln!("{}", "No access token was returned".yellow());
+            eprintln!(
+                "{}",
+                "No access token was returned".style(Style::new().yellow())
+            );
         }
         Err(error) => {
-            eprintln!("{}", format!("Error:\n{error}").red());
+            eprintln!("{}", format!("Error:\n{error}").style(Style::new().red()));
         }
     }
 }
 
 fn display_header(cli: &Cli) {
-    println!(
-        "{}",
-        format!("cURL Request Generator v{VERSION}").green().bold()
-    );
+    let green = Style::new().green();
+    Panel::new(green)
+        .expand()
+        .line(paint_line(
+            &format!("🔧 cURL Request Generator v{VERSION}"),
+            green.bold(),
+        ))
+        .print();
+    println!();
 
     if cli.no_logging {
         println!(
             "{}",
-            "Support key: unavailable when logging is disabled".yellow()
+            "⚠️  Unavailable when logging is disabled".style(Style::new().yellow())
         );
     } else {
         println!(
             "{}",
-            format!("Support key: {}", support::get_support_key()).green()
+            format!("🔑 Support key: {}", support::get_support_key()).style(green)
         );
     }
     println!();
 }
 
+fn paint_line(text: &str, style: Style) -> String {
+    format!("{}", text.style(style))
+}
+
 fn display_configuration(cli: &Cli) {
-    println!("{}", "Configuration".yellow().bold());
-    println!("  OpenAPI Source : {}", cli.open_api_path.cyan());
-    println!("  Output Folder  : {}", cli.output.cyan());
-    println!("  Content Type   : {}", cli.content_type.cyan());
+    let plain = Style::new();
+    let cyan = Style::new().cyan();
+
+    let mut table = Table::new(Style::new().bright_black())
+        .column("Setting", Align::Left)
+        .column("Value", Align::Left)
+        .row(vec![
+            ("📁 OpenAPI Source".to_string(), plain),
+            (cli.open_api_path.clone(), cyan),
+        ])
+        .row(vec![
+            ("📂 Output Folder".to_string(), plain),
+            (cli.output.clone(), cyan),
+        ])
+        .row(vec![
+            ("🌐 Content Type".to_string(), plain),
+            (cli.content_type.clone(), cyan),
+        ]);
 
     if let Some(base_url) = cli.base_url.as_deref().filter(|s| !s.trim().is_empty()) {
-        println!("  Base URL       : {}", base_url.cyan());
+        table = table.row(vec![
+            ("🔗 Base URL".to_string(), plain),
+            (base_url.to_string(), cyan),
+        ]);
     }
     if cli.bash {
-        println!("  Bash Scripts   : {}", "Enabled".green());
+        table = table.row(vec![
+            ("🐚 Bash Scripts".to_string(), plain),
+            ("✓ Enabled".to_string(), Style::new().green()),
+        ]);
     }
     if cli.skip_validation {
-        println!("  Validation     : {}", "Skipped".yellow());
+        table = table.row(vec![
+            ("⚠️  Validation".to_string(), plain),
+            ("⚠️  Skipped".to_string(), Style::new().yellow()),
+        ]);
     }
     if let Some(auth) = cli
         .authorization_header
@@ -211,21 +258,62 @@ fn display_configuration(cli: &Cli) {
         } else {
             auth.to_string()
         };
-        println!("  Authorization  : {}", shown.dimmed());
+        table = table.row(vec![
+            ("🔐 Authorization".to_string(), plain),
+            (shown, Style::new().dimmed()),
+        ]);
     }
+
+    Panel::new(Style::new().yellow())
+        .title("📋 Configuration", Style::new().yellow().bold())
+        .content(table.render())
+        .print();
     println!();
 }
 
 fn display_statistics(stats: &OpenApiStats) {
-    println!("{}", "OpenAPI Statistics".blue().bold());
-    println!("  Path Items     : {}", stats.path_item_count.blue());
-    println!("  Operations     : {}", stats.operation_count.blue());
-    println!("  Parameters     : {}", stats.parameter_count.blue());
-    println!("  Request Bodies : {}", stats.request_body_count.blue());
-    println!("  Responses      : {}", stats.response_count.blue());
-    println!("  Links          : {}", stats.link_count.blue());
-    println!("  Callbacks      : {}", stats.callback_count.blue());
-    println!("  Schemas        : {}", stats.schema_count.blue());
+    let plain = Style::new();
+    let blue = Style::new().blue();
+    let table = Table::new(blue)
+        .column("Component", Align::Left)
+        .column("Count", Align::Right)
+        .row(vec![
+            ("📝 Path Items".to_string(), plain),
+            (stats.path_item_count.to_string(), blue),
+        ])
+        .row(vec![
+            ("⚙️  Operations".to_string(), plain),
+            (stats.operation_count.to_string(), blue),
+        ])
+        .row(vec![
+            ("📝 Parameters".to_string(), plain),
+            (stats.parameter_count.to_string(), blue),
+        ])
+        .row(vec![
+            ("📦 Request Bodies".to_string(), plain),
+            (stats.request_body_count.to_string(), blue),
+        ])
+        .row(vec![
+            ("📋 Responses".to_string(), plain),
+            (stats.response_count.to_string(), blue),
+        ])
+        .row(vec![
+            ("🔗 Links".to_string(), plain),
+            (stats.link_count.to_string(), blue),
+        ])
+        .row(vec![
+            ("📞 Callbacks".to_string(), plain),
+            (stats.callback_count.to_string(), blue),
+        ])
+        .row(vec![
+            ("📝 Schemas".to_string(), plain),
+            (stats.schema_count.to_string(), blue),
+        ]);
+
+    Panel::new(blue)
+        .title("📊 OpenAPI Statistics", blue.bold())
+        .content(table.render())
+        .print();
     println!();
 }
 
@@ -233,27 +321,67 @@ fn display_results(result: &GeneratorResult, elapsed: std::time::Duration, cli: 
     let output = Path::new(&cli.output);
     let full_path = output
         .canonicalize()
-        .map(|p| p.display().to_string())
+        .map(|p| {
+            let s = p.display().to_string();
+            s.strip_prefix(r"\\?\").map(str::to_string).unwrap_or(s)
+        })
         .unwrap_or_else(|_| cli.output.clone());
 
-    println!("{}", "Generation Complete".green().bold());
-    println!("  Files Generated: {}", result.files.len().green());
-    println!("  Duration       : {}ms", elapsed.as_millis().green());
-    println!("  Output Location: {}", full_path.cyan());
-    println!();
+    let plain = Style::new();
+    let green = Style::new().green();
+    let cyan = Style::new().cyan();
 
-    if !result.files.is_empty() {
-        println!("{}", "Generated Files:".yellow().bold());
+    let table = Table::new(green)
+        .column("Metric", Align::Left)
+        .column("Value", Align::Left)
+        .row(vec![
+            ("📄 Files Generated".to_string(), plain),
+            (result.files.len().to_string(), green),
+        ])
+        .row(vec![
+            ("⏱️  Duration".to_string(), plain),
+            (format!("{}ms", elapsed.as_millis()), green),
+        ])
+        .row(vec![
+            ("📁 Output Location".to_string(), plain),
+            (full_path, cyan),
+        ]);
+
+    if result.files.is_empty() {
+        Panel::new(Style::new().yellow())
+            .title(
+                "⚠️  Generation Complete (No Files)",
+                Style::new().yellow().bold(),
+            )
+            .content(table.render())
+            .print();
+    } else {
+        Panel::new(green)
+            .title("✅ Generation Complete", green.bold())
+            .content(table.render())
+            .print();
+
+        println!(
+            "{}",
+            "📁 Generated Files:".style(Style::new().yellow().bold())
+        );
         for file in &result.files {
             let size = file.content.len();
             let size_text = if size < 1024 {
                 format!("{size} bytes")
-            } else {
+            } else if size < 1024 * 1024 {
                 format!("{:.1} KB", size as f64 / 1024.0)
+            } else {
+                format!("{:.1} MB", size as f64 / (1024.0 * 1024.0))
             };
-            println!("  {} ({})", file.filename.cyan(), size_text.dimmed());
+            println!(
+                "  📝 {} {}",
+                file.filename.style(cyan),
+                format!("({size_text})").style(Style::new().dimmed())
+            );
         }
     }
 
-    println!("\n{}", "Done!".green().bold());
+    println!();
+    println!("{}", "🎉 Done!".style(green.bold()));
 }
