@@ -80,7 +80,10 @@ fn generates_bash_for_v3_json() {
 
 #[test]
 fn generates_for_v3_with_different_headers() {
-    assert_scripts("tests/resources/V3/SwaggerPetstoreWithDifferentHeaders.json", false);
+    assert_scripts(
+        "tests/resources/V3/SwaggerPetstoreWithDifferentHeaders.json",
+        false,
+    );
 }
 
 #[test]
@@ -128,8 +131,14 @@ fn applies_base_url_override() {
 fn validation_accepts_valid_spec() {
     let result = validate("tests/resources/V3/SwaggerPetstore.json")
         .expect("valid spec should pass validation");
-    assert!(result.statistics.path_item_count > 0, "expected at least one path");
-    assert!(result.statistics.operation_count > 0, "expected at least one operation");
+    assert!(
+        result.statistics.path_item_count > 0,
+        "expected at least one path"
+    );
+    assert!(
+        result.statistics.operation_count > 0,
+        "expected at least one operation"
+    );
 }
 
 #[test]

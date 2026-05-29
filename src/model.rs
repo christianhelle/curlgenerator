@@ -259,12 +259,7 @@ fn parse_operation(
     // Only path/query/header/cookie parameters remain in the parameter list.
     let parameters = all
         .into_iter()
-        .filter(|p| {
-            matches!(
-                p.location.as_str(),
-                "path" | "query" | "header" | "cookie"
-            )
-        })
+        .filter(|p| matches!(p.location.as_str(), "path" | "query" | "header" | "cookie"))
         .map(|p| Parameter {
             name: p.name,
             location: p.location,
@@ -301,7 +296,7 @@ fn parse_parameters(root: &Value, value: Option<&Value>) -> Vec<ParsedParameter>
     array
         .iter()
         .map(|raw| deref(root, raw))
-        .filter_map(|param| {
+        .map(|param| {
             let name = string_field(param, "name").unwrap_or_default();
             let location = param
                 .get("in")
@@ -310,13 +305,13 @@ fn parse_parameters(root: &Value, value: Option<&Value>) -> Vec<ParsedParameter>
                 .to_string();
             let schema = param.get("schema").cloned();
             let is_file = param.get("type").and_then(Value::as_str) == Some("file");
-            Some(ParsedParameter {
+            ParsedParameter {
                 name,
                 location,
                 description: string_field(param, "description"),
                 schema,
                 is_file,
-            })
+            }
         })
         .collect()
 }
@@ -380,10 +375,7 @@ fn synthesize_v2_request_body(
         let mut properties = serde_json::Map::new();
         for param in &form_params {
             let _ = root; // root not needed here, kept for signature symmetry
-            properties.insert(
-                param.name.clone(),
-                serde_json::json!({ "type": "string" }),
-            );
+            properties.insert(param.name.clone(), serde_json::json!({ "type": "string" }));
         }
         let schema = serde_json::json!({
             "type": "object",
