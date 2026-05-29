@@ -6,40 +6,54 @@ on:
     paths-ignore:
       - "**/*"
       - "!.github/workflows/build.yml"
-      - "!src/**/*.csproj"
-      - "!src/**/*.cs"
+      - "!Cargo.toml"
+      - "!Cargo.lock"
+      - "!src/**/*.rs"
+      - "!tests/**/*"
     branches:
       - "*"
   pull_request:
     paths-ignore:
       - "**/*"
       - "!.github/workflows/build.yml"
-      - "!src/**/*.csproj"
-      - "!src/**/*.cs"
+      - "!Cargo.toml"
+      - "!Cargo.lock"
+      - "!src/**/*.rs"
+      - "!tests/**/*"
     branches:
       - "*"
 
 env:
-  VERSION: 0.4.1.${{ github.run_number }}
+  CARGO_TERM_COLOR: always
 
 jobs:
   build:
     name: 👌 Verify build
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: 🛒 Checkout repository
         uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
+
+      - name: 🦀 Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          dotnet-version: "8.0.x"
+          components: rustfmt, clippy
+
+      - name: 💾 Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🎨 Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: 📎 Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
       - name: 🛠️ Build
-        run: dotnet build -c Release CurlGenerator.sln -p:UseSourceLink=true -p:PackageVersion="${{ env.VERSION }}" -p:Version="${{ env.VERSION }}"
+        run: cargo build --release --verbose
+
       - name: 🧪 Test
-        run: dotnet test CurlGenerator.sln -c Release
-      - name: 🗳️ Upload
-        uses: actions/upload-artifact@v7
-        with:
-          name: Packages
-          path: |
-            **/*.nupkg
-            README.md
+        run: cargo test --release --verbose

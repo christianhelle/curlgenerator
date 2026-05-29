@@ -5,67 +5,44 @@ on:
   push:
     paths-ignore:
       - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
       - "!.github/workflows/smoke-tests.yml"
+      - "!Cargo.toml"
+      - "!Cargo.lock"
+      - "!src/**/*.rs"
+      - "!test/**/*"
     branches:
       - "*"
   pull_request:
-    paths-ignore:
-      - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
-      - "!.github/workflows/smoke-tests.yml"
     branches:
       - "*"
 
-jobs:
-  
-  file:
-    strategy:
-      matrix:
-        format: [json, yaml]
-        version: [v2.0, v3.0]
-        os: [ubuntu-latest]
-        openapi: [
-          "api-with-examples",
-          "callback-example",
-          "link-example",
-          "uber",
-          "uspto",
-          "petstore",
-          "petstore-expanded",
-          "petstore-minimal",
-          "petstore-simple",
-          "petstore-with-external-docs",
-          "ingram-micro",
-          "hubspot-events",
-          "hubspot-webhooks"
-        ]
-    
-    uses: ./.github/workflows/template.yml
-    with:
-      format: ${{ matrix.format }}
-      version: ${{ matrix.version }}
-      openapi: ${{ matrix.openapi }}
-      os: ${{ matrix.os }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
-  
-  url:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        openapi_url: [
-          "https://petstore3.swagger.io/api/v3/openapi.json", 
-          "https://petstore3.swagger.io/api/v3/openapi.yaml"
-        ]
+env:
+  CARGO_TERM_COLOR: always
 
-    uses: ./.github/workflows/template-url.yml
-    with:
-      os: ${{ matrix.os }}
-      openapi: ${{ matrix.openapi_url }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
+jobs:
+  cli:
+    name: 🧪 ${{ matrix.openapi }} (${{ matrix.version }}, ${{ matrix.format }}) ${{ matrix.shell }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        version: ["v2.0", "v3.0", "v3.1"]
+        format: [json, yaml]
+        shell: ["", "--bash"]
+        openapi: ["petstore", "petstore-expanded"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
+
+      - name: 🦀 Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 💾 Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🛠️ Build
+        run: cargo build --release
+
+      - name: 🚀 Generate scripts
+        run: cargo run --release -- "test/OpenAPI/${{ matrix.version }}/${{ matrix.openapi }}.${{ matrix.format }}" --output ./out ${{ matrix.shell }} --skip-validation --no-logging
