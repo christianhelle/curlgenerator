@@ -28,8 +28,14 @@ function Generate
     $args = ""
   )
 
-  Write-Host "CurlGenerator ./openapi.$format --output ./Generated/$outputPath --no-logging $args"
-  $process = Start-Process "./bin/CurlGenerator" `
+  $binary = "./target/release/curlgenerator.exe"
+  if (-not (Test-Path $binary))
+  {
+    $binary = "./target/debug/curlgenerator.exe"
+  }
+
+  Write-Host "CurlGenerator $binary ./openapi.$format --output ./Generated/$output --no-logging $args"
+  $process = Start-Process $binary `
     -Args "./openapi.$format --output ./Generated/$output --no-logging $args" `
     -NoNewWindow `
     -PassThru
@@ -40,8 +46,8 @@ function Generate
     throw "CurlGenerator failed"
   }
 
-  Write-Host "CurlGenerator ./openapi.$format --output ./Generated/$outputPath --output-type OneFile --no-logging $args"
-  $process = Start-Process "./bin/CurlGenerator" `
+  Write-Host "CurlGenerator $binary ./openapi.$format --output ./Generated/$output --output-type OneFile --no-logging $args"
+  $process = Start-Process $binary `
     -Args "./openapi.$format --output ./Generated/$output --output-type OneFile --no-logging $args" `
     -NoNewWindow `
     -PassThru
@@ -85,8 +91,14 @@ function RunTests
   )
     
   Get-ChildItem '*.http' -Recurse | ForEach-Object { Remove-Item -Path $_.FullName }
-  Write-Host "dotnet publish ../src/CurlGenerator/CurlGenerator.csproj -p:TreatWarningsAsErrors=true -p:PublishReadyToRun=true -o bin"
-  Start-Process "dotnet" -Args "publish ../src/CurlGenerator/CurlGenerator.csproj -p:TreatWarningsAsErrors=true -p:PublishReadyToRun=true -o bin" -NoNewWindow -PassThru | Wait-Process
+  
+  $cargoBuild = "cargo build --release"
+  Write-Host $cargoBuild
+  $process = Start-Process "cargo" -Args "build --release" -NoNewWindow -PassThru | Wait-Process
+  if ($process.ExitCode -ne 0)
+  {
+    throw "cargo build failed"
+  }
     
   "v2.0", "v3.0", "v3.1" | ForEach-Object {
     $version = $_
@@ -114,5 +126,5 @@ function RunTests
   }
 }
 
-Measure-Command { RunTests -Method "dotnet-run" -Parallel $Parallel }
+Measure-Command { RunTests -Method "CurlGenerator" -Parallel $Parallel }
 Write-Host "`r`n"
