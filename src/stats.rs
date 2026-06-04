@@ -13,9 +13,10 @@ pub struct OpenApiStats {
 }
 
 pub fn compute_stats(doc: &OpenAPI) -> OpenApiStats {
-    let mut stats = OpenApiStats::default();
-
-    stats.path_item_count = doc.paths.paths.len();
+    let mut stats = OpenApiStats {
+        path_item_count: doc.paths.paths.len(),
+        ..Default::default()
+    };
 
     for path_item_or_ref in doc.paths.paths.values() {
         if let openapiv3::ReferenceOr::Item(ref path_item) = path_item_or_ref {

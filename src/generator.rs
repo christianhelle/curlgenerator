@@ -216,12 +216,10 @@ fn generate_bash_script(
             } else if content_type == "application/octet-stream" {
                 code.push_str("  --data-binary '@filename'\n");
             } else {
-                if let Some(ref schema) = media_type.schema {
-                    if let openapiv3::ReferenceOr::Item(ref s) = schema {
-                        let json = generate_sample_json_from_schema(s);
-                        code.push_str(&format!("  -d '{}'", json));
-                        code.push('\n');
-                    }
+                if let Some(openapiv3::ReferenceOr::Item(ref s)) = &media_type.schema {
+                    let json = generate_sample_json_from_schema(s);
+                    code.push_str(&format!("  -d '{}'", json));
+                    code.push('\n');
                 }
             }
         }
@@ -349,34 +347,22 @@ fn generate_sample_json_from_schema(schema: &openapiv3::Schema) -> String {
             openapiv3::Type::Boolean(_) => "false".to_string(),
         },
         SchemaKind::OneOf { one_of, .. } => {
-            if let Some(first) = one_of.first() {
-                if let openapiv3::ReferenceOr::Item(ref s) = first {
-                    generate_sample_json_from_schema(s)
-                } else {
-                    "{}".to_string()
-                }
+            if let Some(openapiv3::ReferenceOr::Item(ref s)) = one_of.first() {
+                generate_sample_json_from_schema(s)
             } else {
                 "{}".to_string()
             }
         }
         SchemaKind::AllOf { all_of, .. } => {
-            if let Some(first) = all_of.first() {
-                if let openapiv3::ReferenceOr::Item(ref s) = first {
-                    generate_sample_json_from_schema(s)
-                } else {
-                    "{}".to_string()
-                }
+            if let Some(openapiv3::ReferenceOr::Item(ref s)) = all_of.first() {
+                generate_sample_json_from_schema(s)
             } else {
                 "{}".to_string()
             }
         }
         SchemaKind::AnyOf { any_of, .. } => {
-            if let Some(first) = any_of.first() {
-                if let openapiv3::ReferenceOr::Item(ref s) = first {
-                    generate_sample_json_from_schema(s)
-                } else {
-                    "{}".to_string()
-                }
+            if let Some(openapiv3::ReferenceOr::Item(ref s)) = any_of.first() {
+                generate_sample_json_from_schema(s)
             } else {
                 "{}".to_string()
             }
