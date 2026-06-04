@@ -9,6 +9,7 @@ pub enum ValidationError {
     ValidationFailed {
         source: OpenApiValidationFailed,
     },
+    #[allow(dead_code)]
     #[error("Unsupported OpenAPI spec version")]
     UnsupportedVersion,
 }

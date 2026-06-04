@@ -11,6 +11,7 @@ pub fn convert_kebab_to_pascal(s: &str) -> String {
         .collect()
 }
 
+#[allow(dead_code)]
 pub fn convert_kebab_to_snake(s: &str) -> String {
     s.replace('-', "_").to_lowercase()
 }
@@ -33,7 +34,7 @@ pub fn convert_route_to_camel(s: &str) -> String {
 
 pub fn convert_spaces_to_pascal(s: &str) -> String {
     s.split(' ')
-        .map(|part| capitalize_first(part))
+        .map(capitalize_first)
         .collect()
 }
 
@@ -47,6 +48,12 @@ pub fn prefix(s: &str, p: &str) -> String {
 
 #[derive(Debug, Clone)]
 pub struct OperationNameGenerator;
+
+impl Default for OperationNameGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl OperationNameGenerator {
     pub fn new() -> Self {

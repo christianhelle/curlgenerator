@@ -13,7 +13,7 @@ pub async fn generate(settings: &GeneratorSettings) -> Result<GeneratorResult, S
 
     let mut files = Vec::new();
 
-    let base_url = determine_base_url(&settings, &doc);
+    let base_url = determine_base_url(settings, &doc);
 
     for (path, path_item_or_ref) in &doc.paths.paths {
         let path_item = match path_item_or_ref {
@@ -48,9 +48,9 @@ pub async fn generate(settings: &GeneratorSettings) -> Result<GeneratorResult, S
             };
 
             let content = if settings.generate_bash {
-                generate_bash_script(&verb, path, op, &settings, &base_url)
+                generate_bash_script(&verb, path, op, settings, &base_url)
             } else {
-                generate_powershell_script(&verb, path, op, &settings, &base_url)
+                generate_powershell_script(&verb, path, op, settings, &base_url)
             };
 
             files.push(ScriptFile::new(filename, content));
@@ -270,7 +270,7 @@ fn append_parameters_powershell(
         if let Some(ref description) = data.description {
             code.push_str(&format!("                          <# {} #>\n", description));
         }
-        code.push_str(&format!("                          [Parameter(Mandatory=$True)]\n"));
+        code.push_str("                          [Parameter(Mandatory=$True)]\n");
         code.push_str(&format!("                          [String] ${},\n", name));
         code.push('\n');
         param_map.insert(data.name.clone(), name);
@@ -347,7 +347,6 @@ fn generate_sample_json_from_schema(schema: &openapiv3::Schema) -> String {
             openapiv3::Type::Integer(_) => "0".to_string(),
             openapiv3::Type::Number(_) => "0.0".to_string(),
             openapiv3::Type::Boolean(_) => "false".to_string(),
-            _ => "\"value\"".to_string(),
         },
         SchemaKind::OneOf { one_of, .. } => {
             if let Some(first) = one_of.first() {
@@ -384,7 +383,7 @@ fn generate_sample_json_from_schema(schema: &openapiv3::Schema) -> String {
         }
         SchemaKind::Not { not } => {
             if let openapiv3::ReferenceOr::Item(ref s) = **not {
-                generate_sample_json_from_schema(&s)
+                generate_sample_json_from_schema(s)
             } else {
                 "{}".to_string()
             }
