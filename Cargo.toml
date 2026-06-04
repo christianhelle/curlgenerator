@@ -1,0 +1,25 @@
+[package]
+name = "curlgenerator"
+version = "1.0.0"
+edition = "2021"
+description = "Generate cURL request scripts from OpenAPI specifications"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["stream", "gzip", "deflate"] }
+openapiv3 = "2"
+serde = { version = "1", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
+thiserror = "2"
+console = "0.16"
+unicode-width = "0.2"
+tokio = { version = "1", features = ["full"] }
+
+[profile.release]
+opt-level = 2
+strip = true
+lto = true
