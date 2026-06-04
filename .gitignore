@@ -400,3 +400,8 @@ FodyWeavers.xsd
 test/Generated/
 test/openapi.json
 test/openapi.yaml
+
+
+# Added by cargo
+
+/target
