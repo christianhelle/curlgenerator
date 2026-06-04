@@ -30,11 +30,9 @@ pub fn compute_stats(doc: &OpenAPI) -> OpenApiStats {
                 path_item.trace.as_ref(),
             ];
 
-            for op_or_ref in ops {
-                if let Some(op) = op_or_ref {
-                    stats.operation_count += 1;
-                    collect_from_operation(op, &mut stats);
-                }
+            for op in ops.into_iter().flatten() {
+                stats.operation_count += 1;
+                collect_from_operation(op, &mut stats);
             }
         }
     }

@@ -12,7 +12,7 @@ use models::GeneratorSettings;
 use validation::validate;
 
 use clap::Parser;
-use console::{style, Emoji};
+use console::style;
 use std::path::Path;
 use std::time::Instant;
 
