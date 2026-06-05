@@ -102,7 +102,12 @@ function RunTests
           {
             Generate -format $format -output $_/$version/$format -args "--skip-validation"
             Generate -format $format -output $_/$version/$format -args "--skip-validation --bash"
-          } else
+          }
+          elseif ($version -eq "v2.0")
+          {
+            Write-Host "Skipping $filename (Swagger 2.0 not supported by Rust parser)"
+          }
+          else
           {
             Generate -format $format -output $_/$version/$format
             Generate -format $format -output $_/$version/$format -args "--bash"
