@@ -45,18 +45,6 @@ function Generate
   {
     throw "CurlGenerator failed"
   }
-
-  Write-Host "CurlGenerator $binary ./openapi.$format --output ./Generated/$output --output-type OneFile --no-logging $args"
-  $process = Start-Process $binary `
-    -Args "./openapi.$format --output ./Generated/$output --output-type OneFile --no-logging $args" `
-    -NoNewWindow `
-    -PassThru
-
-  $process | Wait-Process
-  if ($process.ExitCode -ne 0)
-  {
-    throw "CurlGenerator failed"
-  }
 }
 
 function RunTests
