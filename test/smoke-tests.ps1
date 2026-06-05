@@ -80,10 +80,9 @@ function RunTests
     
   Get-ChildItem '*.http' -Recurse | ForEach-Object { Remove-Item -Path $_.FullName }
   
-  $cargoBuild = "cargo build --release"
-  Write-Host $cargoBuild
-  $process = Start-Process "cargo" -Args "build --release" -NoNewWindow -PassThru | Wait-Process
-  if ($process.ExitCode -ne 0)
+  Write-Host "cargo build --release"
+  $result = Invoke-Expression "cargo build --release"
+  if ($LASTEXITCODE -ne 0)
   {
     throw "cargo build failed"
   }
