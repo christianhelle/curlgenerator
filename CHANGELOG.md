@@ -13,6 +13,7 @@
 
 **Merged pull requests:**
 
+- Bump Microsoft.SourceLink.GitHub from 10.0.300 to 10.0.400 [\#336](https://github.com/christianhelle/curlgenerator/pull/336) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump Microsoft.OpenApi.YamlReader from 3.5.1 to 3.5.4 [\#325](https://github.com/christianhelle/curlgenerator/pull/325) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Update dependency Microsoft.NET.Test.Sdk to 18.6.0 [\#323](https://github.com/christianhelle/curlgenerator/pull/323) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency coverlet.collector to 10.0.1 [\#322](https://github.com/christianhelle/curlgenerator/pull/322) ([renovate[bot]](https://github.com/apps/renovate))
