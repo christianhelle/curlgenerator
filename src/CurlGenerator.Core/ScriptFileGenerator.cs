@@ -384,23 +384,24 @@ public static class ScriptFileGenerator
     {
         var code = new StringBuilder();
         AppendSummary(verb, kv, operation, code);
-        var parameterNameMap = AppendParameters(verb, kv, operation, code);
+        AppendParameters(verb, kv, operation, code, out var queryParameterNameMap);
 
         var url = kv.Key.Replace("{", "$").Replace("}", null);
         if (!settings.GenerateBashScripts)
         {
-            if (parameterNameMap.Count > 0)
+            // Only add query parameters to the URL query string (not path parameters)
+            if (queryParameterNameMap.Count > 0)
             {
                 url += "?";
             }
 
-            foreach (var parameterName in parameterNameMap)
+            foreach (var parameterName in queryParameterNameMap)
             {
                 var value = parameterName.Value.ConvertKebabCaseToSnakeCase();
                 url += $"{parameterName.Key}=${value}&";
             }
 
-            if (parameterNameMap.Count > 0)
+            if (queryParameterNameMap.Count > 0)
             {
                 url = url.Remove(url.Length - 1);
             }
@@ -434,8 +435,11 @@ public static class ScriptFileGenerator
         string verb,
         KeyValuePair<string, IOpenApiPathItem> kv,
         OpenApiOperation operation,
-        StringBuilder code)
+        StringBuilder code,
+        out Dictionary<string, string> queryParameterNameMap)
     {
+        queryParameterNameMap = new Dictionary<string, string>();
+
         if (operation.Parameters is null)
         {
             return [];
@@ -454,24 +458,32 @@ public static class ScriptFileGenerator
         code.AppendLine("param(");
 
         var parameterNameMap = new Dictionary<string, string>();
-        foreach (var parameter in parameters)
+        for (var i = 0; i < parameters.Length; i++)
         {
+            var parameter = parameters[i];
             var name = parameter.Name!.ConvertKebabCaseToSnakeCase();
+            var isLast = i == parameters.Length - 1;
+            var suffix = isLast ? "" : ",";
             code.AppendLine(
                 parameter.Description is null
                     ? $"""
                           [Parameter(Mandatory=$True)]
-                          [String] ${name},
+                          [String] ${name}{suffix}
                        """
                     : $"""
                           <# {parameter.Description} #>
                           [Parameter(Mandatory=$True)]
-                          [String] ${name},
+                          [String] ${name}{suffix}
                        """);
             code.AppendLine();
             parameterNameMap[parameter.Name!] = name;
+
+            // Track query parameters separately for URL building
+            if (parameter.In == ParameterLocation.Query)
+            {
+                queryParameterNameMap[parameter.Name!] = name;
+            }
         }
-        code.Remove(code.Length - 5, 3);
 
         code.AppendLine(")");
         code.AppendLine();
