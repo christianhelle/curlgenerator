@@ -7,6 +7,7 @@
 #![deny(missing_docs)]
 
 mod base_url;
+pub mod generator;
 mod model;
 pub mod normalized;
 pub mod openapi;
