@@ -4,5 +4,6 @@
 
 pub mod args;
 pub mod help;
+pub mod run;
 pub mod ui;
 pub mod validation;
