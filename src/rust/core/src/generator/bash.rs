@@ -440,7 +440,9 @@ mod tests {
             },
         );
 
-        assert!(script.contains("  -d '{\n  \"name\": \"string\"\n}'"));
+        assert!(script.contains(&format!(
+            "  -d '{{{NEWLINE}  \"name\": \"string\"{NEWLINE}}}'"
+        )));
     }
 
     #[test]

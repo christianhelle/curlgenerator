@@ -3,7 +3,10 @@
 use chrono::Local;
 use serde_json::{Map, Value};
 
-use crate::normalized::{Schema, SchemaType};
+use crate::{
+    generator::NEWLINE,
+    normalized::{Schema, SchemaType},
+};
 
 /// Renders a sample JSON payload for a schema, formatted the way the generated scripts embed it.
 ///
@@ -19,7 +22,9 @@ pub fn sample_json(schema: Option<&Schema>) -> String {
         return "{}".to_string();
     };
 
-    serde_json::to_string_pretty(&sample_value(schema)).unwrap_or_else(|_| "{}".to_string())
+    serde_json::to_string_pretty(&sample_value(schema))
+        .map(|payload| payload.replace('\n', NEWLINE))
+        .unwrap_or_else(|_| "{}".to_string())
 }
 
 /// Builds the sample value a schema describes.
@@ -148,7 +153,7 @@ mod tests {
 
         assert_eq!(
             sample_json(Some(&schema)),
-            "{\n  \"id\": 10,\n  \"name\": \"doggie\"\n}"
+            format!("{{{NEWLINE}  \"id\": 10,{NEWLINE}  \"name\": \"doggie\"{NEWLINE}}}")
         );
     }
 
@@ -160,6 +165,9 @@ mod tests {
             ..Schema::default()
         };
 
-        assert_eq!(sample_json(Some(&schema)), "{\n  \"name\": \"string\"\n}");
+        assert_eq!(
+            sample_json(Some(&schema)),
+            format!("{{{NEWLINE}  \"name\": \"string\"{NEWLINE}}}")
+        );
     }
 }
