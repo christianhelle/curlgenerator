@@ -185,7 +185,7 @@ impl Table {
 ///
 /// The optional header is drawn inside the top border, the way Spectre.Console renders it.
 pub fn panel(
-    header: Option<&str>,
+    header: Option<(&str, &[&'static str])>,
     content: &[String],
     inner_width: usize,
     border: &[&'static str],
@@ -193,16 +193,20 @@ pub fn panel(
 ) -> Vec<String> {
     let width = inner_width + 2;
     let top = match header {
-        Some(header) => {
-            format!(
-                "┌─{header}{}┐",
-                "─".repeat(width.saturating_sub(1 + header.width()))
+        Some((text, header_style)) => format!(
+            "{}{}{}",
+            style("┌─", border, colors),
+            style(text, header_style, colors),
+            style(
+                &format!("{}┐", "─".repeat(width.saturating_sub(1 + text.width()))),
+                border,
+                colors
             )
-        }
-        None => format!("┌{}┐", "─".repeat(width)),
+        ),
+        None => style(&format!("┌{}┐", "─".repeat(width)), border, colors),
     };
 
-    let mut lines = vec![style(&top, border, colors)];
+    let mut lines = vec![top];
     let separator = style("│", border, colors);
 
     for line in content {
@@ -350,7 +354,13 @@ mod tests {
 
     #[test]
     fn draws_a_panel_with_a_header_inside_the_top_border() {
-        let lines = panel(Some("📊 Stats"), &["hello".to_string()], 12, &["34"], false);
+        let lines = panel(
+            Some(("📊 Stats", &["1", "34"][..])),
+            &["hello".to_string()],
+            12,
+            &["34"],
+            false,
+        );
 
         assert_eq!(
             lines,
