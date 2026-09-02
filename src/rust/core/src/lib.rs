@@ -9,9 +9,12 @@
 pub mod normalized;
 pub mod openapi;
 
+mod operation_name;
+
 mod string_extensions;
 mod support_information;
 
+pub use operation_name::{has_duplicate_operation_names, operation_name};
 pub use string_extensions::{
     capitalize_first_character, convert_kebab_case_to_pascal_case,
     convert_kebab_case_to_snake_case, convert_route_to_camel_case, convert_spaces_to_pascal_case,
