@@ -456,6 +456,7 @@ dependencies = [
  "curlgenerator-core",
  "exceptionless",
  "pollster",
+ "regex",
  "serde_json",
  "tokio",
  "unicode-width",
