@@ -9,11 +9,23 @@
 
 Generate cURL requests from OpenAPI specifications v2.0 and v3.0
 
+The CLI was rewritten in Rust for performance. Over the 41 specifications in `test/OpenAPI`, in
+both output modes, the Rust CLI runs the whole corpus roughly **70x faster** than the legacy .NET
+tool. The .NET implementation is kept under `src/dotnet`; the Rust implementation lives under
+`src/rust`. See [PORTING.md](PORTING.md) for how output parity was verified and where the two
+deliberately differ.
+
 ## Installation
 
-This is tool is distrubuted as a .NET Tool on NuGet.org
+### Cargo
 
-To install, simply use the following command
+```bash
+cargo install curlgenerator
+```
+
+### .NET tool (legacy)
+
+The original implementation is still distributed as a .NET Tool on NuGet.org
 
 ```bash
 dotnet tool install --global curlgenerator
@@ -29,7 +41,6 @@ EXAMPLES:
     curlgenerator ./openapi.json
     curlgenerator ./openapi.json --output ./
     curlgenerator ./openapi.json --bash
-    curlgenerator ./openapi.json --output-type onefile
     curlgenerator https://petstore.swagger.io/v2/swagger.json
     curlgenerator https://petstore3.swagger.io/api/v3/openapi.json --base-url https://petstore3.swagger.io
     curlgenerator ./openapi.json --authorization-header Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
@@ -39,18 +50,28 @@ ARGUMENTS:
     [URL or input file]    URL or file path to OpenAPI Specification file
 
 OPTIONS:
-                                           DEFAULT                                                                                                                           
-    -h, --help                                                 Prints help information                                                                                       
-    -v, --version                                              Prints version information                                                                                    
-    -o, --output <OUTPUT>                  ./                  Output directory                                                                                              
-        --bash                                                 Generate Bash scripts                                                                                         
-        --no-logging                                           Don't log errors or collect telemetry                                                                         
-        --skip-validation                                      Skip validation of OpenAPI Specification file                                                                 
-        --authorization-header <HEADER>                        Authorization header to use for all requests                                                                  
-        --content-type <CONTENT-TYPE>      application/json    Default Content-Type header to use for all requests                                                           
-        --base-url <BASE-URL>                                  Default Base URL to use for all requests. Use this if the OpenAPI spec doesn't explicitly specify a server URL
-        --azure-scope <SCOPE>                                  Azure Entra ID Scope to use for retrieving Access Token for Authorization header                              
-        --azure-tenant-id <TENANT-ID>                          Azure Entra ID Tenant ID to use for retrieving Access Token for Authorization header                          
+                                           DEFAULT
+    -h, --help                                                 Prints help information
+    -v, --version                                              Prints version information
+    -o, --output <OUTPUT>                  ./                  Output directory
+        --bash                                                 Generate Bash scripts
+        --no-logging                                           Don't log errors or collect telemetry
+        --skip-validation                                      Skip validation of OpenAPI
+                                                               Specification file
+        --authorization-header <HEADER>                        Authorization header to use for all
+                                                               requests
+        --content-type <CONTENT-TYPE>      application/json    Default Content-Type header to use
+                                                               for all requests
+        --base-url <BASE-URL>                                  Default Base URL to use for all
+                                                               requests. Use this if the OpenAPI
+                                                               spec doesn't explicitly specify a
+                                                               server URL
+        --azure-scope <SCOPE>                                  Azure Entra ID Scope to use for
+                                                               retrieving Access Token for
+                                                               Authorization header
+        --azure-tenant-id <TENANT-ID>                          Azure Entra ID Tenant ID to use for
+                                                               retrieving Access Token for
+                                                               Authorization header
 ```
 
 Running the following:
@@ -62,21 +83,73 @@ curlgenerator https://petstore.swagger.io/v2/swagger.json
 Outputs the following:
 
 ```sh
-cURL Request Generator v0.1.1
-Support key: mbmbqvd
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔧 cURL Request Generator v0.4.1                                             │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-OpenAPI statistics:
- - Path Items: 14
- - Operations: 20
- - Parameters: 14
- - Request Bodies: 9
- - Responses: 20
- - Links: 0
- - Callbacks: 0
- - Schemas: 67
+⚠️  Unavailable when logging is disabled
 
-Files: 20
-Duration: 00:00:02.3089450
+┌─📋 Configuration────────────────────────────────────────────────────┐
+│ ┌───────────────────┬─────────────────────────────────────────────┐ │
+│ │ Setting           │ Value                                       │ │
+│ ├───────────────────┼─────────────────────────────────────────────┤ │
+│ │ 📁 OpenAPI Source │ https://petstore.swagger.io/v2/swagger.json │ │
+│ │ 📂 Output Folder  │ ./                                          │ │
+│ │ 🌐 Content Type   │ application/json                            │ │
+│ └───────────────────┴─────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+┌─📊 OpenAPI Statistics─────────┐
+│ ┌───────────────────┬───────┐ │
+│ │ Component         │ Count │ │
+│ ├───────────────────┼───────┤ │
+│ │ 📝 Path Items     │    14 │ │
+│ │ ⚙️  Operations     │    20 │ │
+│ │ 📝 Parameters     │    14 │ │
+│ │ 📦 Request Bodies │     9 │ │
+│ │ 📋 Responses      │    20 │ │
+│ │ 🔗 Links          │     0 │ │
+│ │ 📞 Callbacks      │     0 │ │
+│ │ 📝 Schemas        │    67 │ │
+│ └───────────────────┴───────┘ │
+└───────────────────────────────┘
+
+
+┌─✅ Generation Complete───────────────────────────────────────────────────────┐
+│ ┌────────────────────┬─────────────────────────────────────────────────────┐ │
+│ │ Metric             │ Value                                               │ │
+│ ├────────────────────┼─────────────────────────────────────────────────────┤ │
+│ │ 📄 Files Generated │ 20                                                  │ │
+│ │ ⏱️  Duration        │ 606ms                                               │ │
+│ │ 📁 Output Location │ ./                                                  │ │
+│ └────────────────────┴─────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+📁 Generated Files:
+  📝 PostUploadFile.ps1 (336 bytes)
+  📝 PostAddPet.ps1 (438 bytes)
+  📝 PutUpdatePet.ps1 (432 bytes)
+  📝 GetFindPetsByStatus.ps1 (444 bytes)
+  📝 GetFindPetsByTags.ps1 (424 bytes)
+  📝 GetPetById.ps1 (345 bytes)
+  📝 PostUpdatePetWithForm.ps1 (352 bytes)
+  📝 DeletePet.ps1 (310 bytes)
+  📝 GetInventory.ps1 (289 bytes)
+  📝 PostPlaceOrder.ps1 (355 bytes)
+  📝 GetOrderById.ps1 (477 bytes)
+  📝 DeleteOrder.ps1 (510 bytes)
+  📝 PostCreateUsersWithListInput.ps1 (465 bytes)
+  📝 GetUserByName.ps1 (371 bytes)
+  📝 PutUpdateUser.ps1 (582 bytes)
+  📝 DeleteUser.ps1 (403 bytes)
+  📝 GetLoginUser.ps1 (456 bytes)
+  📝 GetLogoutUser.ps1 (227 bytes)
+  📝 PostCreateUsersWithArrayInput.ps1 (467 bytes)
+  📝 PostCreateUser.ps1 (437 bytes)
+
+🎉 Done!
 ```
 
 Which will produce the following files:
@@ -168,7 +241,7 @@ az account get-access-token --scope [Some Application ID URI]/.default `
 }
 ```
 
-You can also use the `--azure-scope` and `azure-tenant-id` arguments internally use `DefaultAzureCredentials` from the `Microsoft.Extensions.Azure` NuGet package to retrieve an access token for the specified `scope`.
+You can also use the `--azure-scope` and `--azure-tenant-id` arguments, which retrieve an access token for the specified `scope` using the Azure CLI credentials and the local developer tooling credentials.
 
 ```powershell
 curlgenerator `
@@ -176,6 +249,21 @@ curlgenerator `
   --azure-scope [Some Application ID URI]/.default `
   --base-url https://api.example.com `
   --output ./HttpFiles 
+```
+
+## Building from source
+
+```bash
+make build   # cargo build --workspace, then the legacy .NET solution
+make test    # cargo test --workspace, then dotnet test
+make lint    # cargo fmt --check and cargo clippy -D warnings
+```
+
+The Rust workspace on its own:
+
+```bash
+cargo build --workspace
+cargo test --workspace
 ```
 
 #
