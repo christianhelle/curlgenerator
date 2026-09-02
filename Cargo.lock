@@ -466,6 +466,7 @@ name = "curlgenerator-core"
 version = "0.4.1"
 dependencies = [
  "base64",
+ "chrono",
  "hostname",
  "regex",
  "reqwest 0.12.28",
