@@ -6,6 +6,7 @@
 
 #![deny(missing_docs)]
 
+pub mod normalized;
 pub mod openapi;
 
 mod string_extensions;
