@@ -15,6 +15,8 @@ use curlgenerator_core::{
 
 use crate::{
     args::Args,
+    auth::{self, AzureAuth},
+    telemetry::Telemetry,
     ui::render::{self, ConfigurationView, color},
     validation,
 };
@@ -40,6 +42,20 @@ impl Output {
 
 /// Runs the generator and returns the process exit code.
 pub fn run(args: &Args, output: &Output, writer: &mut impl Write) -> std::io::Result<i32> {
+    let mut telemetry = Telemetry::new(args.no_logging);
+    let code = execute(args, output, writer, &mut telemetry)?;
+
+    pollster::block_on(telemetry.flush());
+
+    Ok(code)
+}
+
+fn execute(
+    args: &Args,
+    output: &Output,
+    writer: &mut impl Write,
+    telemetry: &mut Telemetry,
+) -> std::io::Result<i32> {
     let started = Instant::now();
     let open_api_path = args.open_api_path.clone().unwrap_or_default();
 
@@ -71,6 +87,7 @@ pub fn run(args: &Args, output: &Output, writer: &mut impl Write) -> std::io::Re
                 "{}",
                 render::error(&error.to_string(), output.colors)
             )?;
+            telemetry.record_error(&error.to_string(), args);
             return Ok(1);
         }
     };
@@ -97,6 +114,7 @@ pub fn run(args: &Args, output: &Output, writer: &mut impl Write) -> std::io::Re
                 "{}",
                 render::unsupported_version_tips(output.colors)
             )?;
+            telemetry.record_error("OpenAPI validation failed", args);
             return Ok(1);
         }
 
@@ -107,13 +125,17 @@ pub fn run(args: &Args, output: &Output, writer: &mut impl Write) -> std::io::Re
         )?;
     }
 
+    let authorization_header = resolve_authorization_header(args, output, writer)?;
+
     let settings = GeneratorSettings {
         open_api_path: open_api_path.clone(),
-        authorization_header: args.authorization_header.clone(),
+        authorization_header,
         content_type: args.content_type.clone(),
         base_url: args.base_url.clone(),
         generate_bash_scripts: args.bash,
     };
+
+    telemetry.record_feature_usage(args);
 
     let result = generate_from_document(&settings, &normalize(&document));
     write_files(&result.files, &args.output)?;
@@ -145,6 +167,36 @@ pub fn write_files(files: &[ScriptFile], output: &str) -> std::io::Result<()> {
     }
 
     Ok(())
+}
+
+/// Returns the authorization header to apply, requesting an Azure Entra ID token when configured.
+fn resolve_authorization_header(
+    args: &Args,
+    output: &Output,
+    writer: &mut impl Write,
+) -> std::io::Result<Option<String>> {
+    if !auth::wants_azure_token(
+        args.authorization_header.as_deref(),
+        args.azure_scope.as_deref(),
+        args.azure_tenant_id.as_deref(),
+    ) {
+        return Ok(args.authorization_header.clone());
+    }
+
+    write!(writer, "{}", render::azure_started(output.colors))?;
+
+    let scope = args.azure_scope.clone().unwrap_or_default();
+    match pollster::block_on(auth::acquire_token(&scope, args.azure_tenant_id.as_deref())) {
+        AzureAuth::Acquired(header) => {
+            write!(writer, "{}", render::azure_succeeded(output.colors))?;
+            Ok(Some(header))
+        }
+        AzureAuth::Failed(reason) => {
+            write!(writer, "{}", render::error(&reason, output.colors))?;
+            Ok(args.authorization_header.clone())
+        }
+        AzureAuth::NotRequested => Ok(args.authorization_header.clone()),
+    }
 }
 
 fn configuration_view<'a>(args: &'a Args, open_api_path: &'a str) -> ConfigurationView<'a> {
