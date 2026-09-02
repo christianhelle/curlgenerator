@@ -6,6 +6,7 @@
 
 #![deny(missing_docs)]
 
+mod base_url;
 mod model;
 pub mod normalized;
 pub mod openapi;
@@ -15,6 +16,7 @@ mod operation_name;
 mod string_extensions;
 mod support_information;
 
+pub use base_url::base_url;
 pub use model::{DEFAULT_CONTENT_TYPE, GeneratorResult, GeneratorSettings, ScriptFile};
 pub use operation_name::{has_duplicate_operation_names, operation_name};
 pub use string_extensions::{
