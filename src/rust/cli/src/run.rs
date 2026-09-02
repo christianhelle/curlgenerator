@@ -211,14 +211,21 @@ fn configuration_view<'a>(args: &'a Args, open_api_path: &'a str) -> Configurati
     }
 }
 
+/// Returns the absolute output location, keeping a trailing separator when the caller wrote one.
 fn full_path(output: &str) -> String {
-    fs::canonicalize(output)
+    let absolute = fs::canonicalize(output)
         .map(|path| {
             path.to_string_lossy()
                 .trim_start_matches(r"\\?\")
                 .to_string()
         })
-        .unwrap_or_else(|_| PathBuf::from(output).to_string_lossy().to_string())
+        .unwrap_or_else(|_| PathBuf::from(output).to_string_lossy().to_string());
+
+    if output.ends_with(['/', '\\']) && !absolute.ends_with(std::path::MAIN_SEPARATOR) {
+        return format!("{absolute}{}", std::path::MAIN_SEPARATOR);
+    }
+
+    absolute
 }
 
 #[cfg(test)]

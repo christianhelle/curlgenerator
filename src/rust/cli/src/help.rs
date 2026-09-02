@@ -4,7 +4,7 @@ use unicode_width::UnicodeWidthStr;
 
 const INDENT: &str = "    ";
 const COLUMN_PADDING: usize = 4;
-const FALLBACK_WIDTH: usize = 100;
+const FALLBACK_WIDTH: usize = 80;
 
 const EXAMPLES: [&str; 7] = [
     "curlgenerator ./openapi.json",
@@ -175,11 +175,20 @@ pub fn render(terminal_width: usize) -> String {
     help
 }
 
-/// Returns the terminal width, falling back to a fixed width when it is unknown.
+/// Returns the terminal width.
+///
+/// An explicit `COLUMNS` wins, then the detected terminal size, and finally the same 80 column
+/// fallback Spectre.Console uses when the output is redirected.
 pub fn terminal_width() -> usize {
-    console::Term::stdout()
-        .size_checked()
-        .map(|(_, columns)| columns as usize)
+    std::env::var("COLUMNS")
+        .ok()
+        .and_then(|columns| columns.parse::<usize>().ok())
+        .filter(|columns| *columns >= 20)
+        .or_else(|| {
+            console::Term::stdout()
+                .size_checked()
+                .map(|(_, columns)| columns as usize)
+        })
         .unwrap_or(FALLBACK_WIDTH)
 }
 
