@@ -39,7 +39,7 @@ impl Cell {
     }
 
     fn width(&self) -> usize {
-        self.text.width()
+        display_width(&self.text)
     }
 }
 
@@ -148,7 +148,7 @@ impl Table {
 
                 for (column, width) in widths.iter().enumerate() {
                     let text = wrapped[column].get(line).cloned().unwrap_or_default();
-                    let padding = width.saturating_sub(text.width());
+                    let padding = width.saturating_sub(display_width(&text));
                     let alignment = self
                         .alignments
                         .get(column)
@@ -198,7 +198,10 @@ pub fn panel(
             style("┌─", border, colors),
             style(text, header_style, colors),
             style(
-                &format!("{}┐", "─".repeat(width.saturating_sub(1 + text.width()))),
+                &format!(
+                    "{}┐",
+                    "─".repeat(width.saturating_sub(1 + display_width(text)))
+                ),
                 border,
                 colors
             )
@@ -232,7 +235,19 @@ pub fn style(text: &str, codes: &[&str], colors: bool) -> String {
 
 /// Returns the display width of a string, ignoring ANSI escape sequences.
 pub fn visible_width(text: &str) -> usize {
-    strip_ansi(text).width()
+    display_width(&strip_ansi(text))
+}
+
+/// Returns the display width of a string, measured one character at a time.
+///
+/// `unicode-width` widens a character that is followed by the emoji variation selector, so
+/// `"⚙️"` measures as two columns for a whole string but one column per character.
+/// Spectre.Console measures per character, and matching it keeps the tables of both
+/// implementations byte identical.
+pub fn display_width(text: &str) -> usize {
+    text.chars()
+        .map(|character| character.to_string().width())
+        .sum()
 }
 
 /// Removes ANSI escape sequences from a string.
@@ -267,7 +282,7 @@ pub fn hard_wrap(text: &str, width: usize) -> Vec<String> {
 
     for character in text.chars() {
         let character_width = character.to_string().width();
-        if current.width() + character_width > width {
+        if display_width(&current) + character_width > width {
             lines.push(std::mem::take(&mut current));
         }
 
@@ -386,6 +401,15 @@ mod tests {
     fn measures_width_without_escape_sequences() {
         assert_eq!(visible_width("\u{1b}[32mtext\u{1b}[0m"), 4);
         assert_eq!(strip_ansi("\u{1b}[1;32mok\u{1b}[0m"), "ok");
+    }
+
+    #[test]
+    fn measures_width_one_character_at_a_time() {
+        assert_eq!(display_width("abc"), 3);
+        assert_eq!(display_width("\u{1f4dd} Path Items"), 13);
+        // Spectre.Console does not widen a character for a following variation selector.
+        assert_eq!(display_width("\u{2699}\u{fe0f}  Operations"), 13);
+        assert_eq!(visible_width("\u{1b}[32m\u{2699}\u{fe0f}\u{1b}[0m"), 1);
     }
 
     #[test]
