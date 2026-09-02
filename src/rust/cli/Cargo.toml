@@ -27,6 +27,7 @@ clap.workspace = true
 console.workspace = true
 curlgenerator-core.workspace = true
 exceptionless.workspace = true
+regex.workspace = true
 pollster.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
