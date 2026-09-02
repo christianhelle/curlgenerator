@@ -20,5 +20,6 @@ reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2 = "0.11.0"
+thiserror.workspace = true
 url.workspace = true
 yaml_serde.workspace = true

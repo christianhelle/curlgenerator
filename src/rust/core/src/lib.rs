@@ -6,6 +6,8 @@
 
 #![deny(missing_docs)]
 
+pub mod openapi;
+
 mod string_extensions;
 mod support_information;
 
