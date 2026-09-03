@@ -53,3 +53,14 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPOSITORY="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Discover all OpenAPI specifications under test/OpenAPI, sorted
+mapfile -t SPECIFICATIONS < <(find "$REPOSITORY/test/OpenAPI" -type f \( -name '*.json' -o -name '*.yaml' \) | sort)
+
+if [[ ${#SPECIFICATIONS[@]} -eq 0 ]]; then
+  echo "No specifications found under test/OpenAPI" >&2
+  exit 1
+fi
