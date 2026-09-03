@@ -319,7 +319,7 @@ mod tests {
     fn hides_the_support_key_when_logging_is_disabled() {
         let output = header("0.4.1", true, 80, false);
 
-        assert!(output.contains("⚠️  Unavailable when logging is disabled"));
+        assert!(output.contains("⚠️ Unavailable when logging is disabled"));
         assert!(!output.contains("Support key"));
     }
 
@@ -352,7 +352,7 @@ mod tests {
 
         assert!(output.contains("🔗 Base URL"));
         assert!(output.contains("🐚 Bash Scripts"));
-        assert!(output.contains("✅ Enabled"));
+        assert!(output.contains("✓ Enabled"));
         assert!(output.contains("⚠️ Skipped"));
         assert!(output.contains("Bearer token"));
     }
@@ -394,7 +394,7 @@ mod tests {
         assert!(output.contains("┌─📊 OpenAPI Statistics"));
         for label in [
             "📝 Path Items",
-            "⚙️  Operations",
+            "⚙️ Operations",
             "📝 Parameters",
             "📦 Request Bodies",
             "📋 Responses",

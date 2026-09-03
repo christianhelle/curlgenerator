@@ -347,7 +347,7 @@ mod tests {
         let printed = String::from_utf8(buffer).unwrap();
 
         assert_eq!(code, 0);
-        assert!(printed.contains("⚠️  Skipped"));
+        assert!(printed.contains("⚠️ Skipped"));
         assert!(!printed.contains("📊 OpenAPI Statistics"));
         assert!(printed.contains("🎉 Done!"));
     }

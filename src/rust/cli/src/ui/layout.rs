@@ -238,16 +238,26 @@ pub fn visible_width(text: &str) -> usize {
     display_width(&strip_ansi(text))
 }
 
-/// Returns the display width of a string, measured one character at a time.
+/// Returns the display width of a string.
 ///
-/// `unicode-width` widens a character that is followed by the emoji variation selector, so
-/// `"⚙️"` measures as two columns for a whole string but one column per character.
-/// Spectre.Console measures per character, and matching it keeps the tables of both
-/// implementations byte identical.
+/// A character followed by the emoji variation selector (`U+FE0F`) is measured together with
+/// it, since that is how terminals actually render it: as a single, double-width emoji glyph.
+/// Measuring the pair separately (one column for the base character, zero for the selector)
+/// undercounts it by one column and misaligns any row that contains it.
 pub fn display_width(text: &str) -> usize {
-    text.chars()
-        .map(|character| character.to_string().width())
-        .sum()
+    let mut width = 0;
+    let mut characters = text.chars().peekable();
+
+    while let Some(character) = characters.next() {
+        if characters.peek() == Some(&'\u{fe0f}') {
+            characters.next();
+            width += format!("{character}\u{fe0f}").width();
+        } else {
+            width += character.to_string().width();
+        }
+    }
+
+    width
 }
 
 /// Removes ANSI escape sequences from a string.
@@ -407,9 +417,10 @@ mod tests {
     fn measures_width_one_character_at_a_time() {
         assert_eq!(display_width("abc"), 3);
         assert_eq!(display_width("\u{1f4dd} Path Items"), 13);
-        // Spectre.Console does not widen a character for a following variation selector.
-        assert_eq!(display_width("\u{2699}\u{fe0f}  Operations"), 13);
-        assert_eq!(visible_width("\u{1b}[32m\u{2699}\u{fe0f}\u{1b}[0m"), 1);
+        // A character followed by the emoji variation selector renders as one double-width
+        // glyph, so the pair is measured together rather than as 1 (base) + 0 (selector).
+        assert_eq!(display_width("\u{2699}\u{fe0f} Operations"), 13);
+        assert_eq!(visible_width("\u{1b}[32m\u{2699}\u{fe0f}\u{1b}[0m"), 2);
     }
 
     #[test]
