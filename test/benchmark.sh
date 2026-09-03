@@ -10,7 +10,7 @@
 set -euo pipefail
 
 RUST_COMMAND="../target/release/curlgenerator"
-DOTNET_COMMAND="../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator"
+DOTNET_COMMAND="../src/dotnet/CurlGenerator/bin/Release/net10.0/curlgenerator"
 RUNS=3
 
 usage() {
@@ -30,27 +30,27 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --rust-command)
-      RUST_COMMAND="$2"
-      shift 2
-      ;;
-    --dotnet-command)
-      DOTNET_COMMAND="$2"
-      shift 2
-      ;;
-    --runs)
-      RUNS="$2"
-      shift 2
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "Unknown option: $1" >&2
-      usage >&2
-      exit 1
-      ;;
+  --rust-command)
+    RUST_COMMAND="$2"
+    shift 2
+    ;;
+  --dotnet-command)
+    DOTNET_COMMAND="$2"
+    shift 2
+    ;;
+  --runs)
+    RUNS="$2"
+    shift 2
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    usage >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -80,15 +80,15 @@ measure_generator() {
   output="$(mktemp -d -t "curlgenerator-benchmark-${name}.XXXXXX")"
   local total=0
 
-  for (( run=1; run<=RUNS; run++ )); do
+  for ((run = 1; run <= RUNS; run++)); do
     rm -rf "${output:?}/"*
     mkdir -p "$output"
 
     local start end elapsed
     start="$(now_epoch)"
     for spec in "${SPECIFICATIONS[@]}"; do
-      "$command" "$spec" --output "$output" --no-logging --skip-validation > /dev/null 2>&1
-      "$command" "$spec" --output "$output" --no-logging --skip-validation --bash > /dev/null 2>&1
+      "$command" "$spec" --output "$output" --no-logging --skip-validation >/dev/null 2>&1
+      "$command" "$spec" --output "$output" --no-logging --skip-validation --bash >/dev/null 2>&1
     done
     end="$(now_epoch)"
     elapsed="$(awk "BEGIN {print $end - $start}")"
@@ -115,7 +115,8 @@ else
 fi
 
 count="${#SPECIFICATIONS[@]}"
-summary="$(cat <<SUMMARY
+summary="$(
+  cat <<SUMMARY
 ## Performance comparison
 
 ${count} specifications x 2 output modes, mean of ${RUNS} run(s).
@@ -131,5 +132,5 @@ echo ""
 echo "$summary"
 
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
-  echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+  echo "$summary" >>"$GITHUB_STEP_SUMMARY"
 fi
