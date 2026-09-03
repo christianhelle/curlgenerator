@@ -93,9 +93,43 @@ measure_generator() {
     end="$(now_epoch)"
     elapsed="$(awk "BEGIN {print $end - $start}")"
     total="$(awk "BEGIN {print $total + $elapsed}")"
-    printf '%s run %d of %d: %.2fs\n' "$name" "$run" "$RUNS" "$elapsed"
+    printf '%s run %d of %d: %.2fs\n' "$name" "$run" "$RUNS" "$elapsed" >&2
   done
 
   rm -rf "$output"
   awk "BEGIN {print $total / $RUNS}"
 }
+
+echo "Benchmarking ${#SPECIFICATIONS[@]} specifications, $RUNS run(s) each"
+
+rust_time="$(measure_generator "rust" "$RUST_COMMAND")"
+dotnet_time="$(measure_generator "dotnet" "$DOTNET_COMMAND")"
+
+rust_seconds="$(printf '%.2f' "$rust_time")"
+dotnet_seconds="$(printf '%.2f' "$dotnet_time")"
+
+if awk "BEGIN {exit !($rust_time > 0)}"; then
+  speedup="$(awk "BEGIN {printf \"%.1f\", $dotnet_time / $rust_time}")"
+else
+  speedup="0"
+fi
+
+count="${#SPECIFICATIONS[@]}"
+summary="$(cat <<SUMMARY
+## Performance comparison
+
+${count} specifications x 2 output modes, mean of ${RUNS} run(s).
+
+| Implementation | Total time | Relative |
+| --- | ---: | ---: |
+| Rust CLI | ${rust_seconds}s | 1.0x |
+| .NET CLI (legacy) | ${dotnet_seconds}s | ${speedup}x slower |
+SUMMARY
+)"
+
+echo ""
+echo "$summary"
+
+if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+  echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+fi
