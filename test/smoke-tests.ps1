@@ -85,8 +85,13 @@ function RunTests
   )
     
   Get-ChildItem '*.http' -Recurse | ForEach-Object { Remove-Item -Path $_.FullName }
-  Write-Host "dotnet publish ../src/CurlGenerator/CurlGenerator.csproj -p:TreatWarningsAsErrors=true -p:PublishReadyToRun=true -o bin"
-  Start-Process "dotnet" -Args "publish ../src/CurlGenerator/CurlGenerator.csproj -p:TreatWarningsAsErrors=true -p:PublishReadyToRun=true -o bin" -NoNewWindow -PassThru | Wait-Process
+  Write-Host "cargo build --release --package curlgenerator"
+  $build = Start-Process "cargo" -Args "build --release --package curlgenerator --manifest-path ../Cargo.toml" -NoNewWindow -PassThru
+  $build | Wait-Process
+  if ($build.ExitCode -ne 0)
+  {
+    throw "cargo build failed"
+  }
     
   "v2.0", "v3.0", "v3.1" | ForEach-Object {
     $version = $_
