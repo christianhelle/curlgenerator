@@ -39,18 +39,6 @@ function Generate
   {
     throw "curlgenerator failed"
   }
-
-  Write-Host "curlgenerator ./openapi.$format --output ./Generated/$outputPath --output-type OneFile --no-logging $args"
-  $process = Start-Process "../target/release/curlgenerator" `
-    -Args "./openapi.$format --output ./Generated/$output --output-type OneFile --no-logging $args" `
-    -NoNewWindow `
-    -PassThru
-
-  $process | Wait-Process
-  if ($process.ExitCode -ne 0)
-  {
-    throw "curlgenerator failed"
-  }
 }
 
 function RunTests
