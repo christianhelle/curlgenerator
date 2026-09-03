@@ -52,7 +52,7 @@ pub fn header(version: &str, no_logging: bool, width: usize, colors: bool) -> St
     let content = vec![style(&title, &[color::GREEN, color::BOLD], colors)];
     let support = if no_logging {
         style(
-            "⚠️  Unavailable when logging is disabled",
+            "⚠️ Unavailable when logging is disabled",
             &[color::YELLOW],
             colors,
         )
@@ -89,7 +89,7 @@ pub fn configuration(view: &ConfigurationView<'_>, width: usize, colors: bool) -
     }
 
     if view.skip_validation {
-        table.push(row("⚠️  Validation", "⚠️  Skipped", color::YELLOW));
+        table.push(row("⚠️ Validation", "⚠️ Skipped", color::YELLOW));
     }
 
     if let Some(authorization) = view
@@ -112,7 +112,7 @@ pub fn statistics(stats: &OpenApiStats, width: usize, colors: bool) -> String {
 
     for (label, count) in [
         ("📝 Path Items", stats.path_item_count),
-        ("⚙️  Operations", stats.operation_count),
+        ("⚙️ Operations", stats.operation_count),
         ("📝 Parameters", stats.parameter_count),
         ("📦 Request Bodies", stats.request_body_count),
         ("📋 Responses", stats.response_count),
@@ -145,14 +145,14 @@ pub fn results(
         color::GREEN,
     ));
     table.push(row(
-        "⏱️  Duration",
+        "⏱️ Duration",
         &format!("{:.0}ms", elapsed.as_secs_f64() * 1000.0),
         color::GREEN,
     ));
     table.push(row("📁 Output Location", output_location, color::CYAN));
 
     let (title, border) = if files.is_empty() {
-        ("⚠️  Generation Complete (No Files)", color::YELLOW)
+        ("⚠️ Generation Complete (No Files)", color::YELLOW)
     } else {
         ("✅ Generation Complete", color::GREEN)
     };
@@ -352,8 +352,8 @@ mod tests {
 
         assert!(output.contains("🔗 Base URL"));
         assert!(output.contains("🐚 Bash Scripts"));
-        assert!(output.contains("✓ Enabled"));
-        assert!(output.contains("⚠️  Skipped"));
+        assert!(output.contains("✅ Enabled"));
+        assert!(output.contains("⚠️ Skipped"));
         assert!(output.contains("Bearer token"));
     }
 
@@ -428,7 +428,7 @@ mod tests {
     fn reports_when_nothing_was_generated() {
         let output = results(&[], Duration::from_millis(1), "/out", 100, false);
 
-        assert!(output.contains("⚠️  Generation Complete (No Files)"));
+        assert!(output.contains("⚠️ Generation Complete (No Files)"));
         assert!(!output.contains("Generated Files:"));
     }
 
