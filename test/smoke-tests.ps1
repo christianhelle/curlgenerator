@@ -28,8 +28,8 @@ function Generate
     $args = ""
   )
 
-  Write-Host "CurlGenerator ./openapi.$format --output ./Generated/$outputPath --no-logging $args"
-  $process = Start-Process "./bin/CurlGenerator" `
+  Write-Host "curlgenerator ./openapi.$format --output ./Generated/$outputPath --no-logging $args"
+  $process = Start-Process "../target/release/curlgenerator" `
     -Args "./openapi.$format --output ./Generated/$output --no-logging $args" `
     -NoNewWindow `
     -PassThru
@@ -37,11 +37,11 @@ function Generate
   $process | Wait-Process
   if ($process.ExitCode -ne 0)
   {
-    throw "CurlGenerator failed"
+    throw "curlgenerator failed"
   }
 
-  Write-Host "CurlGenerator ./openapi.$format --output ./Generated/$outputPath --output-type OneFile --no-logging $args"
-  $process = Start-Process "./bin/CurlGenerator" `
+  Write-Host "curlgenerator ./openapi.$format --output ./Generated/$outputPath --output-type OneFile --no-logging $args"
+  $process = Start-Process "../target/release/curlgenerator" `
     -Args "./openapi.$format --output ./Generated/$output --output-type OneFile --no-logging $args" `
     -NoNewWindow `
     -PassThru
@@ -49,7 +49,7 @@ function Generate
   $process | Wait-Process
   if ($process.ExitCode -ne 0)
   {
-    throw "CurlGenerator failed"
+    throw "curlgenerator failed"
   }
 }
 
@@ -57,7 +57,7 @@ function RunTests
 {
   param (
     [Parameter(Mandatory=$true)]
-    [ValidateSet("dotnet-run", "CurlGenerator")]
+    [ValidateSet("cargo-run", "curlgenerator")]
     [string]
     $Method,
         
@@ -119,5 +119,5 @@ function RunTests
   }
 }
 
-Measure-Command { RunTests -Method "dotnet-run" -Parallel $Parallel }
+Measure-Command { RunTests -Method "curlgenerator" -Parallel $Parallel }
 Write-Host "`r`n"
