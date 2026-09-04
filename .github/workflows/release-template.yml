@@ -106,6 +106,18 @@ jobs:
               sha: context.sha
             })
 
+      - name: Update snapcraft.yaml version
+        run: |
+          sed -i "s/^version: .*/version: ${{ inputs.version }}/" snapcraft.yaml
+
+      - name: Commit snapcraft.yaml version update
+        run: |
+          git config --global user.name "Continuous Integration"
+          git config --global user.email "username@users.noreply.github.com"
+          git add snapcraft.yaml
+          git commit -m "Bump up snapcraft version to version ${{ inputs.version }}"
+          git push origin HEAD:main
+
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
