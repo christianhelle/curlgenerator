@@ -35,8 +35,61 @@
 
             <section class="installation">
                 <h2>Installation</h2>
-                <p>This tool is distributed as a .NET Tool on NuGet.org</p>
-                <p>To install, simply use the following command:</p>
+
+                <h3>Cargo</h3>
+                <p>Install the Rust CLI when you already have the Rust toolchain (requires Rust 1.96+):</p>
+                <div class="code-block">
+                    <pre><code>cargo install curlgenerator</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('cargo install curlgenerator')">Copy</button>
+                </div>
+
+                <h3>macOS/Linux</h3>
+                <p>Install the prebuilt CLI without the Rust toolchain:</p>
+                <div class="code-block">
+                    <pre><code>curl -fsSL https://christianhelle.com/curlgenerator/install | bash</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('curl -fsSL https://christianhelle.com/curlgenerator/install | bash')">Copy</button>
+                </div>
+
+                <h3>Windows PowerShell</h3>
+                <p>Install the prebuilt CLI on Windows:</p>
+                <div class="code-block">
+                    <pre><code>irm https://christianhelle.com/curlgenerator/install.ps1 | iex</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('irm https://christianhelle.com/curlgenerator/install.ps1 | iex')">Copy</button>
+                </div>
+
+                <h3>Advanced install options</h3>
+                <p>Install to a user-writable directory on macOS/Linux:</p>
+                <div class="code-block">
+                    <pre><code>curl -fsSL https://christianhelle.com/curlgenerator/install \
+  | INSTALL_DIR="$HOME/.local/bin" bash</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('curl -fsSL https://christianhelle.com/curlgenerator/install \\\n  | INSTALL_DIR=\"$HOME/.local/bin\" bash')">Copy</button>
+                </div>
+                <p>Pin a specific release tag on macOS/Linux:</p>
+                <div class="code-block">
+                    <pre><code>curl -fsSL https://christianhelle.com/curlgenerator/install \
+  | VERSION="0.4.1" bash</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('curl -fsSL https://christianhelle.com/curlgenerator/install \\\n  | VERSION=\"0.4.1\" bash')">Copy</button>
+                </div>
+                <p>Install to a custom directory on Windows:</p>
+                <div class="code-block">
+                    <pre><code>$install = irm https://christianhelle.com/curlgenerator/install.ps1
+& ([scriptblock]::Create($install)) `
+  -InstallDir "$env:USERPROFILE\bin"</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('$install = irm https://christianhelle.com/curlgenerator/install.ps1\n& ([scriptblock]::Create($install)) `\n  -InstallDir \"$env:USERPROFILE\\bin\"')">Copy</button>
+                </div>
+                <p>Pin a specific release tag on Windows:</p>
+                <div class="code-block">
+                    <pre><code>$install = irm https://christianhelle.com/curlgenerator/install.ps1
+& ([scriptblock]::Create($install)) `
+  -Version "0.4.1"</code></pre>
+                    <button class="copy-btn" onclick="copyToClipboard('$install = irm https://christianhelle.com/curlgenerator/install.ps1\n& ([scriptblock]::Create($install)) `\n  -Version \"0.4.1\"')">Copy</button>
+                </div>
+
+                <h3>Standalone CLI archives</h3>
+                <p>Download prebuilt archives from <a href="https://github.com/christianhelle/curlgenerator/releases" target="_blank">GitHub Releases</a>. Archives are available for Linux x64, macOS x64, macOS ARM64, and Windows x64. Windows on ARM currently uses the x64 standalone install path.</p>
+
+                <h3>Legacy .NET tool</h3>
+                <p>The original implementation is still distributed as a .NET Tool on NuGet.org:</p>
                 <div class="code-block">
                     <pre><code>dotnet tool install --global curlgenerator</code></pre>
                     <button class="copy-btn" onclick="copyToClipboard('dotnet tool install --global curlgenerator')">Copy</button>
