@@ -17,13 +17,80 @@ deliberately differ.
 
 ## Installation
 
-### Cargo
+### Quick install
+
+#### Cargo
 
 ```bash
 cargo install curlgenerator
 ```
 
-### .NET tool (legacy)
+Use this when you already have Rust and Cargo and want the canonical
+Rust ecosystem install path. Requires Rust 1.96+.
+
+#### macOS/Linux
+
+```bash
+curl -fsSL https://christianhelle.com/curlgenerator/install | bash
+```
+
+Use this when you want the prebuilt CLI without installing the Rust
+toolchain.
+
+#### Windows PowerShell
+
+```powershell
+irm https://christianhelle.com/curlgenerator/install.ps1 | iex
+```
+
+Use this when you want the prebuilt CLI on Windows.
+
+### Advanced install options
+
+#### macOS/Linux options
+
+Install to a user-writable directory:
+
+```bash
+curl -fsSL https://christianhelle.com/curlgenerator/install \
+  | INSTALL_DIR="$HOME/.local/bin" bash
+```
+
+Pin a specific release:
+
+```bash
+curl -fsSL https://christianhelle.com/curlgenerator/install \
+  | VERSION="<tag>" bash
+```
+
+#### Windows PowerShell options
+
+Install to a custom directory:
+
+```powershell
+$install = irm https://christianhelle.com/curlgenerator/install.ps1
+& ([scriptblock]::Create($install)) `
+  -InstallDir "$env:USERPROFILE\bin"
+```
+
+Pin a specific release:
+
+```powershell
+$install = irm https://christianhelle.com/curlgenerator/install.ps1
+& ([scriptblock]::Create($install)) `
+  -Version "<tag>"
+```
+
+### Other ways to install
+
+#### Standalone CLI archives
+
+Download prebuilt archives from [GitHub Releases](https://github.com/christianhelle/curlgenerator/releases).
+Archives are available for Linux x64, macOS x64, macOS ARM64, and
+Windows x64. Windows on ARM currently uses the x64 standalone install
+path.
+
+### Legacy .NET tool
 
 The original implementation is still distributed as a .NET Tool on NuGet.org
 
