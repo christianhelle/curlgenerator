@@ -17,7 +17,7 @@ validate.
 To reproduce the comparison:
 
 ```bash
-cargo build --release --workspace
+cargo build --release
 dotnet build -c Release src/dotnet/CurlGenerator/CurlGenerator.csproj
 ```
 
