@@ -1,24 +1,47 @@
-[workspace]
-members = ["src/rust/core", "src/rust/cli"]
-resolver = "2"
-
-[workspace.package]
+[package]
+name = "curlgenerator"
 authors = ["Christian Helle"]
+version = "0.4.1"
 edition = "2024"
+description = "Generate cURL requests from OpenAPI specifications v2.0 and v3.0"
 homepage = "https://christianhelle.com/curlgenerator/"
 license = "GPL-3.0-only"
 repository = "https://github.com/christianhelle/curlgenerator"
 rust-version = "1.96"
-version = "0.4.1"
+readme = "README.md"
+keywords = ["openapi", "curl", "generator", "cli", "rest"]
+categories = ["command-line-utilities", "development-tools"]
+include = ["src/rust/**/*.rs", "Cargo.toml", "README.md", "LICENSE"]
 
-[workspace.dependencies]
+[lib]
+name = "curlgenerator"
+path = "src/rust/lib.rs"
+
+[[bin]]
+name = "curlgenerator"
+path = "src/rust/main.rs"
+
+[[test]]
+name = "cli"
+path = "src/rust/tests/cli.rs"
+
+[[test]]
+name = "corpus"
+path = "src/rust/tests/corpus.rs"
+
+[[example]]
+name = "stats"
+path = "src/rust/examples/stats.rs"
+
+[dependencies]
 azure_core = "1.0.0"
 azure_identity = "1.0.0"
+base64 = "0.22.1"
 chrono = { version = "0.4.42", default-features = false, features = ["clock", "std"] }
 clap = { version = "4.6.1", features = ["derive"] }
 console = "0.16.3"
-curlgenerator-core = { version = "0.4.1", path = "src/rust/core" }
 exceptionless = "0.1.0"
+hostname = "0.4.2"
 pollster = "0.4.0"
 regex = "1.12.2"
 reqwest = { version = "0.12.28", default-features = false, features = [
@@ -28,7 +51,9 @@ reqwest = { version = "0.12.28", default-features = false, features = [
 ] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
+sha2 = "0.11.0"
 thiserror = "2.0.17"
 tokio = { version = "1", features = ["full"] }
+unicode-width = "0.2"
 url = "2.5.7"
 yaml_serde = "0.10.4"
