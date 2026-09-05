@@ -47,13 +47,13 @@ jobs:
         run: cargo fmt --all --check
 
       - name: 🔍 Lint
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: 🧪 Test
-        run: cargo test --locked --workspace
+        run: cargo test --locked
 
       - name: 🛠️ Build
-        run: cargo build --release --workspace
+        run: cargo build --release
 
   dotnet:
     name: 👌 Verify legacy .NET build

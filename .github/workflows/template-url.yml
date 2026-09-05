@@ -32,7 +32,7 @@ jobs:
 
     - name: 🛠️ Build both CLIs
       run: |
-        cargo build --release --workspace
+        cargo build --release
         dotnet build -c Release src/dotnet/CurlGenerator/CurlGenerator.csproj
 
     - name: 🦀 Generate with the Rust CLI
