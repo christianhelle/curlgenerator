@@ -3,23 +3,23 @@ all: build
 
 # Build both the Rust CLI and the legacy .NET solution
 build:
-	cargo build --workspace
+	cargo build
 	dotnet build --configuration Debug src/dotnet/CurlGenerator.sln
 
 # Optimized build
 release:
-	cargo build --release --workspace
+	cargo build --release
 	dotnet build --configuration Release src/dotnet/CurlGenerator.sln
 
 # Run every test suite
 test:
-	cargo test --workspace
+	cargo test
 	dotnet test --configuration Debug src/dotnet/CurlGenerator.sln
 
 # Formatting and lints
 lint:
 	cargo fmt --all --check
-	cargo clippy --workspace --all-targets -- -D warnings
+	cargo clippy --all-targets -- -D warnings
 
 # Packaging
 publish:
