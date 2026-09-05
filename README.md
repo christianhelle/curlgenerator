@@ -321,16 +321,16 @@ curlgenerator `
 ## Building from source
 
 ```bash
-make build   # cargo build --workspace, then the legacy .NET solution
-make test    # cargo test --workspace, then dotnet test
+make build   # cargo build, then the legacy .NET solution
+make test    # cargo test, then dotnet test
 make lint    # cargo fmt --check and cargo clippy -D warnings
 ```
 
-The Rust workspace on its own:
+The Rust crate on its own:
 
 ```bash
-cargo build --workspace
-cargo test --workspace
+cargo build
+cargo test
 ```
 
 #
