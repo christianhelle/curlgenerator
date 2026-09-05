@@ -152,8 +152,5 @@ jobs:
           $toml = (Get-Content -Path Cargo.toml -Raw) -replace 'version = "0.4.1"', 'version = "${{ inputs.version }}"'
           $toml | Set-Content -Path Cargo.toml
 
-      - name: Publish curlgenerator-core
-        run: cargo publish --allow-dirty -p curlgenerator-core
-
       - name: Publish curlgenerator
-        run: cargo publish --allow-dirty -p curlgenerator
+        run: cargo publish --allow-dirty
