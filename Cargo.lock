@@ -451,30 +451,21 @@ version = "0.4.1"
 dependencies = [
  "azure_core",
  "azure_identity",
- "clap",
- "console",
- "curlgenerator-core",
- "exceptionless",
- "pollster",
- "regex",
- "serde_json",
- "tokio",
- "unicode-width",
-]
-
-[[package]]
-name = "curlgenerator-core"
-version = "0.4.1"
-dependencies = [
  "base64",
  "chrono",
+ "clap",
+ "console",
+ "exceptionless",
  "hostname",
+ "pollster",
  "regex",
  "reqwest 0.12.28",
  "serde",
  "serde_json",
  "sha2",
  "thiserror",
+ "tokio",
+ "unicode-width",
  "url",
  "yaml_serde",
 ]
