@@ -11,6 +11,7 @@ use crate::{
     GeneratorSettings, ScriptFile,
     args::Args,
     auth::{self, AzureAuth},
+    executor,
     generator::generate_from_document,
     openapi::{inspect, load_document, normalize},
     telemetry::Telemetry,
@@ -42,7 +43,7 @@ pub fn run(args: &Args, output: &Output, writer: &mut impl Write) -> std::io::Re
     let mut telemetry = Telemetry::new(args.no_logging);
     let code = execute(args, output, writer, &mut telemetry)?;
 
-    crate::executor::block_on(telemetry.flush());
+    executor::isolate(|| executor::block_on(telemetry.flush()));
 
     Ok(code)
 }
@@ -183,7 +184,7 @@ fn resolve_authorization_header(
     write!(writer, "{}", render::azure_started(output.colors))?;
 
     let scope = args.azure_scope.clone().unwrap_or_default();
-    match crate::executor::block_on(auth::acquire_token(&scope, args.azure_tenant_id.as_deref())) {
+    match executor::block_on(auth::acquire_token(&scope, args.azure_tenant_id.as_deref())) {
         AzureAuth::Acquired(header) => {
             write!(writer, "{}", render::azure_succeeded(output.colors))?;
             Ok(Some(header))
