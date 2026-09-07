@@ -42,7 +42,7 @@ pub fn run(args: &Args, output: &Output, writer: &mut impl Write) -> std::io::Re
     let mut telemetry = Telemetry::new(args.no_logging);
     let code = execute(args, output, writer, &mut telemetry)?;
 
-    pollster::block_on(telemetry.flush());
+    crate::executor::block_on(telemetry.flush());
 
     Ok(code)
 }
