@@ -183,7 +183,7 @@ fn resolve_authorization_header(
     write!(writer, "{}", render::azure_started(output.colors))?;
 
     let scope = args.azure_scope.clone().unwrap_or_default();
-    match pollster::block_on(auth::acquire_token(&scope, args.azure_tenant_id.as_deref())) {
+    match crate::executor::block_on(auth::acquire_token(&scope, args.azure_tenant_id.as_deref())) {
         AzureAuth::Acquired(header) => {
             write!(writer, "{}", render::azure_succeeded(output.colors))?;
             Ok(Some(header))
