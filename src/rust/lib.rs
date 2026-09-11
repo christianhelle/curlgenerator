@@ -12,6 +12,7 @@ pub mod generator;
 mod model;
 pub mod normalized;
 pub mod openapi;
+mod platform;
 
 mod operation_name;
 
