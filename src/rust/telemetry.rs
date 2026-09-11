@@ -131,7 +131,6 @@ impl Telemetry {
 /// # Examples
 ///
 /// ```
-/// use clap::Parser;
 /// use curlgenerator::{args::Args, telemetry::used_features};
 ///
 /// let args = Args::try_parse_from(["curlgenerator", "./openapi.json", "--bash"]).unwrap();
@@ -205,7 +204,6 @@ impl std::error::Error for GenerationError {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use clap::Parser;
 
     fn parse(arguments: &[&str]) -> Args {
         let mut all = vec!["curlgenerator"];

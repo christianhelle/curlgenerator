@@ -2,7 +2,6 @@
 
 use std::io::{self, Write};
 
-use clap::Parser;
 use curlgenerator::{
     args::Args,
     help,

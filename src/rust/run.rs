@@ -242,7 +242,6 @@ fn full_path(output: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use clap::Parser;
 
     fn plain_output() -> Output {
         Output {
