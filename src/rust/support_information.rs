@@ -166,8 +166,7 @@ fn current_user_name() -> String {
 }
 
 fn current_machine_name() -> Option<String> {
-    hostname::get()
-        .ok()
+    crate::platform::machine_name()
         .and_then(normalize_os_string)
         .or_else(|| env_value(&["COMPUTERNAME", "HOSTNAME"]))
 }
