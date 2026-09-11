@@ -226,26 +226,36 @@ fn read_source(source: &OpenApiSource) -> Result<String, OpenApiLoadError> {
 }
 
 fn download(url: &str) -> Result<String, OpenApiLoadError> {
-    let http_error = |error: reqwest::Error| OpenApiLoadError::HttpRequest {
+    let http_error = |error: ureq::Error| OpenApiLoadError::HttpRequest {
         url: url.to_string(),
         reason: error.to_string(),
     };
 
-    let client = reqwest::blocking::Client::builder()
-        .danger_accept_invalid_certs(true)
-        .gzip(true)
-        .timeout(Duration::from_secs(60))
-        .build()
-        .map_err(http_error)?;
+    // Certificates are not verified, so specifications can be fetched from development servers
+    // with self-signed certificates, matching the legacy CLI.
+    let agent = ureq::Agent::new_with_config(
+        ureq::Agent::config_builder()
+            .tls_config(
+                ureq::tls::TlsConfig::builder()
+                    .disable_verification(true)
+                    .build(),
+            )
+            .timeout_global(Some(Duration::from_secs(60)))
+            .build(),
+    );
 
-    client
+    let body = agent
         .get(url)
-        .send()
+        .call()
         .map_err(http_error)?
-        .error_for_status()
-        .map_err(http_error)?
-        .text()
-        .map_err(http_error)
+        .body_mut()
+        .with_config()
+        .limit(u64::MAX)
+        .read_to_vec()
+        .map_err(http_error)?;
+    let text = String::from_utf8_lossy(&body);
+
+    Ok(text.strip_prefix('\u{feff}').unwrap_or(&text).to_string())
 }
 
 fn major_minor(version: &str) -> Option<(u32, u32)> {
