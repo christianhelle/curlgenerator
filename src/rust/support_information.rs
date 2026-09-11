@@ -244,4 +244,25 @@ mod tests {
             "camwml74lg9zl3spx8bhiyterdidgqbkhzqgsiirflc="
         );
     }
+
+    #[test]
+    fn anonymous_identity_uses_the_machine_name_the_hostname_command_reports() {
+        let output = std::process::Command::new("hostname")
+            .output()
+            .expect("the hostname command should run");
+        let machine_name = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        let user_name = ["USERNAME", "USER", "LOGNAME"]
+            .iter()
+            .find_map(|key| {
+                std::env::var(key)
+                    .ok()
+                    .filter(|value| !value.trim().is_empty())
+            })
+            .unwrap_or_default();
+
+        assert_eq!(
+            super::anonymous_identity(),
+            anonymous_identity_from_parts(user_name.trim(), Some(&machine_name))
+        );
+    }
 }
