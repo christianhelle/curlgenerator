@@ -14,13 +14,11 @@ pub enum OpenApiSource {
 }
 
 /// Errors raised while classifying an OpenAPI input string.
-#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SourceClassificationError {
     /// The input was empty or only contained whitespace.
-    #[error("the OpenAPI path is empty")]
     EmptyInput,
     /// The input looked like a URL but could not be parsed.
-    #[error("could not parse '{input}' as a URL: {reason}")]
     InvalidUrl {
         /// The original input.
         input: String,
@@ -28,6 +26,19 @@ pub enum SourceClassificationError {
         reason: String,
     },
 }
+
+impl std::fmt::Display for SourceClassificationError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::EmptyInput => write!(formatter, "the OpenAPI path is empty"),
+            Self::InvalidUrl { input, reason } => {
+                write!(formatter, "could not parse '{input}' as a URL: {reason}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for SourceClassificationError {}
 
 /// Returns `true` when the path points at an HTTP or HTTPS URL.
 ///

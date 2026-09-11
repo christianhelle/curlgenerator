@@ -46,13 +46,11 @@ impl fmt::Display for OpenApiSpecificationVersion {
 }
 
 /// Errors raised while loading or decoding a specification.
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
 pub enum OpenApiLoadError {
     /// The input could not be classified as a path or URL.
-    #[error(transparent)]
-    SourceClassification(#[from] SourceClassificationError),
+    SourceClassification(SourceClassificationError),
     /// Reading the local file failed.
-    #[error("could not open the file at {path}: {reason}")]
     FileRead {
         /// The file that could not be read.
         path: String,
@@ -60,7 +58,6 @@ pub enum OpenApiLoadError {
         reason: String,
     },
     /// Downloading the remote document failed.
-    #[error("could not download the file at {url}: {reason}")]
     HttpRequest {
         /// The URL that could not be downloaded.
         url: String,
@@ -68,14 +65,38 @@ pub enum OpenApiLoadError {
         reason: String,
     },
     /// The payload was neither valid JSON nor valid YAML.
-    #[error("could not decode the OpenAPI document: {reason}")]
     Decode {
         /// The parser failure description.
         reason: String,
     },
     /// The document did not declare a supported `openapi` or `swagger` version.
-    #[error("{0}")]
     UnsupportedVersion(String),
+}
+
+impl fmt::Display for OpenApiLoadError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::SourceClassification(error) => write!(formatter, "{error}"),
+            Self::FileRead { path, reason } => {
+                write!(formatter, "could not open the file at {path}: {reason}")
+            }
+            Self::HttpRequest { url, reason } => {
+                write!(formatter, "could not download the file at {url}: {reason}")
+            }
+            Self::Decode { reason } => {
+                write!(formatter, "could not decode the OpenAPI document: {reason}")
+            }
+            Self::UnsupportedVersion(message) => write!(formatter, "{message}"),
+        }
+    }
+}
+
+impl std::error::Error for OpenApiLoadError {}
+
+impl From<SourceClassificationError> for OpenApiLoadError {
+    fn from(error: SourceClassificationError) -> Self {
+        Self::SourceClassification(error)
+    }
 }
 
 /// A decoded OpenAPI document together with the metadata describing where it came from.
