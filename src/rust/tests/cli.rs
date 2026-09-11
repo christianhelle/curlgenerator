@@ -353,3 +353,174 @@ fn fails_for_a_specification_the_server_does_not_have() {
         "{printed}"
     );
 }
+
+/// A fake `az` that records its arguments and prints an access token.
+#[cfg(unix)]
+const AZ_WITH_TOKEN: &str = r#"echo "$@" > "$(dirname "$0")/az.args"
+echo '{"accessToken":"fake-az-token","expiresOn":"2030-01-02 03:04:05.000000","expires_on":1893553445,"tokenType":"Bearer"}'"#;
+
+/// A fake `azd` that records its arguments and prints an access token.
+#[cfg(unix)]
+const AZD_WITH_TOKEN: &str = r#"echo "$@" > "$(dirname "$0")/azd.args"
+echo '{"token":"fake-azd-token","expiresOn":"2030-01-02T03:04:05Z"}'"#;
+
+/// A fake `az` that is not logged in.
+#[cfg(unix)]
+const AZ_NOT_LOGGED_IN: &str = "echo 'ERROR: Please run az login to setup account.' >&2\nexit 1";
+
+/// Writes fake command line tools into a fresh directory that can be put on `PATH`.
+#[cfg(unix)]
+fn fake_tools(name: &str, tools: &[(&str, &str)]) -> PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+
+    let directory = output_directory(&format!("tools-{name}"));
+    fs::create_dir_all(&directory).expect("the tools directory should be created");
+
+    for (tool, script) in tools {
+        let path = directory.join(tool);
+        fs::write(&path, format!("#!/bin/sh\n{script}\n")).expect("the tool should be written");
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o755))
+            .expect("the tool should be executable");
+    }
+
+    directory
+}
+
+/// Runs the binary against the petstore specification with the fake tools first on `PATH`.
+#[cfg(unix)]
+fn generate_with_tools(
+    tools: &std::path::Path,
+    name: &str,
+    extra: &[&str],
+) -> (i32, String, String) {
+    let directory = output_directory(name);
+    let output = Command::new(binary())
+        .arg(specification("v3.0/petstore.json"))
+        .arg("--output")
+        .arg(&directory)
+        .arg("--no-logging")
+        .args(extra)
+        .env(
+            "PATH",
+            format!(
+                "{}:{}",
+                tools.display(),
+                std::env::var("PATH").unwrap_or_default()
+            ),
+        )
+        .output()
+        .expect("the binary should run");
+    let printed = String::from_utf8_lossy(&output.stdout).to_string()
+        + &String::from_utf8_lossy(&output.stderr);
+    let script = fs::read_to_string(directory.join("GetPetById.ps1")).unwrap_or_default();
+
+    (output.status.code().unwrap_or(-1), printed, script)
+}
+
+#[cfg(unix)]
+#[test]
+fn acquires_the_authorization_header_from_the_azure_cli() {
+    let tools = fake_tools("azure-cli", &[("az", AZ_WITH_TOKEN)]);
+
+    let (code, printed, script) = generate_with_tools(
+        &tools,
+        "azure-cli",
+        &[
+            "--azure-scope",
+            "api://curlgenerator/.default",
+            "--azure-tenant-id",
+            "my-tenant",
+        ],
+    );
+
+    assert_eq!(code, 0, "{printed}");
+    assert!(
+        script.contains("Authorization: Bearer fake-az-token"),
+        "{script}"
+    );
+
+    let arguments = fs::read_to_string(tools.join("az.args")).expect("az should have run");
+    for expected in [
+        "account get-access-token",
+        "--scope api://curlgenerator/.default",
+        "--tenant my-tenant",
+    ] {
+        assert!(arguments.contains(expected), "{arguments}");
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn falls_back_to_the_azure_developer_cli() {
+    let tools = fake_tools(
+        "azure-developer-cli",
+        &[("az", AZ_NOT_LOGGED_IN), ("azd", AZD_WITH_TOKEN)],
+    );
+
+    let (code, printed, script) = generate_with_tools(
+        &tools,
+        "azure-developer-cli",
+        &["--azure-scope", "api://curlgenerator/.default"],
+    );
+
+    assert_eq!(code, 0, "{printed}");
+    assert!(
+        script.contains("Authorization: Bearer fake-azd-token"),
+        "{script}"
+    );
+
+    let arguments = fs::read_to_string(tools.join("azd.args")).expect("azd should have run");
+    for expected in ["auth token", "--scope api://curlgenerator/.default"] {
+        assert!(arguments.contains(expected), "{arguments}");
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn keeps_generating_when_no_azure_token_can_be_acquired() {
+    let tools = fake_tools(
+        "azure-failure",
+        &[
+            ("az", AZ_NOT_LOGGED_IN),
+            ("azd", "echo 'ERROR: not logged in' >&2\nexit 1"),
+        ],
+    );
+
+    let (code, printed, script) = generate_with_tools(
+        &tools,
+        "azure-failure",
+        &["--azure-scope", "api://curlgenerator/.default"],
+    );
+
+    assert_eq!(code, 0, "{printed}");
+    assert!(printed.contains("Error:"), "{printed}");
+    assert!(
+        printed.contains("Please run az login to setup account."),
+        "{printed}"
+    );
+    assert!(!script.contains("Authorization:"), "{script}");
+}
+
+#[cfg(unix)]
+#[test]
+fn never_passes_an_invalid_azure_scope_to_the_tools() {
+    let tools = fake_tools(
+        "azure-invalid-scope",
+        &[("az", AZ_WITH_TOKEN), ("azd", AZD_WITH_TOKEN)],
+    );
+
+    let (code, printed, script) = generate_with_tools(
+        &tools,
+        "azure-invalid-scope",
+        &[
+            "--azure-scope",
+            "api://curlgenerator/.default;touch injected",
+        ],
+    );
+
+    assert_eq!(code, 0, "{printed}");
+    assert!(printed.contains("invalid scope"), "{printed}");
+    assert!(!tools.join("az.args").exists(), "az should not have run");
+    assert!(!tools.join("azd.args").exists(), "azd should not have run");
+    assert!(!script.contains("Authorization:"), "{script}");
+}
