@@ -1,6 +1,6 @@
 //! Box drawing primitives that mirror Spectre.Console panels and tables.
 
-use unicode_width::UnicodeWidthStr;
+use super::width::{char_width, emoji_presentation_width};
 
 /// The width used when the terminal size is unknown, matching Spectre.Console.
 pub const DEFAULT_WIDTH: usize = 80;
@@ -251,9 +251,9 @@ pub fn display_width(text: &str) -> usize {
     while let Some(character) = characters.next() {
         if characters.peek() == Some(&'\u{fe0f}') {
             characters.next();
-            width += format!("{character}\u{fe0f}").width();
+            width += emoji_presentation_width(character);
         } else {
-            width += character.to_string().width();
+            width += char_width(character);
         }
     }
 
@@ -291,7 +291,7 @@ pub fn hard_wrap(text: &str, width: usize) -> Vec<String> {
     let mut current = String::new();
 
     for character in text.chars() {
-        let character_width = character.to_string().width();
+        let character_width = char_width(character);
         if display_width(&current) + character_width > width {
             lines.push(std::mem::take(&mut current));
         }
