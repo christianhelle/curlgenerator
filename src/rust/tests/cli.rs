@@ -257,3 +257,99 @@ fn rejects_invalid_arguments_with_a_usage_error() {
     assert!(output.stdout.is_empty());
     assert!(String::from_utf8_lossy(&output.stderr).contains("--unknown"));
 }
+
+/// Serves HTTP responses on a local port and returns the base URL to reach them.
+///
+/// `respond` maps a request path to a status line, extra header lines, and a body.
+fn serve(respond: fn(&str) -> (&'static str, String, Vec<u8>)) -> String {
+    use std::io::{BufRead, Write};
+
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("a local port should be free");
+    let address = listener
+        .local_addr()
+        .expect("the listener should have an address");
+
+    std::thread::spawn(move || {
+        for stream in listener.incoming().flatten() {
+            let mut reader = std::io::BufReader::new(stream);
+            let mut request_line = String::new();
+            if reader.read_line(&mut request_line).is_err() {
+                continue;
+            }
+
+            let mut header = String::new();
+            while reader.read_line(&mut header).is_ok_and(|read| read > 2) {
+                header.clear();
+            }
+
+            let path = request_line.split_whitespace().nth(1).unwrap_or("/");
+            let (status, headers, body) = respond(path);
+            let mut stream = reader.into_inner();
+            let _ = write!(
+                stream,
+                "HTTP/1.1 {status}\r\n{headers}Content-Length: {}\r\nConnection: close\r\n\r\n",
+                body.len()
+            );
+            let _ = stream.write_all(&body);
+        }
+    });
+
+    format!("http://{address}")
+}
+
+fn petstore(path: &str) -> (&'static str, String, Vec<u8>) {
+    let specification =
+        fs::read(specification("v3.0/petstore.json")).expect("the petstore specification exists");
+
+    match path {
+        "/openapi.json" => ("200 OK", String::new(), specification),
+        "/moved" => (
+            "302 Found",
+            "Location: /openapi.json\r\n".to_string(),
+            Vec::new(),
+        ),
+        "/large.json" => {
+            // Trailing whitespace keeps the document valid while pushing it past ten megabytes.
+            let mut large = specification;
+            large.resize(large.len() + 11 * 1024 * 1024, b' ');
+            ("200 OK", String::new(), large)
+        }
+        _ => ("404 Not Found", String::new(), b"not found".to_vec()),
+    }
+}
+
+#[test]
+fn generates_from_a_specification_served_over_http() {
+    let base = serve(petstore);
+
+    for (name, path) in [
+        ("http", "/openapi.json"),
+        ("http-redirect", "/moved"),
+        ("http-large", "/large.json"),
+    ] {
+        let directory = output_directory(name);
+        let (code, printed) = run(&[
+            &format!("{base}{path}"),
+            "--output",
+            &directory.to_string_lossy(),
+            "--no-logging",
+        ]);
+
+        assert_eq!(code, 0, "{path} failed: {printed}");
+        assert!(
+            directory.join("GetPetById.ps1").exists(),
+            "{path} generated nothing"
+        );
+    }
+}
+
+#[test]
+fn fails_for_a_specification_the_server_does_not_have() {
+    let (code, printed) = run(&[&format!("{}/missing.json", serve(petstore)), "--no-logging"]);
+
+    assert_eq!(code, 1);
+    assert!(
+        printed.contains("could not download the file at"),
+        "{printed}"
+    );
+}
