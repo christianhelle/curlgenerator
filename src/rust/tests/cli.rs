@@ -195,3 +195,53 @@ fn generates_from_a_remote_specification() {
             > 0
     );
 }
+
+#[test]
+fn colors_piped_output_only_when_forced() {
+    for (environment, colored) in [
+        (&[][..], false),
+        (&[("CLICOLOR_FORCE", "1")][..], true),
+        (&[("CLICOLOR_FORCE", "0")][..], false),
+        (
+            &[
+                ("CLICOLOR_FORCE", "1"),
+                ("NO_COLOR", "1"),
+                ("CLICOLOR", "0"),
+                ("TERM", "dumb"),
+            ][..],
+            true,
+        ),
+    ] {
+        let output = Command::new(binary())
+            .args(["./does-not-exist.json", "--no-logging"])
+            .env_remove("CLICOLOR")
+            .env_remove("CLICOLOR_FORCE")
+            .env_remove("NO_COLOR")
+            .envs(environment.iter().copied())
+            .output()
+            .expect("the binary should run");
+
+        assert_eq!(
+            String::from_utf8_lossy(&output.stdout).contains('\u{1b}'),
+            colored,
+            "unexpected colors with {environment:?}"
+        );
+    }
+}
+
+#[test]
+fn lays_out_piped_output_for_80_columns() {
+    let help = |columns: Option<&str>| {
+        let mut command = Command::new(binary());
+        command.arg("--help").env_remove("COLUMNS");
+        if let Some(columns) = columns {
+            command.env("COLUMNS", columns);
+        }
+
+        String::from_utf8_lossy(&command.output().expect("the binary should run").stdout)
+            .to_string()
+    };
+
+    assert_eq!(help(None), help(Some("80")));
+    assert_ne!(help(None), help(Some("120")));
+}
