@@ -108,4 +108,30 @@ mod tests {
 
         assert_eq!(redact_authorization_headers(&once), once);
     }
+
+    #[test]
+    fn applies_the_patterns_in_sequence_like_the_legacy_cli() {
+        // Each pattern runs over the output of the previous one, so the two token form can consume
+        // the argument that follows an already redacted value.
+        assert_eq!(
+            redact_authorization_headers(
+                "curlgenerator ./openapi.json --authorization-header \"Bearer secret\" --bash"
+            ),
+            "curlgenerator ./openapi.json --authorization-header [REDACTED]"
+        );
+        assert_eq!(
+            redact_authorization_headers(
+                "curlgenerator ./openapi.json --authorization-header 'Basic dXNlcjpwYXNz' --output ./out"
+            ),
+            "curlgenerator ./openapi.json --authorization-header [REDACTED] ./out"
+        );
+    }
+
+    #[test]
+    fn leaves_an_option_without_a_value_untouched() {
+        assert_eq!(
+            redact_authorization_headers("curlgenerator --authorization-header"),
+            "curlgenerator --authorization-header"
+        );
+    }
 }
