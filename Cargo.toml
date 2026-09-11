@@ -34,8 +34,6 @@ name = "stats"
 path = "src/rust/examples/stats.rs"
 
 [dependencies]
-azure_core = "1.0.0"
-azure_identity = "1.0.0"
 exceptionless = "0.1.0"
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 tokio = { version = "1", features = ["full"] }
