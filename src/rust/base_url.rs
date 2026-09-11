@@ -1,10 +1,8 @@
 //! Resolution of the base URL that generated requests are sent to.
 
-use url::Url;
-
 use crate::{
     normalized::Document,
-    openapi::{authority_of, is_http},
+    openapi::{authority_of, is_absolute_url, is_http},
 };
 
 /// Resolves the base URL for a document.
@@ -42,10 +40,6 @@ pub fn base_url(document: &Document, configured: Option<&str>, open_api_path: &s
         Some(authority) => format!("{authority}{base_url}"),
         None => base_url,
     }
-}
-
-fn is_absolute_url(value: &str) -> bool {
-    Url::parse(value).is_ok()
 }
 
 #[cfg(test)]
