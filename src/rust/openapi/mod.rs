@@ -12,5 +12,6 @@ pub use loader::{
 };
 pub use normalize::{normalize, normalize_value};
 pub use source::{
-    OpenApiSource, SourceClassificationError, authority_of, classify_source, is_http,
+    OpenApiSource, SourceClassificationError, authority_of, classify_source, is_absolute_url,
+    is_http,
 };
