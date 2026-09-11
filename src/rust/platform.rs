@@ -195,3 +195,169 @@ pub fn local_time() -> Option<LocalTime> {
 pub fn local_time() -> Option<LocalTime> {
     None
 }
+
+/// Returns `true` when standard output is a terminal that renders ANSI colors.
+///
+/// Mirrors `console`: `NO_COLOR` disables colors, and so does a missing or `dumb` `TERM`.
+#[cfg(unix)]
+pub fn stdout_is_color_terminal() -> bool {
+    use std::io::IsTerminal;
+
+    std::io::stdout().is_terminal()
+        && std::env::var("NO_COLOR").is_err()
+        && std::env::var("TERM").is_ok_and(|term| term != "dumb")
+}
+
+/// Returns `true` when standard output is a terminal that renders ANSI colors.
+///
+/// A Windows console only renders them once virtual terminal processing is switched on, which is
+/// attempted here. A terminal that is not a console, such as the MSYS2 or Cygwin pseudo terminal,
+/// renders them unless `TERM` is `dumb`.
+#[cfg(windows)]
+pub fn stdout_is_color_terminal() -> bool {
+    use std::{io::IsTerminal, os::windows::io::AsRawHandle};
+
+    const ENABLE_VIRTUAL_TERMINAL_PROCESSING: u32 = 0x0004;
+
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn GetConsoleMode(console: *mut std::ffi::c_void, mode: *mut u32) -> i32;
+        fn SetConsoleMode(console: *mut std::ffi::c_void, mode: u32) -> i32;
+    }
+
+    let stdout = std::io::stdout();
+    if !stdout.is_terminal() || std::env::var("NO_COLOR").is_ok() {
+        return false;
+    }
+
+    let handle = stdout.as_raw_handle();
+    let mut mode = 0u32;
+    if unsafe { GetConsoleMode(handle, &mut mode) } == 0 {
+        return std::env::var("TERM").map_or(true, |term| term != "dumb");
+    }
+
+    mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING != 0
+        || unsafe { SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING) } != 0
+}
+
+/// Returns `false` where colors cannot be detected.
+#[cfg(not(any(unix, windows)))]
+pub fn stdout_is_color_terminal() -> bool {
+    false
+}
+
+/// Returns the number of columns of the terminal standard output is connected to.
+#[cfg(unix)]
+pub fn stdout_columns() -> Option<usize> {
+    use std::{
+        ffi::{c_int, c_ulong},
+        io::IsTerminal,
+        os::fd::AsRawFd,
+    };
+
+    #[repr(C)]
+    struct WindowSize {
+        rows: u16,
+        columns: u16,
+        width: u16,
+        height: u16,
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "android"))]
+    const TIOCGWINSZ: c_ulong = if cfg!(any(
+        target_arch = "mips",
+        target_arch = "mips64",
+        target_arch = "powerpc",
+        target_arch = "powerpc64",
+        target_arch = "sparc64"
+    )) {
+        0x4008_7468
+    } else {
+        0x5413
+    };
+    #[cfg(not(any(target_os = "linux", target_os = "android")))]
+    const TIOCGWINSZ: c_ulong = 0x4008_7468;
+
+    unsafe extern "C" {
+        fn ioctl(descriptor: c_int, request: c_ulong, ...) -> c_int;
+    }
+
+    let stdout = std::io::stdout();
+    if !stdout.is_terminal() {
+        return None;
+    }
+
+    let mut size = WindowSize {
+        rows: 0,
+        columns: 0,
+        width: 0,
+        height: 0,
+    };
+    if unsafe { ioctl(stdout.as_raw_fd(), TIOCGWINSZ, &mut size) } != 0 {
+        return None;
+    }
+
+    (size.rows > 0 && size.columns > 0).then_some(usize::from(size.columns))
+}
+
+/// Returns the number of columns of the console window standard output is connected to.
+#[cfg(windows)]
+pub fn stdout_columns() -> Option<usize> {
+    use std::os::windows::io::AsRawHandle;
+
+    #[repr(C)]
+    struct Coordinate {
+        x: i16,
+        y: i16,
+    }
+
+    #[repr(C)]
+    struct Rectangle {
+        left: i16,
+        top: i16,
+        right: i16,
+        bottom: i16,
+    }
+
+    #[repr(C)]
+    struct ScreenBufferInfo {
+        size: Coordinate,
+        cursor_position: Coordinate,
+        attributes: u16,
+        window: Rectangle,
+        maximum_window_size: Coordinate,
+    }
+
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn GetConsoleScreenBufferInfo(
+            console: *mut std::ffi::c_void,
+            info: *mut ScreenBufferInfo,
+        ) -> i32;
+    }
+
+    let origin = || Coordinate { x: 0, y: 0 };
+    let mut info = ScreenBufferInfo {
+        size: origin(),
+        cursor_position: origin(),
+        attributes: 0,
+        window: Rectangle {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+        },
+        maximum_window_size: origin(),
+    };
+    if unsafe { GetConsoleScreenBufferInfo(std::io::stdout().as_raw_handle(), &mut info) } == 0 {
+        return None;
+    }
+
+    usize::try_from(i32::from(info.window.right) - i32::from(info.window.left) + 1).ok()
+}
+
+/// Returns `None` where the terminal size cannot be queried.
+#[cfg(not(any(unix, windows)))]
+pub fn stdout_columns() -> Option<usize> {
+    None
+}

@@ -184,11 +184,7 @@ pub fn terminal_width() -> usize {
         .ok()
         .and_then(|columns| columns.parse::<usize>().ok())
         .filter(|columns| *columns >= 20)
-        .or_else(|| {
-            console::Term::stdout()
-                .size_checked()
-                .map(|(_, columns)| columns as usize)
-        })
+        .or_else(crate::platform::stdout_columns)
         .unwrap_or(FALLBACK_WIDTH)
 }
 
