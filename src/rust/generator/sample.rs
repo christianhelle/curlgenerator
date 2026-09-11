@@ -1,11 +1,11 @@
 //! Generation of sample request bodies from normalized schemas.
 
-use chrono::Local;
 use serde_json::{Map, Value};
 
 use crate::{
     generator::NEWLINE,
     normalized::{Schema, SchemaType},
+    platform::{LocalTime, local_time},
 };
 
 /// Renders a sample JSON payload for a schema, formatted the way the generated scripts embed it.
@@ -55,12 +55,25 @@ pub fn sample_value(schema: &Schema) -> Value {
 
 fn sample_string(format: Option<&str>) -> String {
     match format {
-        Some("date") => Local::now().format("%Y-%m-%d").to_string(),
-        Some("date-time") => Local::now().format("%Y-%m-%dT%H:%M:%SZ").to_string(),
+        Some("date") => {
+            format_local_time(|now| format!("{:04}-{:02}-{:02}", now.year, now.month, now.day))
+        }
+        Some("date-time") => format_local_time(|now| {
+            format!(
+                "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z",
+                now.year, now.month, now.day, now.hour, now.minute, now.second
+            )
+        }),
         Some("email") => "user@example.com".to_string(),
         Some("uri") => "https://example.com".to_string(),
         _ => "string".to_string(),
     }
+}
+
+/// Formats the current local time, falling back to the plain string sample when the platform
+/// cannot tell the time.
+fn format_local_time(format: impl FnOnce(LocalTime) -> String) -> String {
+    local_time().map_or_else(|| "string".to_string(), format)
 }
 
 #[cfg(test)]
