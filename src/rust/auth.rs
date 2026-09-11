@@ -1,7 +1,11 @@
 //! Acquisition of an `Authorization` header from Azure Entra ID.
+//!
+//! Tokens come from the Azure CLI or the Azure Developer CLI, run the same way the developer
+//! credentials of the Azure Identity SDK run them.
 
-use azure_core::credentials::TokenCredential;
-use azure_identity::{AzureCliCredential, DeveloperToolsCredential};
+use std::process::Command;
+
+use serde_json::Value;
 
 /// The outcome of an Azure Entra ID token request.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -41,43 +45,144 @@ pub fn wants_azure_token(
 
 /// Requests an access token for `scope`, returning the `Authorization` header value.
 ///
-/// The credential chain mirrors the legacy CLI: the Azure CLI first, then the credentials the
-/// local developer tooling provides.
-pub async fn acquire_token(scope: &str, tenant_id: Option<&str>) -> AzureAuth {
-    let scopes = [scope];
+/// The credential chain mirrors the legacy CLI: the Azure CLI for the configured tenant first,
+/// then the Azure CLI for its default tenant, and finally the Azure Developer CLI. When none of
+/// them succeeds, the failure of the first attempt is reported.
+pub fn acquire_token(scope: &str, tenant_id: Option<&str>) -> AzureAuth {
+    let tenant_id = tenant_id.filter(|tenant| !tenant.trim().is_empty());
 
-    let failure = match azure_cli_credential(tenant_id) {
-        Ok(credential) => match credential.get_token(&scopes, None).await {
-            Ok(token) => return AzureAuth::Acquired(format!("Bearer {}", token.token.secret())),
-            Err(error) => error.to_string(),
-        },
-        Err(error) => error.to_string(),
+    let failure = match azure_cli_token(scope, tenant_id) {
+        Ok(token) => return AzureAuth::Acquired(format!("Bearer {token}")),
+        Err(failure) => failure,
     };
 
-    match developer_tools_token(&scopes).await {
-        Some(token) => AzureAuth::Acquired(token),
-        None => AzureAuth::Failed(failure),
+    let default_tenant = match tenant_id {
+        Some(_) => azure_cli_token(scope, None),
+        None => Err(failure.clone()),
+    };
+
+    match default_tenant.or_else(|_| azure_developer_cli_token(scope)) {
+        Ok(token) => AzureAuth::Acquired(format!("Bearer {token}")),
+        Err(_) => AzureAuth::Failed(failure),
     }
 }
 
-fn azure_cli_credential(
-    tenant_id: Option<&str>,
-) -> azure_core::Result<std::sync::Arc<AzureCliCredential>> {
-    let options = tenant_id
-        .filter(|tenant| !tenant.trim().is_empty())
-        .map(|tenant| azure_identity::AzureCliCredentialOptions {
-            tenant_id: Some(tenant.to_string()),
-            ..Default::default()
-        });
+fn azure_cli_token(scope: &str, tenant_id: Option<&str>) -> Result<String, String> {
+    validate_scope(scope)?;
 
-    AzureCliCredential::new(options)
+    let mut arguments = vec![
+        "account",
+        "get-access-token",
+        "-o",
+        "json",
+        "--scope",
+        scope,
+    ];
+    if let Some(tenant_id) = tenant_id {
+        validate_tenant_id(tenant_id)?;
+        arguments.extend(["--tenant", tenant_id]);
+    }
+
+    run_tool("az", "AzureCliCredential", &arguments, "accessToken")
 }
 
-async fn developer_tools_token(scopes: &[&str]) -> Option<String> {
-    let credential = DeveloperToolsCredential::new(None).ok()?;
-    let token = credential.get_token(scopes, None).await.ok()?;
+fn azure_developer_cli_token(scope: &str) -> Result<String, String> {
+    validate_scope(scope)?;
 
-    Some(format!("Bearer {}", token.token.secret()))
+    run_tool(
+        "azd",
+        "AzureDeveloperCliCredential",
+        &[
+            "auth",
+            "token",
+            "-o",
+            "json",
+            "--no-prompt",
+            "--scope",
+            scope,
+        ],
+        "token",
+    )
+}
+
+/// Runs a developer tool that prints a JSON token response, returning the token in `field`.
+fn run_tool(
+    program: &str,
+    credential: &str,
+    arguments: &[&str],
+    field: &str,
+) -> Result<String, String> {
+    let not_found = || format!("{program} not found on PATH");
+
+    let output = tool_command(program, arguments)
+        .output()
+        .map_err(|error| match error.kind() {
+            std::io::ErrorKind::NotFound => not_found(),
+            _ => format!("{credential} authentication failed. {error}"),
+        })?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        if output.status.code() == Some(127) || stderr.contains("' is not recognized") {
+            return Err(not_found());
+        }
+
+        return Err(format!(
+            "{credential} authentication failed. {}",
+            stderr.trim()
+        ));
+    }
+
+    serde_json::from_slice::<Value>(&output.stdout)
+        .ok()
+        .and_then(|response| response.get(field)?.as_str().map(str::to_string))
+        .ok_or_else(|| format!("{credential} authentication failed. {program} returned no token"))
+}
+
+/// Builds the command that runs a developer tool from a fixed directory, so a tool planted in the
+/// working directory is never picked up.
+fn tool_command(program: &str, arguments: &[&str]) -> Command {
+    if cfg!(windows) {
+        // The tools are batch files on Windows, which only `cmd` runs. The arguments were
+        // validated to contain nothing `cmd` interprets.
+        let mut command = Command::new("cmd");
+        command.arg("/C").arg(program).args(arguments);
+        if let Some(system_root) = std::env::var_os("SYSTEMROOT") {
+            command.current_dir(system_root);
+        }
+
+        command
+    } else {
+        let mut command = Command::new(program);
+        command.args(arguments).current_dir("/");
+
+        command
+    }
+}
+
+fn validate_scope(scope: &str) -> Result<(), String> {
+    let valid = !scope.is_empty()
+        && scope.chars().all(|character| {
+            character.is_alphanumeric() || matches!(character, '.' | '-' | '_' | ':' | '/')
+        });
+
+    valid
+        .then_some(())
+        .ok_or_else(|| format!("invalid scope {scope}"))
+}
+
+fn validate_tenant_id(tenant_id: &str) -> Result<(), String> {
+    let valid = !tenant_id.is_empty()
+        && tenant_id
+            .chars()
+            .all(|character| character.is_alphanumeric() || matches!(character, '.' | '-'));
+
+    valid.then_some(()).ok_or_else(|| {
+        format!(
+            "invalid tenant ID {tenant_id}. You can locate your tenant ID by following the \
+             instructions listed here: https://learn.microsoft.com/partner-center/find-ids-and-domain-names"
+        )
+    })
 }
 
 #[cfg(test)]
