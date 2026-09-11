@@ -33,9 +33,22 @@ impl Output {
     pub fn detect() -> Self {
         Self {
             width: crate::help::terminal_width(),
-            colors: console::colors_enabled(),
+            colors: colors_enabled(),
         }
     }
+}
+
+/// Returns whether ANSI colors should be emitted, following the `CLICOLOR` conventions.
+///
+/// A color terminal gets colors unless `CLICOLOR` is `0`, and `CLICOLOR_FORCE` set to anything
+/// but `0` enables them regardless. The terminal is always queried first, since that is what
+/// switches on ANSI support in a Windows console.
+fn colors_enabled() -> bool {
+    let supported = crate::platform::stdout_is_color_terminal();
+    let allowed = std::env::var("CLICOLOR").map_or(true, |value| value != "0");
+    let forced = std::env::var("CLICOLOR_FORCE").is_ok_and(|value| value != "0");
+
+    (supported && allowed) || forced
 }
 
 /// Runs the generator and returns the process exit code.
