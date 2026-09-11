@@ -170,4 +170,42 @@ mod tests {
             format!("{{{NEWLINE}  \"name\": \"string\"{NEWLINE}}}")
         );
     }
+
+    #[cfg(unix)]
+    #[test]
+    fn renders_dates_in_the_local_time_zone() {
+        let local = |format: &str| {
+            let output = std::process::Command::new("date")
+                .arg(format)
+                .output()
+                .expect("the date command should run");
+
+            String::from_utf8_lossy(&output.stdout).trim().to_string()
+        };
+        let sample = |format: &str| {
+            sample_value(&Schema {
+                schema_type: Some(SchemaType::String),
+                format: Some(format.to_string()),
+                ..Schema::default()
+            })
+            .as_str()
+            .expect("a string sample")
+            .to_string()
+        };
+
+        let before = local("+%Y-%m-%dT%H:%M");
+        let date_time = sample("date-time");
+        let date = sample("date");
+        let after = local("+%Y-%m-%dT%H:%M");
+
+        assert!(
+            date_time.starts_with(&before) || date_time.starts_with(&after),
+            "{date_time} is not the local time between {before} and {after}"
+        );
+        assert_eq!(date_time.len(), "2026-01-01T00:00:00Z".len(), "{date_time}");
+        assert!(
+            before.starts_with(&date) || after.starts_with(&date),
+            "{date} is not the local date between {before} and {after}"
+        );
+    }
 }
