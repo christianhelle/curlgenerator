@@ -157,4 +157,50 @@ mod tests {
         );
         assert_eq!(authority_of("./openapi.json"), None);
     }
+
+    #[test]
+    fn classify_source_rejects_malformed_urls() {
+        for input in [
+            "http://",
+            "https://exa mple.com/openapi.json",
+            "http://example.com:99999/openapi.json",
+        ] {
+            assert!(
+                matches!(
+                    classify_source(input),
+                    Err(SourceClassificationError::InvalidUrl { .. })
+                ),
+                "{input} should be rejected"
+            );
+        }
+
+        assert!(matches!(
+            classify_source("http://[::1]:8080/openapi.json"),
+            Ok(OpenApiSource::Url(_))
+        ));
+    }
+
+    #[test]
+    fn authority_of_normalizes_the_scheme_host_and_port() {
+        for (url, authority) in [
+            (
+                "HTTPS://Example.COM:443/openapi.json",
+                "https://example.com",
+            ),
+            ("http://example.com:80/openapi.json", "http://example.com"),
+            ("http://example.com:/openapi.json", "http://example.com"),
+            (
+                "http://user:secret@example.com:8081/openapi.json",
+                "http://example.com:8081",
+            ),
+            ("http://example.com?query", "http://example.com"),
+            (
+                "https://example.com\\specs\\openapi.json",
+                "https://example.com",
+            ),
+            ("http://[::1]:8080/openapi.json", "http://[::1]:8080"),
+        ] {
+            assert_eq!(authority_of(url).as_deref(), Some(authority), "{url}");
+        }
+    }
 }
