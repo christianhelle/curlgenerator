@@ -418,7 +418,6 @@ version = "0.4.1"
 dependencies = [
  "azure_core",
  "azure_identity",
- "chrono",
  "clap",
  "console",
  "exceptionless",
