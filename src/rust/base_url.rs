@@ -118,4 +118,30 @@ mod tests {
         );
         assert_eq!(base_url(&document(&[]), None, "./openapi.json"), "");
     }
+
+    #[test]
+    fn treats_a_base_url_with_any_scheme_as_absolute() {
+        for configured in ["localhost:8080", "custom://api"] {
+            assert_eq!(
+                base_url(
+                    &document(&["/api"]),
+                    Some(configured),
+                    "https://petstore3.swagger.io/openapi.json"
+                ),
+                format!("{configured}/api")
+            );
+        }
+    }
+
+    #[test]
+    fn prepends_the_specification_authority_to_a_base_url_without_a_scheme() {
+        assert_eq!(
+            base_url(
+                &document(&["/api"]),
+                Some("/v1"),
+                "https://petstore3.swagger.io/openapi.json"
+            ),
+            "https://petstore3.swagger.io/v1/api"
+        );
+    }
 }
