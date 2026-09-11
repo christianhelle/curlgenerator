@@ -300,6 +300,33 @@ mod tests {
     }
 
     #[test]
+    fn load_errors_describe_what_went_wrong() {
+        let message = |input: &str| load_document(input).unwrap_err().to_string();
+
+        assert_eq!(message("   "), "the OpenAPI path is empty");
+        assert_eq!(
+            message("http://"),
+            "could not parse 'http://' as a URL: empty host"
+        );
+        assert!(
+            message("./does-not-exist.json")
+                .starts_with("could not open the file at ./does-not-exist.json: ")
+        );
+        assert!(
+            decode_document(path_source(), "{ not json ")
+                .unwrap_err()
+                .to_string()
+                .starts_with("could not decode the OpenAPI document: ")
+        );
+        assert_eq!(
+            decode_document(path_source(), "openapi: 4.0.0\n")
+                .unwrap_err()
+                .to_string(),
+            "OpenAPI specification version '4.0.0' is not supported"
+        );
+    }
+
+    #[test]
     fn specification_versions_render_friendly_names() {
         assert_eq!(
             OpenApiSpecificationVersion::Swagger2.to_string(),
