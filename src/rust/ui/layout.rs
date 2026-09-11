@@ -429,4 +429,16 @@ mod tests {
         assert_eq!(hard_wrap("", 4), vec![String::new()]);
         assert_eq!(hard_wrap("abc", 0), vec![String::new()]);
     }
+
+    #[test]
+    fn measures_wide_zero_width_and_text_presentation_characters() {
+        assert_eq!(display_width("日本語"), 6);
+        assert_eq!(display_width("e\u{301}"), 1);
+        assert_eq!(display_width("a\u{200d}b"), 2);
+        assert_eq!(display_width("\t"), 1);
+        assert_eq!(display_width("\u{26a0}"), 1);
+        assert_eq!(display_width("\u{26a0}\u{fe0f}"), 2);
+        assert_eq!(display_width("\u{23f1}\u{fe0f} Duration"), 11);
+        assert_eq!(hard_wrap("日本語", 4), vec!["日本", "語"]);
+    }
 }
