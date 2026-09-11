@@ -123,4 +123,29 @@ mod tests {
     fn support_key_is_not_empty() {
         assert_eq!(support_key().len(), 7);
     }
+
+    #[test]
+    fn anonymous_identity_hashes_values_across_sha256_block_boundaries() {
+        // `user@build-agent` is 55, 56, 64 and 120 bytes long, straddling the padding boundaries.
+        for (user_length, expected) in [
+            (43, "46xfwrqto5ihrm8r74xiclym8khkzilhwihfwtj2/ic="),
+            (44, "kxz49criov89syiupji7chh0pnnj2ztoiifvea5n000="),
+            (52, "w+9rpscdbhkscttxiuienlfiw32jjtpzqrlvnnm1g04="),
+            (108, "hdnygea3yotby9capap7hmra6ax0500jqubgeou1uti="),
+        ] {
+            assert_eq!(
+                anonymous_identity_from_parts(&"a".repeat(user_length), Some("build-agent")),
+                expected,
+                "failed for a {user_length} character user name"
+            );
+        }
+    }
+
+    #[test]
+    fn anonymous_identity_hashes_the_utf8_bytes_of_the_user_name() {
+        assert_eq!(
+            anonymous_identity_from_parts("Søren", Some("build-agent")),
+            "camwml74lg9zl3spx8bhiyterdidgqbkhzqgsiirflc="
+        );
+    }
 }
