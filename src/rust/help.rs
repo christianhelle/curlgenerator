@@ -1,6 +1,6 @@
 //! The help screen, laid out the way Spectre.Console.Cli renders it.
 
-use unicode_width::UnicodeWidthStr;
+use crate::ui::layout::display_width;
 
 const INDENT: &str = "    ";
 const COLUMN_PADDING: usize = 4;
@@ -130,10 +130,10 @@ pub fn render(terminal_width: usize) -> String {
     help.push_str("\nOPTIONS:\n");
 
     let names: Vec<String> = options.iter().map(render_name).collect();
-    let name_column = INDENT.width()
+    let name_column = display_width(INDENT)
         + names
             .iter()
-            .map(|name| name.width())
+            .map(|name| display_width(name))
             .max()
             .unwrap_or_default()
         + COLUMN_PADDING;
@@ -141,8 +141,8 @@ pub fn render(terminal_width: usize) -> String {
         + options
             .iter()
             .filter_map(|option| option.default)
-            .map(str::width)
-            .chain(std::iter::once("DEFAULT".width()))
+            .map(display_width)
+            .chain(std::iter::once(display_width("DEFAULT")))
             .max()
             .unwrap_or_default()
         + COLUMN_PADDING;
@@ -154,8 +154,8 @@ pub fn render(terminal_width: usize) -> String {
         let default = option.default.unwrap_or("");
         let mut prefix = format!(
             "{INDENT}{name}{}{default}{}",
-            " ".repeat(name_column - INDENT.width() - name.width()),
-            " ".repeat(default_column - name_column - default.width())
+            " ".repeat(name_column - display_width(INDENT) - display_width(name)),
+            " ".repeat(default_column - name_column - display_width(default))
         );
 
         for (index, chunk) in wrap(option.description, description_width)
@@ -213,7 +213,7 @@ fn wrap(text: &str, width: usize) -> Vec<String> {
     for word in text.split_whitespace() {
         if current.is_empty() {
             current.push_str(word);
-        } else if current.width() + 1 + word.width() <= width {
+        } else if display_width(&current) + 1 + display_width(word) <= width {
             current.push(' ');
             current.push_str(word);
         } else {
@@ -310,7 +310,10 @@ mod tests {
             .nth(1)
             .expect("an options section");
 
-        assert!(options.lines().all(|line| line.width() <= 80), "{options}");
+        assert!(
+            options.lines().all(|line| display_width(line) <= 80),
+            "{options}"
+        );
         assert!(help.contains("Default Base URL"));
     }
 
