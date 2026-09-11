@@ -153,4 +153,52 @@ mod tests {
         assert!(parse(&["--version"]).version);
         assert!(parse(&["-v"]).version);
     }
+
+    #[test]
+    fn accepts_attached_option_values() {
+        assert_eq!(parse(&["./openapi.json", "--output=./a"]).output, "./a");
+        assert_eq!(parse(&["./openapi.json", "-o./b"]).output, "./b");
+        assert_eq!(parse(&["./openapi.json", "-o=./c"]).output, "./c");
+        assert_eq!(
+            parse(&["./openapi.json", "--content-type=text/plain"]).content_type,
+            "text/plain"
+        );
+    }
+
+    #[test]
+    fn treats_everything_after_a_double_dash_as_the_input() {
+        assert_eq!(
+            parse(&["--", "-openapi.json"]).open_api_path.as_deref(),
+            Some("-openapi.json")
+        );
+    }
+
+    #[test]
+    fn combines_short_flags() {
+        let args = parse(&["-vh"]);
+
+        assert!(args.version);
+        assert!(args.help);
+    }
+
+    #[test]
+    fn rejects_invalid_invocations() {
+        for arguments in [
+            &["--unknown"][..],
+            &["./openapi.json", "extra"],
+            &["./openapi.json", "--bash", "--bash"],
+            &["./openapi.json", "-o", "a", "-o", "b"],
+            &["./openapi.json", "--bash=true"],
+            &["./openapi.json", "--output"],
+            &["./openapi.json", "--output", "--bash"],
+        ] {
+            let mut all = vec!["curlgenerator"];
+            all.extend_from_slice(arguments);
+
+            assert!(
+                Args::try_parse_from(all).is_err(),
+                "{arguments:?} should be rejected"
+            );
+        }
+    }
 }

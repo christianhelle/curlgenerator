@@ -245,3 +245,15 @@ fn lays_out_piped_output_for_80_columns() {
     assert_eq!(help(None), help(Some("80")));
     assert_ne!(help(None), help(Some("120")));
 }
+
+#[test]
+fn rejects_invalid_arguments_with_a_usage_error() {
+    let output = Command::new(binary())
+        .args(["./openapi.json", "--unknown"])
+        .output()
+        .expect("the binary should run");
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("--unknown"));
+}
