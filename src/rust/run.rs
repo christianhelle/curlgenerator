@@ -56,7 +56,7 @@ pub fn run(args: &Args, output: &Output, writer: &mut impl Write) -> std::io::Re
     let mut telemetry = Telemetry::new(args.no_logging);
     let code = execute(args, output, writer, &mut telemetry)?;
 
-    executor::isolate(|| executor::block_on(telemetry.flush()));
+    executor::isolate(|| telemetry.flush());
 
     Ok(code)
 }

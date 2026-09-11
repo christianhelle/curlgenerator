@@ -93,7 +93,7 @@ impl Telemetry {
     }
 
     /// Submits every recorded event and clears the buffer.
-    pub async fn flush(&mut self) {
+    pub fn flush(&mut self) {
         self.flush_to(COLLECTOR_URL);
     }
 

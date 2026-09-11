@@ -35,6 +35,5 @@ path = "src/rust/examples/stats.rs"
 
 [dependencies]
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
-tokio = { version = "1", features = ["full"] }
 ureq = { version = "3.4.1", default-features = false, features = ["rustls"] }
 yaml_serde = "0.10.4"
