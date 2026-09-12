@@ -65,6 +65,7 @@ function RunTests
     "link-example",
     "uber",
     "uspto",
+    "ingram-micro",
     "hubspot-events",
     "hubspot-webhooks",
     "non-oauth-scopes",
