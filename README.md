@@ -172,7 +172,7 @@ Outputs the following:
 │ │ Component         │ Count │ │
 │ ├───────────────────┼───────┤ │
 │ │ 📝 Path Items     │    14 │ │
-│ │ ⚙️  Operations     │    20 │ │
+│ │ ⚙️ Operations     │    20 │ │
 │ │ 📝 Parameters     │    14 │ │
 │ │ 📦 Request Bodies │     9 │ │
 │ │ 📋 Responses      │    20 │ │
@@ -188,7 +188,7 @@ Outputs the following:
 │ │ Metric             │ Value                                               │ │
 │ ├────────────────────┼─────────────────────────────────────────────────────┤ │
 │ │ 📄 Files Generated │ 20                                                  │ │
-│ │ ⏱️  Duration        │ 606ms                                               │ │
+│ │ ⏱️ Duration        │ 606ms                                               │ │
 │ │ 📁 Output Location │ ./                                                  │ │
 │ └────────────────────┴─────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────────────┘
