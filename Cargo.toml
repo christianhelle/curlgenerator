@@ -34,6 +34,6 @@ name = "stats"
 path = "src/rust/examples/stats.rs"
 
 [dependencies]
-serde_json = { version = "1.0.145", features = ["preserve_order"] }
+serde_json = { version = "1.0.151", features = ["preserve_order"] }
 ureq = { version = "3.4.1", default-features = false, features = ["rustls"] }
-yaml_serde = "0.10.4"
+yaml_serde = "0.10.7"
