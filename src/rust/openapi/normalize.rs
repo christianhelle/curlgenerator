@@ -329,13 +329,28 @@ fn string_field(value: &Value, field: &str) -> Option<String> {
     value.get(field).and_then(Value::as_str).map(str::to_string)
 }
 
-/// Follows a `$ref` when the value is a reference object, otherwise returns the value unchanged.
+/// The most `$ref` links followed for a single value, guarding against a reference cycle.
+const MAX_REFERENCE_DEPTH: u8 = 32;
+
+/// Follows a `$ref` when the value is a reference object, repeating until a non-reference value
+/// is reached (a reference may itself point to another reference) or the value cycles back on
+/// itself.
 fn resolve_reference<'a>(root: &'a Value, value: &'a Value) -> &'a Value {
-    value
-        .get("$ref")
-        .and_then(Value::as_str)
-        .and_then(|reference| resolve_pointer(root, reference))
-        .unwrap_or(value)
+    let mut current = value;
+
+    for _ in 0..MAX_REFERENCE_DEPTH {
+        let Some(resolved) = current
+            .get("$ref")
+            .and_then(Value::as_str)
+            .and_then(|reference| resolve_pointer(root, reference))
+        else {
+            return current;
+        };
+
+        current = resolved;
+    }
+
+    current
 }
 
 /// Resolves a local JSON pointer such as `#/components/schemas/Pet`.
@@ -466,6 +481,48 @@ mod tests {
 
         assert_eq!(schema.schema_type, Some(SchemaType::Object));
         assert_eq!(schema.properties[0].0, "name");
+    }
+
+    #[test]
+    fn follows_a_reference_that_points_to_another_reference() {
+        let document = normalize_v3(&json!({
+            "openapi": "3.0.0",
+            "paths": {
+                "/pets": { "$ref": "#/components/pathItems/Alias" }
+            },
+            "components": {
+                "pathItems": {
+                    "Alias": { "$ref": "#/components/pathItems/Pets" },
+                    "Pets": {
+                        "get": { "operationId": "listPets" }
+                    }
+                }
+            }
+        }));
+
+        assert_eq!(document.paths[0].operations.len(), 1);
+        assert_eq!(
+            document.paths[0].operations[0].operation_id.as_deref(),
+            Some("listPets")
+        );
+    }
+
+    #[test]
+    fn does_not_hang_on_a_reference_cycle() {
+        let document = normalize_v3(&json!({
+            "openapi": "3.0.0",
+            "paths": {
+                "/pets": { "$ref": "#/components/pathItems/A" }
+            },
+            "components": {
+                "pathItems": {
+                    "A": { "$ref": "#/components/pathItems/B" },
+                    "B": { "$ref": "#/components/pathItems/A" }
+                }
+            }
+        }));
+
+        assert_eq!(document.paths[0].operations.len(), 0);
     }
 
     #[test]
