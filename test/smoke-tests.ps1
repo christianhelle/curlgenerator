@@ -12,6 +12,14 @@ function ThrowOnNativeFailure
   }
 }
 
+# Specifications with known validation issues in the document itself (unrelated to code
+# generation), which always need --skip-validation regardless of OpenAPI version.
+function NeedsSkipValidation
+{
+  param ([string] $Name)
+  return $Name -eq "ingram-micro"
+}
+
 function Generate
 {
   param (
@@ -28,8 +36,8 @@ function Generate
     $args = ""
   )
 
-  Write-Host "CurlGenerator ./openapi.$format --output ./Generated/$outputPath --no-logging $args"
-  $process = Start-Process "./bin/CurlGenerator" `
+  Write-Host "curlgenerator ./openapi.$format --output ./Generated/$output --no-logging $args"
+  $process = Start-Process "../target/release/curlgenerator" `
     -Args "./openapi.$format --output ./Generated/$output --no-logging $args" `
     -NoNewWindow `
     -PassThru
@@ -37,19 +45,7 @@ function Generate
   $process | Wait-Process
   if ($process.ExitCode -ne 0)
   {
-    throw "CurlGenerator failed"
-  }
-
-  Write-Host "CurlGenerator ./openapi.$format --output ./Generated/$outputPath --output-type OneFile --no-logging $args"
-  $process = Start-Process "./bin/CurlGenerator" `
-    -Args "./openapi.$format --output ./Generated/$output --output-type OneFile --no-logging $args" `
-    -NoNewWindow `
-    -PassThru
-
-  $process | Wait-Process
-  if ($process.ExitCode -ne 0)
-  {
-    throw "CurlGenerator failed"
+    throw "curlgenerator failed"
   }
 }
 
@@ -57,7 +53,7 @@ function RunTests
 {
   param (
     [Parameter(Mandatory=$true)]
-    [ValidateSet("dotnet-run", "CurlGenerator")]
+    [ValidateSet("cargo-run", "curlgenerator")]
     [string]
     $Method,
         
@@ -77,6 +73,7 @@ function RunTests
     "link-example",
     "uber",
     "uspto",
+    "ingram-micro",
     "hubspot-events",
     "hubspot-webhooks",
     "non-oauth-scopes",
@@ -85,8 +82,13 @@ function RunTests
   )
     
   Get-ChildItem '*.http' -Recurse | ForEach-Object { Remove-Item -Path $_.FullName }
-  Write-Host "dotnet publish ../src/CurlGenerator/CurlGenerator.csproj -p:TreatWarningsAsErrors=true -p:PublishReadyToRun=true -o bin"
-  Start-Process "dotnet" -Args "publish ../src/CurlGenerator/CurlGenerator.csproj -p:TreatWarningsAsErrors=true -p:PublishReadyToRun=true -o bin" -NoNewWindow -PassThru | Wait-Process
+  Write-Host "cargo build --release --package curlgenerator"
+  $build = Start-Process "cargo" -Args "build --release --package curlgenerator --manifest-path ../Cargo.toml" -NoNewWindow -PassThru
+  $build | Wait-Process
+  if ($build.ExitCode -ne 0)
+  {
+    throw "cargo build failed"
+  }
     
   "v2.0", "v3.0", "v3.1" | ForEach-Object {
     $version = $_
@@ -99,7 +101,7 @@ function RunTests
         {
           Write-Host "Testing $filename"
           Copy-Item $filename ./openapi.$format
-          if ($version -eq "v3.1")
+          if ($version -eq "v3.1" -or (NeedsSkipValidation $_))
           {
             Generate -format $format -output $_/$version/$format -args "--skip-validation"
             Generate -format $format -output $_/$version/$format -args "--skip-validation --bash"
@@ -114,5 +116,5 @@ function RunTests
   }
 }
 
-Measure-Command { RunTests -Method "dotnet-run" -Parallel $Parallel }
+Measure-Command { RunTests -Method "curlgenerator" -Parallel $Parallel }
 Write-Host "`r`n"

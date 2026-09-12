@@ -3,9 +3,12 @@ name: Release (Preview)
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  publish:
+  release:
     uses: ./.github/workflows/release-template.yml
     with:
-      version: 0.4.1.${{ github.run_number }}-preview
+      version: 0.4.1-preview.${{ github.run_number }}
     secrets: inherit

@@ -6,16 +6,16 @@ on:
     paths-ignore:
       - '**/*'
       - '!.github/workflows/codecov.yml'
-      - '!src/**/*.csproj'
-      - '!src/**/*.cs'
+      - '!src/dotnet/**/*.csproj'
+      - '!src/dotnet/**/*.cs'
     branches:
       - '*'
   pull_request:
     paths-ignore:
       - '**/*'
       - '!.github/workflows/codecov.yml'
-      - '!src/**/*.csproj'
-      - '!src/**/*.cs'
+      - '!src/dotnet/**/*.csproj'
+      - '!src/dotnet/**/*.cs'
     branches:
       - '*'
 
@@ -38,7 +38,7 @@ jobs:
         dotnet-version: '8.0.x'    
     
     - name: 🧪 Test
-      run: dotnet test src/CurlGenerator.Tests/CurlGenerator.Tests.csproj -c Release --collect "XPlat Code Coverage" -p:UseSourceLink=true -p:PackageVersion="${{ env.VERSION }}"
+      run: dotnet test src/dotnet/CurlGenerator.Tests/CurlGenerator.Tests.csproj -c Release --collect "XPlat Code Coverage" -p:UseSourceLink=true -p:PackageVersion="${{ env.VERSION }}"
     
     - name: 🗳️ Upload
       uses: actions/upload-artifact@v7

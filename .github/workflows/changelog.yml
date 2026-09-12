@@ -6,8 +6,8 @@ on:
     paths-ignore:
       - '**/*'
       - '!.github/workflows/changelog.yml'
-      - '!src/**/*.csproj'
-      - '!src/**/*.cs'
+      - '!src/dotnet/**/*.csproj'
+      - '!src/dotnet/**/*.cs'
     branches:
       - 'main' 
 

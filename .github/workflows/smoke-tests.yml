@@ -3,64 +3,63 @@ name: Smoke Tests
 on:
   workflow_dispatch:
   push:
-    paths-ignore:
-      - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
-      - "!.github/workflows/smoke-tests.yml"
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/rust/**"
+      - "src/dotnet/**/*.cs"
+      - "src/dotnet/**/*.csproj"
+      - "test/**"
+      - ".github/workflows/template-url.yml"
+      - ".github/workflows/smoke-tests.yml"
     branches:
       - "*"
   pull_request:
-    paths-ignore:
-      - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
-      - "!.github/workflows/smoke-tests.yml"
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/rust/**"
+      - "src/dotnet/**/*.cs"
+      - "src/dotnet/**/*.csproj"
+      - "test/**"
+      - ".github/workflows/template-url.yml"
+      - ".github/workflows/smoke-tests.yml"
     branches:
       - "*"
 
 jobs:
-  
+
   file:
-    strategy:
-      matrix:
-        format: [json, yaml]
-        version: [v2.0, v3.0]
-        os: [ubuntu-latest]
-        openapi: [
-          "api-with-examples",
-          "callback-example",
-          "link-example",
-          "uber",
-          "uspto",
-          "petstore",
-          "petstore-expanded",
-          "petstore-minimal",
-          "petstore-simple",
-          "petstore-with-external-docs",
-          "ingram-micro",
-          "hubspot-events",
-          "hubspot-webhooks"
-        ]
-    
-    uses: ./.github/workflows/template.yml
-    with:
-      format: ${{ matrix.format }}
-      version: ${{ matrix.version }}
-      openapi: ${{ matrix.openapi }}
-      os: ${{ matrix.os }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
-  
+    name: 🚀 Smoke test the OpenAPI corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
+        with:
+          toolchain: stable
+
+      - name: 🚀 Run smoke tests
+        run: ./smoke-tests.ps1
+        working-directory: test
+        shell: pwsh
+
+      - name: 🗳️ Publish generated code as Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Generated Code
+          path: test/Generated/*
+
   url:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         openapi_url: [
-          "https://petstore3.swagger.io/api/v3/openapi.json", 
+          "https://petstore3.swagger.io/api/v3/openapi.json",
           "https://petstore3.swagger.io/api/v3/openapi.yaml"
         ]
 
@@ -68,4 +67,37 @@ jobs:
     with:
       os: ${{ matrix.os }}
       openapi: ${{ matrix.openapi_url }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
+
+  benchmark:
+    name: ⏱️ Performance comparison
+    needs: [file, url]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
+        with:
+          toolchain: stable
+
+      - name: 🟣 Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: 🛠️ Build both CLIs
+        run: |
+          cargo build --release --locked
+          dotnet build -c Release src/dotnet/CurlGenerator/CurlGenerator.csproj
+
+      - name: ⏱️ Compare generator runtimes over the whole corpus
+        run: |
+          ./benchmark.ps1 `
+            -RustCommand "../target/release/curlgenerator" `
+            -DotnetCommand "../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator" `
+            -Runs 3
+        working-directory: test
+        shell: pwsh
