@@ -140,6 +140,7 @@ jobs:
     name: Publish crates.io packages
     runs-on: ubuntu-latest
     needs: release
+    if: inputs.publish-crates
     env:
       CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
     steps:
