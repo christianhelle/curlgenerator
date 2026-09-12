@@ -10,7 +10,7 @@
 set -euo pipefail
 
 RUST_COMMAND="../target/release/curlgenerator"
-DOTNET_COMMAND="../src/dotnet/CurlGenerator/bin/Release/net10.0/curlgenerator"
+DOTNET_COMMAND="../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator"
 RUNS=3
 
 usage() {
