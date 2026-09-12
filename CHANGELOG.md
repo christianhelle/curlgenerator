@@ -8,6 +8,7 @@
 
 - Migrate NuGet publishing in release workflows to Trusted Publishing [\#243](https://github.com/christianhelle/curlgenerator/issues/243)
 - bug ?  [\#117](https://github.com/christianhelle/curlgenerator/issues/117)
+- Rewrite the CLI in Rust [\#347](https://github.com/christianhelle/curlgenerator/pull/347) ([christianhelle](https://github.com/christianhelle))
 - Fix code after the recent package upgrades [\#262](https://github.com/christianhelle/curlgenerator/pull/262) ([chi-lambda](https://github.com/chi-lambda))
 - fix: escape curly braces and handle multiline descriptions in bash scripts [\#256](https://github.com/christianhelle/curlgenerator/pull/256) ([ESearcy](https://github.com/ESearcy))
 
