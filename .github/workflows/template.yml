@@ -67,6 +67,9 @@ jobs:
         $elapsed = Measure-Command {
           ../target/release/curlgenerator ./openapi.${{ inputs.format }} --output ./rust-out --no-logging ${{ matrix.args }}
         }
+        if ($LASTEXITCODE -ne 0) {
+          throw "The Rust CLI exited with code $LASTEXITCODE"
+        }
         "seconds=$([math]::Round($elapsed.TotalSeconds, 3))" >> $env:GITHUB_OUTPUT
       working-directory: test
       shell: pwsh
@@ -78,6 +81,9 @@ jobs:
         New-Item -ItemType Directory -Path ./dotnet-out -Force | Out-Null
         $elapsed = Measure-Command {
           dotnet ../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator.dll ./openapi.${{ inputs.format }} --output ./dotnet-out --no-logging ${{ matrix.args }}
+        }
+        if ($LASTEXITCODE -ne 0) {
+          throw "The legacy .NET CLI exited with code $LASTEXITCODE"
         }
         "seconds=$([math]::Round($elapsed.TotalSeconds, 3))" >> $env:GITHUB_OUTPUT
       working-directory: test
