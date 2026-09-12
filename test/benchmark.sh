@@ -9,8 +9,11 @@
 
 set -euo pipefail
 
-RUST_COMMAND="../target/release/curlgenerator"
-DOTNET_COMMAND="../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPOSITORY="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+RUST_COMMAND="$REPOSITORY/target/release/curlgenerator"
+DOTNET_COMMAND="$REPOSITORY/src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator"
 RUNS=3
 
 usage() {
@@ -53,9 +56,6 @@ while [[ $# -gt 0 ]]; do
     ;;
   esac
 done
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPOSITORY="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Discover all OpenAPI specifications under test/OpenAPI, sorted
 mapfile -t SPECIFICATIONS < <(find "$REPOSITORY/test/OpenAPI" -type f \( -name '*.json' -o -name '*.yaml' \) | sort)

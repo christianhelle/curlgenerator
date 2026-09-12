@@ -18,8 +18,8 @@
 #>
 [CmdletBinding()]
 param(
-    [string] $RustCommand = "../target/release/curlgenerator",
-    [string] $DotnetCommand = "../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator",
+    [string] $RustCommand = (Join-Path $PSScriptRoot "../target/release/curlgenerator"),
+    [string] $DotnetCommand = (Join-Path $PSScriptRoot "../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator"),
     [int] $Runs = 3
 )
 
