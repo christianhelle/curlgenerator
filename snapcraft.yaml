@@ -1,0 +1,46 @@
+name: curlgenerator
+base: core24
+version: 0.4.1
+adopt-info: curlgenerator
+summary: Generate cURL requests from OpenAPI specifications
+description: |
+  cURL Request Generator converts OpenAPI specifications into ready-to-run
+  cURL request scripts for PowerShell and Bash.
+
+  Key capabilities:
+  - Generate one cURL request script per operation
+  - Output PowerShell .ps1 or Bash .sh scripts
+  - Override base URLs and content types
+  - Carry custom authorization headers into generated requests
+  - Optionally acquire Azure access tokens for Authorization headers
+  - Skip validation for OpenAPI 3.1 documents when needed
+
+title: cURL Request Generator
+contact: https://github.com/christianhelle/curlgenerator/issues
+issues: https://github.com/christianhelle/curlgenerator/issues
+source-code: https://github.com/christianhelle/curlgenerator
+website: https://christianhelle.com/curlgenerator
+donation: https://buymeacoffee.com/christianhelle
+
+grade: stable
+confinement: strict
+license: GPL-3.0
+
+apps:
+  curlgenerator:
+    command: bin/curlgenerator
+    plugs:
+      - network
+      - home
+
+parts:
+  curlgenerator:
+    plugin: rust
+    source: .
+    override-build: |
+      cargo build --release --package curlgenerator
+      install -D -m755 target/release/curlgenerator $SNAPCRAFT_PART_INSTALL/bin/curlgenerator
+    build-packages:
+      - libssl-dev
+      - pkg-config
+      - git

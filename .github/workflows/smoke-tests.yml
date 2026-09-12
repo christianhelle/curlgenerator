@@ -3,30 +3,48 @@ name: Smoke Tests
 on:
   workflow_dispatch:
   push:
-    paths-ignore:
-      - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
-      - "!.github/workflows/smoke-tests.yml"
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/rust/**"
+      - "src/dotnet/**/*.cs"
+      - "src/dotnet/**/*.csproj"
+      - "test/**"
+      - ".github/workflows/template.yml"
+      - ".github/workflows/template-url.yml"
+      - ".github/workflows/smoke-tests.yml"
     branches:
       - "*"
   pull_request:
-    paths-ignore:
-      - "**/*"
-      - '!src/**/*.cs'
-      - '!src/**/*.csproj'
-      - "!.github/workflows/template.yml"
-      - "!.github/workflows/template-url.yml"
-      - "!.github/workflows/smoke-tests.yml"
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/rust/**"
+      - "src/dotnet/**/*.cs"
+      - "src/dotnet/**/*.csproj"
+      - "test/**"
+      - ".github/workflows/template.yml"
+      - ".github/workflows/template-url.yml"
+      - ".github/workflows/smoke-tests.yml"
     branches:
       - "*"
 
 jobs:
-  
+
+  summary-header:
+    name: 📊 Prepare summary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write the timing table header
+        run: |
+          echo "## Smoke test timings" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Specification | Rust CLI | .NET CLI (legacy) |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | ---: | ---: |" >> $GITHUB_STEP_SUMMARY
+
   file:
     strategy:
+      fail-fast: false
       matrix:
         format: [json, yaml]
         version: [v2.0, v3.0]
@@ -46,21 +64,21 @@ jobs:
           "hubspot-events",
           "hubspot-webhooks"
         ]
-    
+
     uses: ./.github/workflows/template.yml
     with:
       format: ${{ matrix.format }}
       version: ${{ matrix.version }}
       openapi: ${{ matrix.openapi }}
       os: ${{ matrix.os }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
-  
+
   url:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         openapi_url: [
-          "https://petstore3.swagger.io/api/v3/openapi.json", 
+          "https://petstore3.swagger.io/api/v3/openapi.json",
           "https://petstore3.swagger.io/api/v3/openapi.yaml"
         ]
 
@@ -68,4 +86,35 @@ jobs:
     with:
       os: ${{ matrix.os }}
       openapi: ${{ matrix.openapi_url }}
-      command: 'dotnet run --project ../src/CurlGenerator/CurlGenerator.csproj'
+
+  benchmark:
+    name: ⏱️ Performance comparison
+    needs: [file, url]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 🟣 Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: 🛠️ Build both CLIs
+        run: |
+          cargo build --release --locked
+          dotnet build -c Release src/dotnet/CurlGenerator/CurlGenerator.csproj
+
+      - name: ⏱️ Compare generator runtimes over the whole corpus
+        run: |
+          ./benchmark.ps1 `
+            -RustCommand "../target/release/curlgenerator" `
+            -DotnetCommand "../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator" `
+            -Runs 3
+        working-directory: test
+        shell: pwsh

@@ -1,0 +1,39 @@
+[package]
+name = "curlgenerator"
+authors = ["Christian Helle"]
+version = "0.4.1"
+edition = "2024"
+description = "Generate cURL requests from OpenAPI specifications v2.0 and v3.0"
+homepage = "https://christianhelle.com/curlgenerator/"
+license = "GPL-3.0-only"
+repository = "https://github.com/christianhelle/curlgenerator"
+rust-version = "1.96"
+readme = "README.md"
+keywords = ["openapi", "curl", "generator", "cli", "rest"]
+categories = ["command-line-utilities", "development-tools"]
+include = ["/src/rust/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE"]
+
+[lib]
+name = "curlgenerator"
+path = "src/rust/lib.rs"
+
+[[bin]]
+name = "curlgenerator"
+path = "src/rust/main.rs"
+
+[[test]]
+name = "cli"
+path = "src/rust/tests/cli.rs"
+
+[[test]]
+name = "corpus"
+path = "src/rust/tests/corpus.rs"
+
+[[example]]
+name = "stats"
+path = "src/rust/examples/stats.rs"
+
+[dependencies]
+serde_json = { version = "1.0.151", features = ["preserve_order"] }
+ureq = { version = "3.4.1", default-features = false, features = ["rustls"] }
+yaml_serde = "0.10.7"

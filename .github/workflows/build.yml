@@ -3,19 +3,23 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    paths-ignore:
-      - "**/*"
-      - "!.github/workflows/build.yml"
-      - "!src/**/*.csproj"
-      - "!src/**/*.cs"
+    paths:
+      - ".github/workflows/build.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/rust/**"
+      - "src/dotnet/**/*.cs"
+      - "src/dotnet/**/*.csproj"
     branches:
       - "*"
   pull_request:
-    paths-ignore:
-      - "**/*"
-      - "!.github/workflows/build.yml"
-      - "!src/**/*.csproj"
-      - "!src/**/*.cs"
+    paths:
+      - ".github/workflows/build.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/rust/**"
+      - "src/dotnet/**/*.cs"
+      - "src/dotnet/**/*.csproj"
     branches:
       - "*"
 
@@ -23,8 +27,36 @@ env:
   VERSION: 0.4.1.${{ github.run_number }}
 
 jobs:
-  build:
-    name: 👌 Verify build
+  rust:
+    name: 🦀 Verify Rust CLI
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: 🎨 Check formatting
+        run: cargo fmt --all --check
+
+      - name: 🔍 Lint
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: 🧪 Test
+        run: cargo test --locked
+
+      - name: 🛠️ Build
+        run: cargo build --release --locked
+
+  dotnet:
+    name: 👌 Verify legacy .NET build
     runs-on: ubuntu-latest
     steps:
       - name: 🛒 Checkout repository
@@ -33,9 +65,9 @@ jobs:
         with:
           dotnet-version: "8.0.x"
       - name: 🛠️ Build
-        run: dotnet build -c Release CurlGenerator.sln -p:UseSourceLink=true -p:PackageVersion="${{ env.VERSION }}" -p:Version="${{ env.VERSION }}"
+        run: dotnet build -c Release src/dotnet/CurlGenerator.sln -p:UseSourceLink=true -p:PackageVersion="${{ env.VERSION }}" -p:Version="${{ env.VERSION }}"
       - name: 🧪 Test
-        run: dotnet test CurlGenerator.sln -c Release
+        run: dotnet test src/dotnet/CurlGenerator.sln -c Release
       - name: 🗳️ Upload
         uses: actions/upload-artifact@v7
         with:
