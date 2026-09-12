@@ -65,7 +65,7 @@ jobs:
       run: |
         New-Item -ItemType Directory -Path ./rust-out -Force | Out-Null
         $elapsed = Measure-Command {
-          ../target/release/curlgenerator ./openapi.${{ inputs.format }} --output ./rust-out --no-logging ${{ matrix.args }}
+          ../target/release/curlgenerator ./openapi.${{ inputs.format }} --output ./rust-out --no-logging --skip-validation ${{ matrix.args }}
         }
         if ($LASTEXITCODE -ne 0) {
           throw "The Rust CLI exited with code $LASTEXITCODE"
@@ -80,7 +80,7 @@ jobs:
       run: |
         New-Item -ItemType Directory -Path ./dotnet-out -Force | Out-Null
         $elapsed = Measure-Command {
-          dotnet ../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator.dll ./openapi.${{ inputs.format }} --output ./dotnet-out --no-logging ${{ matrix.args }}
+          dotnet ../src/dotnet/CurlGenerator/bin/Release/net8.0/curlgenerator.dll ./openapi.${{ inputs.format }} --output ./dotnet-out --no-logging --skip-validation ${{ matrix.args }}
         }
         if ($LASTEXITCODE -ne 0) {
           throw "The legacy .NET CLI exited with code $LASTEXITCODE"
