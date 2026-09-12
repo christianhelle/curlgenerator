@@ -60,7 +60,7 @@ function Measure-Generator {
         }
 
         $total += $elapsed
-        Write-Output "$Name run $run of ${Runs}: $([math]::Round($elapsed.TotalSeconds, 2))s"
+        Write-Host "$Name run $run of ${Runs}: $([math]::Round($elapsed.TotalSeconds, 2))s"
     }
 
     if (Test-Path $output) {
