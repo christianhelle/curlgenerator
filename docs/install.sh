@@ -169,7 +169,10 @@ download_and_install() {
     return 1
   fi
 
-  mapfile -t binary_entries < <(awk -F/ -v name="$BINARY_NAME" '$NF == name && $0 !~ /\/$/ { print }' <<<"$archive_entries")
+  binary_entries=()
+  while IFS= read -r entry; do
+    [[ -n "$entry" ]] && binary_entries+=("$entry")
+  done < <(awk -F/ -v name="$BINARY_NAME" '$NF == name && $0 !~ /\/$/ { print }' <<<"$archive_entries")
   binary_entry_count=${#binary_entries[@]}
   if [[ "$binary_entry_count" -ne 1 ]]; then
     log_error "Expected exactly one '$BINARY_NAME' entry in '$archive_name', found $binary_entry_count."
