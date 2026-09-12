@@ -28,9 +28,9 @@ function Generate
     $args = ""
   )
 
-  Write-Host "curlgenerator ./openapi.$format --output ./Generated/$output $args"
+  Write-Host "curlgenerator ./openapi.$format --output ./Generated/$output --no-logging $args"
   $process = Start-Process "../target/release/curlgenerator" `
-    -Args "./openapi.$format --output ./Generated/$output $args" `
+    -Args "./openapi.$format --output ./Generated/$output --no-logging $args" `
     -NoNewWindow `
     -PassThru
 
