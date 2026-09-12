@@ -17,12 +17,22 @@ filenames=(
   "link-example"
   "uber"
   "uspto"
+  "ingram-micro"
   "hubspot-events"
   "hubspot-webhooks"
   "non-oauth-scopes"
   "webhook-example"
   "tictactoe"
 )
+
+# Specifications with known validation issues in the document itself (unrelated to code
+# generation), which always need --skip-validation regardless of OpenAPI version.
+needs_skip_validation() {
+  case "$1" in
+  ingram-micro) return 0 ;;
+  *) return 1 ;;
+  esac
+}
 
 generate() {
   local format="$1"
@@ -52,7 +62,7 @@ run_tests() {
         if [ -f "$filename" ]; then
           echo "Testing $filename"
           cp "$filename" "./openapi.$format"
-          if [ "$version" = "v3.1" ]; then
+          if [ "$version" = "v3.1" ] || needs_skip_validation "$name"; then
             generate "$format" "$name/$version/$format" --skip-validation
             generate "$format" "$name/$version/$format" --skip-validation --bash
           else
