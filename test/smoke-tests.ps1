@@ -12,6 +12,14 @@ function ThrowOnNativeFailure
   }
 }
 
+# Specifications with known validation issues in the document itself (unrelated to code
+# generation), which always need --skip-validation regardless of OpenAPI version.
+function NeedsSkipValidation
+{
+  param ([string] $Name)
+  return $Name -eq "ingram-micro"
+}
+
 function Generate
 {
   param (
@@ -93,7 +101,7 @@ function RunTests
         {
           Write-Host "Testing $filename"
           Copy-Item $filename ./openapi.$format
-          if ($version -eq "v3.1")
+          if ($version -eq "v3.1" -or (NeedsSkipValidation $_))
           {
             Generate -format $format -output $_/$version/$format -args "--skip-validation"
             Generate -format $format -output $_/$version/$format -args "--skip-validation --bash"
