@@ -77,8 +77,23 @@ fn append_payload(script: &mut String, content_type: &str, schema: Option<&Schem
             }
         }
         OCTET_STREAM => line(script, "  --data-binary '@filename'"),
-        _ => line(script, &format!("  -d '{}'", sample_json(schema))),
+        _ => line(
+            script,
+            &format!("  -d '{}'", escape_single_quoted(&sample_json(schema))),
+        ),
     }
+}
+
+/// Escapes a value for embedding inside a single-quoted Bash string, so a value taken from the
+/// specification (a schema `example`, say) cannot end the string early.
+fn escape_single_quoted(value: &str) -> String {
+    value.replace('\'', r"'\''")
+}
+
+/// Collapses embedded line breaks, so a value taken from the specification cannot break out of a
+/// single-line `#` comment and run as script content.
+fn sanitize_comment(value: &str) -> String {
+    value.replace(['\r', '\n'], " ")
 }
 
 fn request_content_type(operation: &Operation) -> String {
@@ -113,14 +128,21 @@ fn query_string(operation: &Operation) -> String {
 
 fn append_summary(script: &mut String, path: &str, operation: &Operation) {
     line(script, "#");
-    line(script, &format!("# Request: {} {path}", operation.method));
+    line(
+        script,
+        &format!(
+            "# Request: {} {}",
+            sanitize_comment(&operation.method),
+            sanitize_comment(path)
+        ),
+    );
 
     if let Some(summary) = operation
         .summary
         .as_deref()
         .filter(|value| !is_blank(value))
     {
-        line(script, &format!("# Summary: {summary}"));
+        line(script, &format!("# Summary: {}", sanitize_comment(summary)));
     }
 
     if let Some(description) = operation
@@ -154,7 +176,7 @@ fn append_parameters(script: &mut String, operation: &Operation) {
     for parameter in declared {
         let variable = convert_kebab_case_to_snake_case(&parameter.name);
         let comment = match &parameter.description {
-            Some(description) => format!("# {description}"),
+            Some(description) => format!("# {}", sanitize_comment(description)),
             None => format!(
                 "# {} parameter: {variable}",
                 location_name(parameter.location)
@@ -443,6 +465,53 @@ mod tests {
         assert!(script.contains(&format!(
             "  -d '{{{NEWLINE}  \"name\": \"string\"{NEWLINE}}}'"
         )));
+    }
+
+    #[test]
+    fn escapes_single_quotes_in_the_json_payload() {
+        let script = render(
+            &settings(),
+            "",
+            "/pet",
+            &Operation {
+                method: "POST".to_string(),
+                request_body: Some(RequestBody {
+                    content: vec![MediaType {
+                        content_type: "application/json".to_string(),
+                        schema: Some(Schema {
+                            example: Some(serde_json::json!("O'Reilly")),
+                            ..Schema::default()
+                        }),
+                    }],
+                }),
+                ..operation()
+            },
+        );
+
+        assert!(script.contains("-d '\"O'\\''Reilly\"'"));
+    }
+
+    #[test]
+    fn sanitizes_embedded_line_breaks_in_comments() {
+        let script = render(
+            &settings(),
+            "",
+            "/pet",
+            &Operation {
+                summary: Some("first line\nsecond line".to_string()),
+                parameters: Some(vec![parameter(
+                    "id",
+                    ParameterLocation::Query,
+                    Some("first\nsecond"),
+                )]),
+                ..operation()
+            },
+        );
+
+        assert!(script.contains("# Summary: first line second line"));
+        assert!(script.contains("# first second"));
+        assert!(!script.lines().any(|line| line == "second line"));
+        assert!(!script.lines().any(|line| line == "second"));
     }
 
     #[test]
