@@ -4,7 +4,7 @@ set -euo pipefail
 
 GITHUB_REPO="christianhelle/curlgenerator"
 BINARY_NAME="curlgenerator"
-INSTALL_DIR="${INSTALL_DIR:-~/.local/bin}"
+INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 DOCUMENTATION_URL="https://christianhelle.com/curlgenerator/"
 REQUESTED_VERSION="${VERSION:-}"
 
