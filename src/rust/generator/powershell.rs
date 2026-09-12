@@ -54,23 +54,45 @@ pub fn render(
             .find(|content_type| content_type.contains(&settings.content_type))
     {
         let payload = sample_json(body.schema_for(content_type));
-        line(&mut script, &format!("  -d '{payload}'"));
+        line(
+            &mut script,
+            &format!("  -d '{}'", escape_single_quoted(&payload)),
+        );
     }
 
     script.push_str(NEWLINE);
     script
 }
 
+/// Escapes a value for embedding inside a single-quoted PowerShell string, so a value taken from
+/// the specification (a schema `example`, say) cannot end the string early.
+fn escape_single_quoted(value: &str) -> String {
+    value.replace('\'', "''")
+}
+
+/// Neutralizes an embedded `#>`, so a value taken from the specification cannot close the
+/// enclosing PowerShell block comment and run as script content.
+fn escape_comment(value: &str) -> String {
+    value.replace("#>", "# >")
+}
+
 fn append_summary(script: &mut String, path: &str, operation: &Operation) {
     line(script, "<#");
-    line(script, &format!("  Request: {} {path}", operation.method));
+    line(
+        script,
+        &format!(
+            "  Request: {} {}",
+            escape_comment(&operation.method),
+            escape_comment(path)
+        ),
+    );
 
     if let Some(summary) = operation
         .summary
         .as_deref()
         .filter(|value| !is_blank(value))
     {
-        line(script, &format!("  Summary: {summary}"));
+        line(script, &format!("  Summary: {}", escape_comment(summary)));
     }
 
     if let Some(description) = operation
@@ -78,7 +100,10 @@ fn append_summary(script: &mut String, path: &str, operation: &Operation) {
         .as_deref()
         .filter(|value| !is_blank(value))
     {
-        line(script, &format!("  Description: {description}"));
+        line(
+            script,
+            &format!("  Description: {}", escape_comment(description)),
+        );
     }
 
     line(script, "#>");
@@ -112,7 +137,7 @@ fn append_parameters(script: &mut String, operation: &Operation) -> Vec<(String,
         let variable = convert_kebab_case_to_snake_case(&parameter.name);
 
         if let Some(description) = &parameter.description {
-            line(script, &format!("   <# {description} #>"));
+            line(script, &format!("   <# {} #>", escape_comment(description)));
         }
 
         line(script, "   [Parameter(Mandatory=$True)]");
@@ -337,6 +362,52 @@ mod tests {
         assert!(script.contains(&format!(
             "  -d '{{{NEWLINE}  \"name\": \"string\"{NEWLINE}}}'"
         )));
+    }
+
+    #[test]
+    fn escapes_single_quotes_in_the_json_payload() {
+        let script = render(
+            &settings(),
+            "",
+            "/pet",
+            &Operation {
+                request_body: Some(RequestBody {
+                    content: vec![MediaType {
+                        content_type: "application/json".to_string(),
+                        schema: Some(Schema {
+                            example: Some(serde_json::json!("O'Reilly")),
+                            ..Schema::default()
+                        }),
+                    }],
+                }),
+                ..operation()
+            },
+        );
+
+        assert!(script.contains("-d '\"O''Reilly\"'"));
+    }
+
+    #[test]
+    fn escapes_an_embedded_comment_terminator_in_the_summary_and_description() {
+        let script = render(
+            &settings(),
+            "",
+            "/pet",
+            &Operation {
+                summary: Some("close #> then inject".to_string()),
+                parameters: Some(vec![parameter(
+                    "id",
+                    ParameterLocation::Query,
+                    Some("also #> here"),
+                )]),
+                ..operation()
+            },
+        );
+
+        assert!(!script.contains("#> then inject"));
+        assert!(!script.contains("#> here"));
+        assert!(script.contains("close # > then inject"));
+        assert!(script.contains("also # > here"));
     }
 
     #[test]
