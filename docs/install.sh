@@ -79,7 +79,7 @@ get_latest_release() {
 
   log_info "Fetching latest release information..."
 
-  if ! curl -fsSL "$api_url" | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$'; then
+  if ! curl -fsSL --proto '=https' --tlsv1.2 "$api_url" | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$'; then
     log_error "Failed to fetch release information from GitHub Releases."
     exit 1
   fi
@@ -150,7 +150,7 @@ download_and_install() {
 
   log_info "Downloading $archive_name..."
 
-  if ! curl -fsSL -o "$archive_path" "$download_url"; then
+  if ! curl -fsSL --proto '=https' --tlsv1.2 -o "$archive_path" "$download_url"; then
     log_error "Failed to download '$archive_name' from GitHub Releases."
     if [[ "$platform" == *"-arm64" ]]; then
       log_error "That usually means the current release does not publish a native $platform archive yet."
