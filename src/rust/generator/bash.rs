@@ -24,13 +24,16 @@ pub fn render(
     append_summary(&mut script, path, operation);
     append_parameters(&mut script, operation);
 
-    let route = path.replace('{', "$").replace('}', "");
+    let route = route_for(path);
     let query = query_string(operation);
     let verb = &operation.method;
 
     line(
         &mut script,
-        &format!("curl -X {verb} \"{base_url}{route}{query}\" \\"),
+        &format!(
+            "curl -X {verb} \"{}{route}{query}\" \\",
+            escape_double_quoted(base_url)
+        ),
     );
     line(
         &mut script,
@@ -40,7 +43,10 @@ pub fn render(
     let content_type = request_content_type(operation);
     line(
         &mut script,
-        &format!("  -H \"Content-Type: {content_type}\" \\"),
+        &format!(
+            "  -H \"Content-Type: {}\" \\",
+            escape_double_quoted(&content_type)
+        ),
     );
 
     if let Some(authorization) = settings
@@ -50,7 +56,10 @@ pub fn render(
     {
         line(
             &mut script,
-            &format!("  -H \"Authorization: {authorization}\" \\"),
+            &format!(
+                "  -H \"Authorization: {}\" \\",
+                escape_double_quoted(authorization)
+            ),
         );
     }
 
@@ -96,6 +105,45 @@ fn sanitize_comment(value: &str) -> String {
     value.replace(['\r', '\n'], " ")
 }
 
+/// Escapes a value for embedding inside a double-quoted Bash string, so a value taken from the
+/// specification (a server URL or media type, say) cannot end the string or run as a command via
+/// `$(...)` or backtick substitution.
+fn escape_double_quoted(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('$', "\\$")
+        .replace('`', "\\`")
+}
+
+/// Renders a path template as the route embedded in the double-quoted request URL: a `{name}`
+/// placeholder becomes a `$name` variable reference, and the literal text around it is escaped.
+fn route_for(path: &str) -> String {
+    let mut route = String::new();
+    let mut rest = path;
+
+    while let Some(start) = rest.find('{') {
+        route.push_str(&escape_double_quoted(&rest[..start]));
+        rest = &rest[start + '{'.len_utf8()..];
+
+        match rest.find('}') {
+            Some(end) => {
+                route.push('$');
+                route.push_str(&rest[..end]);
+                rest = &rest[end + '}'.len_utf8()..];
+            }
+            None => {
+                // No closing brace: treat the rest of the path as literal text.
+                route.push('{');
+                break;
+            }
+        }
+    }
+
+    route.push_str(&escape_double_quoted(rest));
+    route
+}
+
 fn request_content_type(operation: &Operation) -> String {
     operation
         .request_body
@@ -115,7 +163,7 @@ fn query_string(operation: &Operation) -> String {
         .filter(|parameter| parameter.location == ParameterLocation::Query)
         .map(|parameter| {
             let variable = convert_kebab_case_to_snake_case(&parameter.name);
-            format!("{}=${{{variable}}}", parameter.name)
+            format!("{}=${{{variable}}}", escape_double_quoted(&parameter.name))
         })
         .collect();
 
@@ -275,6 +323,92 @@ mod tests {
 
     fn lines(script: &str) -> Vec<&str> {
         script.split(NEWLINE).collect()
+    }
+
+    #[test]
+    fn escapes_command_substitution_in_the_base_url() {
+        let script = render(
+            &settings(),
+            "https://example.com/$(rm -rf ~)",
+            "/pet",
+            &operation(),
+        );
+
+        assert!(script.contains(r#"curl -X GET "https://example.com/\$(rm -rf ~)/pet""#));
+    }
+
+    #[test]
+    fn escapes_command_substitution_in_the_content_type() {
+        let script = render(
+            &settings(),
+            "",
+            "/pet",
+            &Operation {
+                request_body: Some(RequestBody {
+                    content: vec![MediaType {
+                        content_type: "application/json$(rm -rf ~)".to_string(),
+                        schema: None,
+                    }],
+                }),
+                ..operation()
+            },
+        );
+
+        assert!(script.contains(r#"-H "Content-Type: application/json\$(rm -rf ~)""#));
+    }
+
+    #[test]
+    fn escapes_command_substitution_in_the_authorization_header() {
+        let script = render(
+            &GeneratorSettings {
+                authorization_header: Some("Bearer $(rm -rf ~)".to_string()),
+                generate_bash_scripts: true,
+                ..GeneratorSettings::new("./openapi.json")
+            },
+            "",
+            "/pet",
+            &operation(),
+        );
+
+        assert!(script.contains(r#"-H "Authorization: Bearer \$(rm -rf ~)""#));
+    }
+
+    #[test]
+    fn escapes_literal_path_text_while_keeping_parameter_references_live() {
+        let script = render(
+            &settings(),
+            "",
+            "/pet/$(rm -rf ~)/{petId}",
+            &Operation {
+                parameters: Some(vec![parameter("petId", ParameterLocation::Path, None)]),
+                ..operation()
+            },
+        );
+
+        assert!(script.contains(r#"curl -X GET "/pet/\$(rm -rf ~)/$petId""#));
+    }
+
+    #[test]
+    fn escapes_command_substitution_in_a_query_parameter_name() {
+        let script = render(
+            &settings(),
+            "",
+            "/pet",
+            &Operation {
+                parameters: Some(vec![parameter(
+                    "id$(rm -rf ~)",
+                    ParameterLocation::Query,
+                    None,
+                )]),
+                ..operation()
+            },
+        );
+
+        // Only the literal key text before `=` is escaped here; the `${...}` variable reference
+        // that follows is a separate, pre-existing concern (a raw specification-derived name used
+        // as a Bash identifier) that this fix does not attempt to sanitize.
+        assert!(script.contains(r"/pet?id\$(rm -rf ~)="));
+        assert!(!script.contains("/pet?id$(rm -rf ~)="));
     }
 
     #[test]

@@ -74,6 +74,13 @@ uses `:`. This accounts for the last 6 of the 64 differing files.
   bypasses the check entirely.
 - **The document is parsed once.** The .NET command parses the specification twice, once to
   validate and once to generate.
+- **Generated scripts escape specification text.** The .NET generator embeds schema examples,
+  summaries, descriptions, server URLs, and media types into the generated scripts verbatim. A
+  crafted or untrusted specification can use that to break out of a quoted argument, run its own
+  shell command via `$(...)`/backticks, or close a PowerShell `<# ... #>` block comment early. The
+  Rust port escapes all of this before embedding it. It does not (yet) sanitize a parameter or
+  property name that is itself used as a Bash or PowerShell variable identifier — the same known
+  gap as the legacy CLI.
 
 ## Structure
 
