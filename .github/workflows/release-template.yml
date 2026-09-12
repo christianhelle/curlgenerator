@@ -48,8 +48,15 @@ jobs:
       - name: Update Version
         shell: pwsh
         run: |
-          $rootToml = (Get-Content -Path Cargo.toml -Raw) -replace 'version = "0.4.1"', 'version = "${{ inputs.version }}"'
+          $version = "${{ inputs.version }}"
+          $replacement = '"' + $version + '"'
+
+          $rootToml = (Get-Content -Path Cargo.toml -Raw) -replace '(?<=version = )"0\.4\.1"', $replacement
           $rootToml | Set-Content -Path Cargo.toml
+
+          # cargo build --locked needs Cargo.lock's own entry for this package to match Cargo.toml.
+          $rootLock = (Get-Content -Path Cargo.lock -Raw) -replace '(?<=name = "curlgenerator"\r?\nversion = )"0\.4\.1"', $replacement
+          $rootLock | Set-Content -Path Cargo.lock
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
@@ -155,8 +162,14 @@ jobs:
       - name: Update Version
         shell: pwsh
         run: |
-          $toml = (Get-Content -Path Cargo.toml -Raw) -replace 'version = "0.4.1"', 'version = "${{ inputs.version }}"'
+          $version = "${{ inputs.version }}"
+          $replacement = '"' + $version + '"'
+
+          $toml = (Get-Content -Path Cargo.toml -Raw) -replace '(?<=version = )"0\.4\.1"', $replacement
           $toml | Set-Content -Path Cargo.toml
+
+          $lock = (Get-Content -Path Cargo.lock -Raw) -replace '(?<=name = "curlgenerator"\r?\nversion = )"0\.4\.1"', $replacement
+          $lock | Set-Content -Path Cargo.lock
 
       - name: Publish curlgenerator
         run: cargo publish --allow-dirty
