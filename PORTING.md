@@ -79,19 +79,19 @@ uses `:`. This accounts for the last 6 of the 64 differing files.
 
 | .NET | Rust |
 | --- | --- |
-| `CurlGenerator.Core/StringExtensions.cs` | `core/src/string_extensions.rs` |
-| `CurlGenerator.Core/OperationNameGenerator.cs` | `core/src/operation_name.rs` |
-| `CurlGenerator.Core/OpenApiDocumentFactory.cs` | `core/src/openapi/{source,loader}.rs` |
-| `CurlGenerator.Core/ScriptFileGenerator.cs` | `core/src/generator/{pipeline,powershell,bash,sample}.rs` |
-| `CurlGenerator.Core/GeneratorSettings.cs` | `core/src/model.rs` |
-| `CurlGenerator/Validation/OpenApiStats.cs` | `core/src/openapi/inspect.rs` |
-| `CurlGenerator/Validation/OpenApiValidator.cs` | `cli/src/validation.rs` |
-| `CurlGenerator/SupportInformation.cs` | `core/src/support_information.rs` |
-| `CurlGenerator/Settings.cs`, `Program.cs` | `cli/src/{args,help,main}.rs` |
-| `CurlGenerator/GenerateCommand.cs` | `cli/src/{run,ui}.rs` |
-| `CurlGenerator/Analytics.cs` | `cli/src/telemetry.rs` |
-| `CurlGenerator/PrivacyHelper.cs` | `cli/src/privacy.rs` |
-| `CurlGenerator.Core/AzureEntraID.cs` | `cli/src/auth.rs` |
+| `CurlGenerator.Core/StringExtensions.cs` | `src/rust/string_extensions.rs` |
+| `CurlGenerator.Core/OperationNameGenerator.cs` | `src/rust/operation_name.rs` |
+| `CurlGenerator.Core/OpenApiDocumentFactory.cs` | `src/rust/openapi/{source,loader}.rs` |
+| `CurlGenerator.Core/ScriptFileGenerator.cs` | `src/rust/generator/{pipeline,powershell,bash,sample}.rs` |
+| `CurlGenerator.Core/GeneratorSettings.cs` | `src/rust/model.rs` |
+| `CurlGenerator/Validation/OpenApiStats.cs` | `src/rust/openapi/inspect.rs` |
+| `CurlGenerator/Validation/OpenApiValidator.cs` | `src/rust/validation.rs` |
+| `CurlGenerator/SupportInformation.cs` | `src/rust/support_information.rs` |
+| `CurlGenerator/Settings.cs`, `Program.cs` | `src/rust/{args,help,main}.rs` |
+| `CurlGenerator/GenerateCommand.cs` | `src/rust/{run,ui}.rs` |
+| `CurlGenerator/Analytics.cs` | `src/rust/telemetry.rs` |
+| `CurlGenerator/PrivacyHelper.cs` | `src/rust/privacy.rs` |
+| `CurlGenerator.Core/AzureEntraID.cs` | `src/rust/auth.rs` |
 
-The Spectre.Console panels and tables are reproduced by `cli/src/ui/layout.rs`, which draws the
+The Spectre.Console panels and tables are reproduced by `src/rust/ui/layout.rs`, which draws the
 same box characters and colors without a console framework.
