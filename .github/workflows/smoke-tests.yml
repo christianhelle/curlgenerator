@@ -10,7 +10,6 @@ on:
       - "src/dotnet/**/*.cs"
       - "src/dotnet/**/*.csproj"
       - "test/**"
-      - ".github/workflows/template.yml"
       - ".github/workflows/template-url.yml"
       - ".github/workflows/smoke-tests.yml"
     branches:
@@ -23,7 +22,6 @@ on:
       - "src/dotnet/**/*.cs"
       - "src/dotnet/**/*.csproj"
       - "test/**"
-      - ".github/workflows/template.yml"
       - ".github/workflows/template-url.yml"
       - ".github/workflows/smoke-tests.yml"
     branches:
@@ -31,46 +29,27 @@ on:
 
 jobs:
 
-  summary-header:
-    name: 📊 Prepare summary
-    runs-on: ubuntu-latest
-    steps:
-      - name: Write the timing table header
-        run: |
-          echo "## Smoke test timings" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Specification | Rust CLI | .NET CLI (legacy) |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | ---: | ---: |" >> $GITHUB_STEP_SUMMARY
-
   file:
-    strategy:
-      fail-fast: false
-      matrix:
-        format: [json, yaml]
-        version: [v2.0, v3.0]
-        os: [ubuntu-latest]
-        openapi: [
-          "api-with-examples",
-          "callback-example",
-          "link-example",
-          "uber",
-          "uspto",
-          "petstore",
-          "petstore-expanded",
-          "petstore-minimal",
-          "petstore-simple",
-          "petstore-with-external-docs",
-          "ingram-micro",
-          "hubspot-events",
-          "hubspot-webhooks"
-        ]
+    name: 🚀 Smoke test the OpenAPI corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
 
-    uses: ./.github/workflows/template.yml
-    with:
-      format: ${{ matrix.format }}
-      version: ${{ matrix.version }}
-      openapi: ${{ matrix.openapi }}
-      os: ${{ matrix.os }}
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 🚀 Run smoke tests
+        run: ./smoke-tests.ps1
+        working-directory: test
+        shell: pwsh
+
+      - name: 🗳️ Publish generated code as Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Generated Code
+          path: test/Generated/*
 
   url:
     strategy:
