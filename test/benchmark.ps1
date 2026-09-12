@@ -52,6 +52,9 @@ function Measure-Generator {
             foreach ($specification in $specifications) {
                 foreach ($mode in @(@(), @("--bash"))) {
                     & $Command $specification.FullName --output $output --no-logging --skip-validation @mode *> $null
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "$Command exited with code $LASTEXITCODE for $($specification.FullName)"
+                    }
                 }
             }
         }
