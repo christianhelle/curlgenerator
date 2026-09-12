@@ -15,6 +15,12 @@ pub enum OpenApiContentFormat {
     Yaml,
 }
 
+/// The largest response body accepted from a remote specification, in bytes.
+///
+/// Real-world OpenAPI documents are at most a few megabytes; this bounds the memory a malicious
+/// or misbehaving server can force the CLI to allocate.
+const MAX_DOWNLOAD_BYTES: u64 = 100 * 1024 * 1024;
+
 impl fmt::Display for OpenApiContentFormat {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -250,7 +256,7 @@ fn download(url: &str) -> Result<String, OpenApiLoadError> {
         .map_err(http_error)?
         .body_mut()
         .with_config()
-        .limit(u64::MAX)
+        .limit(MAX_DOWNLOAD_BYTES)
         .read_to_vec()
         .map_err(http_error)?;
     let text = String::from_utf8_lossy(&body);
