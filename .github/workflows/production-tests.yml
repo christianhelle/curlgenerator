@@ -11,33 +11,35 @@ on:
 
 jobs:
   cli:
+    name: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        format: [json, yaml]
-        version: [V2, V3]
         os: [macos-latest, windows-latest, ubuntu-latest]
-        openapi:
-          [
-            "api-with-examples",
-            "callback-example",
-            "link-example",
-            "uber",
-            "uspto",
-            "petstore",
-            "petstore-expanded",
-            "petstore-minimal",
-            "petstore-simple",
-            "petstore-with-external-docs",
-            "ingram-micro",
-            "hubspot-events",
-            "hubspot-webhooks",
-          ]
-    uses: ./.github/workflows/template.yml
-    with:
-      os: ${{ matrix.os }}
-      format: ${{ matrix.format }}
-      version: ${{ matrix.version }}
-      openapi: ${{ matrix.openapi }}
-      command: "dotnet tool install --global --prerelease CurlGenerator; CurlGenerator"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
 
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
+        with:
+          toolchain: stable
+
+      - name: 📦 Install curlgenerator from crates.io
+        run: cargo install curlgenerator --locked
+
+      - name: 🚀 Generate from every specification in the corpus
+        shell: pwsh
+        run: |
+          $specifications = Get-ChildItem -Path ./test/OpenAPI -Recurse -Include *.json, *.yaml
+          foreach ($specification in $specifications) {
+            foreach ($mode in @(@(), @("--bash"))) {
+              Write-Host "curlgenerator $($specification.FullName) $mode"
+              curlgenerator $specification.FullName --output ./out --no-logging --skip-validation @mode
+              if ($LASTEXITCODE -ne 0) {
+                throw "curlgenerator failed for $($specification.FullName) $mode"
+              }
+            }
+          }
