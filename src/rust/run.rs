@@ -13,7 +13,7 @@ use crate::{
     auth::{self, AzureAuth},
     executor,
     generator::generate_from_document,
-    openapi::{inspect, load_document, normalize},
+    openapi::{load_document, normalize},
     telemetry::Telemetry,
     ui::render::{self, ConfigurationView, color},
     validation,
@@ -90,7 +90,7 @@ fn execute(
         )
     )?;
 
-    let document = match load_document(&open_api_path) {
+    let document = match load_document(&open_api_path, args.insecure) {
         Ok(document) => document,
         Err(error) => {
             write!(
@@ -102,6 +102,32 @@ fn execute(
             return Ok(1);
         }
     };
+
+    // Unresolved references fail validation, so they are only warnings when validation is skipped.
+    let warnings = document
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            args.skip_validation
+                || !matches!(
+                    diagnostic,
+                    oasreader::Diagnostic::UnresolvedReference { .. }
+                )
+        })
+        .map(ToString::to_string)
+        .collect::<Vec<_>>();
+    if !warnings.is_empty() {
+        write!(
+            writer,
+            "{}",
+            render::diagnostic(
+                "Warning",
+                &warnings.join("\n"),
+                color::YELLOW,
+                output.colors
+            )
+        )?;
+    }
 
     if !args.skip_validation {
         let diagnostics = validation::validate(&document);
@@ -132,7 +158,7 @@ fn execute(
         write!(
             writer,
             "{}",
-            render::statistics(&inspect(&document), output.width, output.colors)
+            render::statistics(&document.stats(), output.width, output.colors)
         )?;
     }
 
@@ -144,6 +170,7 @@ fn execute(
         content_type: args.content_type.clone(),
         base_url: args.base_url.clone(),
         generate_bash_scripts: args.bash,
+        accept_invalid_certificates: args.insecure,
     };
 
     telemetry.record_feature_usage(args);

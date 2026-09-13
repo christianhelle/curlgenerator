@@ -9,6 +9,9 @@
 
 Generate cURL requests from OpenAPI specifications v2.0 and v3.0
 
+Specifications split across multiple files are supported. External `$ref`s to other local files
+or URLs are merged into a single document with [oasreader](https://crates.io/crates/oasreader).
+
 The CLI was rewritten in Rust for performance. Over the 41 specifications in `test/OpenAPI`, in
 both output modes, the Rust CLI runs the whole corpus roughly **70x faster** than the legacy .NET
 tool. The .NET implementation is kept under `src/dotnet`; the Rust implementation lives under
@@ -125,6 +128,10 @@ OPTIONS:
         --no-logging                                           Don't log errors or collect telemetry
         --skip-validation                                      Skip validation of OpenAPI
                                                                Specification file
+        --insecure                                             Skip TLS certificate verification
+                                                               when downloading the OpenAPI
+                                                               Specification file and its external
+                                                               references
         --authorization-header <HEADER>                        Authorization header to use for all
                                                                requests
         --content-type <CONTENT-TYPE>      application/json    Default Content-Type header to use

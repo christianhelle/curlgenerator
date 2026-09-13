@@ -28,7 +28,7 @@ impl Definition {
     }
 }
 
-const DEFINITIONS: [Definition; 11] = [
+const DEFINITIONS: [Definition; 12] = [
     Definition {
         long: "output",
         short: Some('o'),
@@ -46,6 +46,11 @@ const DEFINITIONS: [Definition; 11] = [
     },
     Definition {
         long: "skip-validation",
+        short: None,
+        value: None,
+    },
+    Definition {
+        long: "insecure",
         short: None,
         value: None,
     },
@@ -99,6 +104,8 @@ pub struct Args {
     pub no_logging: bool,
     /// Skip validation of OpenAPI Specification file.
     pub skip_validation: bool,
+    /// Skip TLS certificate verification when downloading the OpenAPI Specification file.
+    pub insecure: bool,
     /// Authorization header to use for all requests.
     pub authorization_header: Option<String>,
     /// Default Content-Type header to use for all requests.
@@ -221,6 +228,7 @@ impl Args {
             bash: switch("bash"),
             no_logging: switch("no-logging"),
             skip_validation: switch("skip-validation"),
+            insecure: switch("insecure"),
             authorization_header: value("authorization-header"),
             content_type: value("content-type").unwrap_or_else(|| DEFAULT_CONTENT_TYPE.to_string()),
             base_url: value("base-url"),
@@ -321,6 +329,7 @@ mod tests {
         assert!(!args.bash);
         assert!(!args.no_logging);
         assert!(!args.skip_validation);
+        assert!(!args.insecure);
         assert_eq!(args.authorization_header, None);
         assert_eq!(args.base_url, None);
         assert_eq!(args.azure_scope, None);
@@ -337,6 +346,7 @@ mod tests {
             "--bash",
             "--no-logging",
             "--skip-validation",
+            "--insecure",
             "--authorization-header",
             "Bearer token",
             "--content-type",
@@ -353,6 +363,7 @@ mod tests {
         assert!(args.bash);
         assert!(args.no_logging);
         assert!(args.skip_validation);
+        assert!(args.insecure);
         assert_eq!(args.authorization_header.as_deref(), Some("Bearer token"));
         assert_eq!(args.content_type, "application/xml");
         assert_eq!(args.base_url.as_deref(), Some("https://api.example.com"));

@@ -5,14 +5,17 @@ use crate::{
     generator::{bash, powershell},
     model::{GeneratorResult, GeneratorSettings, ScriptFile},
     normalized::Document,
-    openapi::{OpenApiLoadError, load_document, normalize},
+    openapi::{ReadError, load_document, normalize},
     operation_name::operation_name,
     string_extensions::capitalize_first_character,
 };
 
 /// Loads the configured specification and renders a script per operation.
-pub fn generate(settings: &GeneratorSettings) -> Result<GeneratorResult, OpenApiLoadError> {
-    let raw = load_document(&settings.open_api_path)?;
+pub fn generate(settings: &GeneratorSettings) -> Result<GeneratorResult, ReadError> {
+    let raw = load_document(
+        &settings.open_api_path,
+        settings.accept_invalid_certificates,
+    )?;
 
     Ok(generate_from_document(settings, &normalize(&raw)))
 }
@@ -166,6 +169,11 @@ mod tests {
     fn reports_a_load_error_for_a_missing_specification() {
         let error = generate(&GeneratorSettings::new("./does-not-exist.json")).unwrap_err();
 
-        assert!(matches!(error, OpenApiLoadError::FileRead { .. }));
+        assert!(matches!(
+            error,
+            ReadError::Load(oasreader::RawOpenApiLoadError::Fetch(
+                oasreader::FetchError::FileRead { .. }
+            ))
+        ));
     }
 }
