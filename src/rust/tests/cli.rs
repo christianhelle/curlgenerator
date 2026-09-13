@@ -503,7 +503,7 @@ fn answer<S: std::io::Read + std::io::Write>(
     stream: S,
     respond: fn(&str) -> (&'static str, String, Vec<u8>),
 ) {
-    use std::io::{BufRead, Write};
+    use std::io::BufRead;
 
     let mut reader = std::io::BufReader::new(stream);
     let mut request_line = String::new();
