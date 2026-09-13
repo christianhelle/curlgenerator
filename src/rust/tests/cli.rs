@@ -176,6 +176,103 @@ fn fails_for_a_specification_that_does_not_validate() {
     assert!(printed.contains("OpenAPI validation failed"));
 }
 
+/// Writes `files` of `(name, content)` into a fresh directory and returns its path.
+fn specification_files(name: &str, files: &[(&str, &str)]) -> PathBuf {
+    let directory = output_directory(&format!("{name}-specification"));
+    fs::create_dir_all(&directory).unwrap();
+    for (file, content) in files {
+        fs::write(directory.join(file), content).unwrap();
+    }
+
+    directory
+}
+
+const PETSTORE_WITH_MISSING_COMPONENTS: &str = r#"
+openapi: 3.0.3
+info:
+  title: Petstore
+  version: 1.0.0
+paths:
+  /pets:
+    post:
+      operationId: addPet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'missing.yaml#/components/schemas/Pet'
+      responses:
+        '200':
+          description: ok
+"#;
+
+#[test]
+fn fails_validation_for_references_that_cannot_be_resolved() {
+    let directory = specification_files(
+        "unresolved",
+        &[("petstore.yaml", PETSTORE_WITH_MISSING_COMPONENTS)],
+    );
+    let (code, printed) = run(&[
+        &directory.join("petstore.yaml").to_string_lossy(),
+        "--output",
+        &output_directory("unresolved").to_string_lossy(),
+        "--no-logging",
+    ]);
+
+    assert_eq!(code, 1, "{printed}");
+    assert!(printed.contains("OpenAPI validation failed"), "{printed}");
+    assert!(
+        printed.contains("missing.yaml#/components/schemas/Pet"),
+        "{printed}"
+    );
+}
+
+#[test]
+fn generates_with_unresolved_references_when_validation_is_skipped() {
+    let directory = specification_files(
+        "unresolved-skipped",
+        &[("petstore.yaml", PETSTORE_WITH_MISSING_COMPONENTS)],
+    );
+    let output = output_directory("unresolved-skipped");
+    let (code, printed) = run(&[
+        &directory.join("petstore.yaml").to_string_lossy(),
+        "--output",
+        &output.to_string_lossy(),
+        "--skip-validation",
+        "--no-logging",
+    ]);
+
+    assert_eq!(code, 0, "{printed}");
+    assert!(output.join("PostAddPet.ps1").exists());
+}
+
+#[test]
+fn warns_about_references_that_were_left_unchanged() {
+    let directory = specification_files(
+        "circular",
+        &[
+            (
+                "tree.yaml",
+                "openapi: 3.0.3\ninfo:\n  title: Tree\n  version: 1.0.0\npaths:\n  /tree:\n    get:\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                $ref: 'node.yaml'\n",
+            ),
+            (
+                "node.yaml",
+                "type: object\nproperties:\n  children:\n    type: array\n    items:\n      $ref: 'node.yaml'\n",
+            ),
+        ],
+    );
+    let (code, printed) = run(&[
+        &directory.join("tree.yaml").to_string_lossy(),
+        "--output",
+        &output_directory("circular").to_string_lossy(),
+        "--no-logging",
+    ]);
+
+    assert_eq!(code, 0, "{printed}");
+    assert!(printed.contains("Warning:"), "{printed}");
+    assert!(printed.contains("refers back to itself"), "{printed}");
+}
+
 #[test]
 fn generates_an_unvalidated_specification_when_validation_is_skipped() {
     let directory = output_directory("skip-validation");

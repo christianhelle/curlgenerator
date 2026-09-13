@@ -55,8 +55,26 @@ impl std::fmt::Display for Diagnostic {
 }
 
 /// Validates a decoded document and returns every diagnostic it violates.
+///
+/// External references that could not be resolved while reading the document are reported too,
+/// since generating from them would produce incomplete requests.
 pub fn validate(document: &ReadResult) -> Vec<Diagnostic> {
-    validate_value(&document.document)
+    let unresolved = document
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match diagnostic {
+            oasreader::Diagnostic::UnresolvedReference {
+                reference, reason, ..
+            } => Some(Diagnostic::new(
+                format!("Unresolved reference: {reason}"),
+                reference.clone(),
+            )),
+            _ => None,
+        });
+
+    unresolved
+        .chain(validate_value(&document.document))
+        .collect()
 }
 
 /// Validates a decoded document tree.

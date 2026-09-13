@@ -103,6 +103,32 @@ fn execute(
         }
     };
 
+    // Unresolved references fail validation, so they are only warnings when validation is skipped.
+    let warnings = document
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            args.skip_validation
+                || !matches!(
+                    diagnostic,
+                    oasreader::Diagnostic::UnresolvedReference { .. }
+                )
+        })
+        .map(ToString::to_string)
+        .collect::<Vec<_>>();
+    if !warnings.is_empty() {
+        write!(
+            writer,
+            "{}",
+            render::diagnostic(
+                "Warning",
+                &warnings.join("\n"),
+                color::YELLOW,
+                output.colors
+            )
+        )?;
+    }
+
     if !args.skip_validation {
         let diagnostics = validation::validate(&document);
         if !diagnostics.is_empty() {
