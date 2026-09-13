@@ -361,6 +361,36 @@ fn generates_from_a_specification_served_over_http() {
     }
 }
 
+fn multi_file_petstore(path: &str) -> (&'static str, String, Vec<u8>) {
+    let directory = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test/multi-file");
+
+    match path {
+        "/specs/petstore.yaml" | "/specs/petstore.components.yaml" => (
+            "200 OK",
+            String::new(),
+            fs::read(directory.join(path.trim_start_matches("/specs/")))
+                .expect("the multi-file fixture exists"),
+        ),
+        _ => ("404 Not Found", String::new(), b"not found".to_vec()),
+    }
+}
+
+#[test]
+fn generates_request_bodies_from_a_split_specification_served_over_http() {
+    let directory = output_directory("multi-file-http");
+    let (code, printed) = run(&[
+        &format!("{}/specs/petstore.yaml", serve(multi_file_petstore)),
+        "--output",
+        &directory.to_string_lossy(),
+        "--no-logging",
+    ]);
+
+    assert_eq!(code, 0, "{printed}");
+    let script = fs::read_to_string(directory.join("PostAddPet.ps1")).unwrap();
+    assert!(script.contains(r#""name": "doggie""#), "{script}");
+    assert!(script.contains(r#""photoUrls""#), "{script}");
+}
+
 #[test]
 fn fails_for_a_specification_the_server_does_not_have() {
     let (code, printed) = run(&[&format!("{}/missing.json", serve(petstore)), "--no-logging"]);
