@@ -128,6 +128,10 @@ OPTIONS:
         --no-logging                                           Don't log errors or collect telemetry
         --skip-validation                                      Skip validation of OpenAPI
                                                                Specification file
+        --insecure                                             Skip TLS certificate verification
+                                                               when downloading the OpenAPI
+                                                               Specification file and its external
+                                                               references
         --authorization-header <HEADER>                        Authorization header to use for all
                                                                requests
         --content-type <CONTENT-TYPE>      application/json    Default Content-Type header to use

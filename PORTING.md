@@ -72,6 +72,12 @@ uses `:`. This accounts for the last 6 of the 64 differing files.
   implements the rules that the shipped test corpus actually exercises: unique path signatures and
   at-least-one-response per operation. Everything else is accepted; `--skip-validation` still
   bypasses the check entirely.
+- **TLS certificates are verified.** The .NET tool accepted any certificate when downloading a
+  specification. The Rust CLI verifies certificates by default; `--insecure` restores the old
+  behaviour for development servers with self-signed certificates.
+- **Unresolved external references fail validation.** Specifications split across files are merged
+  with [oasreader](https://crates.io/crates/oasreader). A `$ref` that cannot be loaded is reported
+  as a validation error, and as a warning when `--skip-validation` is used.
 - **The document is parsed once.** The .NET command parses the specification twice, once to
   validate and once to generate.
 - **Generated scripts escape specification text.** The .NET generator embeds schema examples,
