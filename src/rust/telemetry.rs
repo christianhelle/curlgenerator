@@ -200,6 +200,10 @@ pub fn used_features(args: &Args) -> Vec<&'static str> {
         features.push("skip-validation");
     }
 
+    if args.insecure {
+        features.push("insecure");
+    }
+
     if args.authorization_header.is_some() {
         features.push("authorization-header");
     }
@@ -229,6 +233,7 @@ fn redacted_settings(args: &Args) -> String {
         "outputFolder": args.output,
         "generateBashScripts": args.bash,
         "skipValidation": args.skip_validation,
+        "insecure": args.insecure,
         "contentType": args.content_type,
         "baseUrl": args.base_url,
         "authorizationHeader": args.authorization_header.as_ref().map(|_| "[REDACTED]"),
@@ -320,6 +325,20 @@ mod tests {
                 "azure-tenant-id"
             ]
         );
+    }
+
+    #[test]
+    fn reports_the_insecure_switch_as_a_feature_and_a_setting() {
+        let args = parse(&["./openapi.json", "--insecure"]);
+        let mut telemetry = Telemetry::new(args.no_logging);
+
+        telemetry.record_error("boom", &args);
+
+        assert_eq!(used_features(&args), vec!["insecure", "content-type"]);
+        let Event::Error { settings, .. } = &telemetry.events()[0] else {
+            panic!("expected an error event");
+        };
+        assert!(settings.contains(r#""insecure":true"#), "{settings}");
     }
 
     #[test]
