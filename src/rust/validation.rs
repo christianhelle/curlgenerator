@@ -6,7 +6,7 @@
 
 use std::collections::HashMap;
 
-use crate::openapi::RawOpenApiDocument;
+use crate::openapi::ReadResult;
 use serde_json::Value;
 
 const HTTP_METHODS: [&str; 8] = [
@@ -55,8 +55,8 @@ impl std::fmt::Display for Diagnostic {
 }
 
 /// Validates a decoded document and returns every diagnostic it violates.
-pub fn validate(document: &RawOpenApiDocument) -> Vec<Diagnostic> {
-    validate_value(document.value())
+pub fn validate(document: &ReadResult) -> Vec<Diagnostic> {
+    validate_value(&document.document)
 }
 
 /// Validates a decoded document tree.

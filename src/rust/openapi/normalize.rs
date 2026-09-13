@@ -7,7 +7,7 @@ use crate::normalized::{
     SchemaType,
 };
 
-use super::{OpenApiSpecificationVersion, RawOpenApiDocument};
+use super::{OpenApiSpecificationVersion, ReadResult};
 
 /// HTTP methods recognized on a path item, matching the OpenAPI specification.
 const HTTP_METHODS: [&str; 8] = [
@@ -15,8 +15,8 @@ const HTTP_METHODS: [&str; 8] = [
 ];
 
 /// Normalizes a decoded document into the version independent model.
-pub fn normalize(document: &RawOpenApiDocument) -> Document {
-    normalize_value(document.value(), document.version())
+pub fn normalize(document: &ReadResult) -> Document {
+    normalize_value(&document.document, document.specification_version)
 }
 
 /// Normalizes a decoded document tree for an explicit specification version.

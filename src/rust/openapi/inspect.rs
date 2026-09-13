@@ -6,7 +6,7 @@
 
 use serde_json::Value;
 
-use super::{OpenApiSpecificationVersion, RawOpenApiDocument};
+use super::{OpenApiSpecificationVersion, ReadResult};
 
 /// The number of components a specification declares.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -32,8 +32,8 @@ pub struct OpenApiStats {
 }
 
 /// Counts the components of a decoded document.
-pub fn inspect(document: &RawOpenApiDocument) -> OpenApiStats {
-    inspect_value(document.value(), document.version())
+pub fn inspect(document: &ReadResult) -> OpenApiStats {
+    inspect_value(&document.document, document.specification_version)
 }
 
 /// Counts the components of a decoded document tree for an explicit version.

@@ -120,6 +120,24 @@ fn generates_bash_scripts_from_a_local_specification() {
 }
 
 #[test]
+fn generates_request_bodies_from_a_specification_split_across_files() {
+    let directory = output_directory("multi-file");
+    let specification =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test/multi-file/petstore.yaml");
+    let (code, printed) = run(&[
+        &specification.to_string_lossy(),
+        "--output",
+        &directory.to_string_lossy(),
+        "--no-logging",
+    ]);
+
+    assert_eq!(code, 0, "{printed}");
+    let script = fs::read_to_string(directory.join("PostAddPet.ps1")).unwrap();
+    assert!(script.contains(r#""name": "doggie""#), "{script}");
+    assert!(script.contains(r#""photoUrls""#), "{script}");
+}
+
+#[test]
 fn applies_the_authorization_header_to_every_request() {
     let directory = output_directory("authorization");
     let (code, _) = run(&[
