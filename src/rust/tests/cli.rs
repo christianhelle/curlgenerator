@@ -448,7 +448,38 @@ fn rejects_invalid_arguments_with_a_usage_error() {
 ///
 /// `respond` maps a request path to a status line, extra header lines, and a body.
 fn serve(respond: fn(&str) -> (&'static str, String, Vec<u8>)) -> String {
-    use std::io::{BufRead, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("a local port should be free");
+    let address = listener
+        .local_addr()
+        .expect("the listener should have an address");
+
+    std::thread::spawn(move || {
+        for stream in listener.incoming().flatten() {
+            answer(stream, respond);
+        }
+    });
+
+    format!("http://{address}")
+}
+
+/// Starts an HTTPS server with a freshly generated self-signed certificate for `127.0.0.1`.
+fn serve_https(respond: fn(&str) -> (&'static str, String, Vec<u8>)) -> String {
+    use std::sync::Arc;
+
+    let certificate = rcgen::generate_simple_self_signed(vec!["127.0.0.1".to_string()])
+        .expect("a self-signed certificate should be generated");
+    let key =
+        rustls::pki_types::PrivateKeyDer::Pkcs8(certificate.signing_key.serialize_der().into());
+    let config = Arc::new(
+        rustls::ServerConfig::builder_with_provider(Arc::new(
+            rustls::crypto::ring::default_provider(),
+        ))
+        .with_safe_default_protocol_versions()
+        .expect("the default protocol versions should be supported")
+        .with_no_client_auth()
+        .with_single_cert(vec![certificate.cert.der().clone()], key)
+        .expect("the certificate should be usable"),
+    );
 
     let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("a local port should be free");
     let address = listener
@@ -457,30 +488,44 @@ fn serve(respond: fn(&str) -> (&'static str, String, Vec<u8>)) -> String {
 
     std::thread::spawn(move || {
         for stream in listener.incoming().flatten() {
-            let mut reader = std::io::BufReader::new(stream);
-            let mut request_line = String::new();
-            if reader.read_line(&mut request_line).is_err() {
+            let Ok(connection) = rustls::ServerConnection::new(Arc::clone(&config)) else {
                 continue;
-            }
-
-            let mut header = String::new();
-            while reader.read_line(&mut header).is_ok_and(|read| read > 2) {
-                header.clear();
-            }
-
-            let path = request_line.split_whitespace().nth(1).unwrap_or("/");
-            let (status, headers, body) = respond(path);
-            let mut stream = reader.into_inner();
-            let _ = write!(
-                stream,
-                "HTTP/1.1 {status}\r\n{headers}Content-Length: {}\r\nConnection: close\r\n\r\n",
-                body.len()
-            );
-            let _ = stream.write_all(&body);
+            };
+            answer(rustls::StreamOwned::new(connection, stream), respond);
         }
     });
 
-    format!("http://{address}")
+    format!("https://{address}")
+}
+
+/// Reads one request from `stream` and writes the response `respond` returns for its path.
+fn answer<S: std::io::Read + std::io::Write>(
+    stream: S,
+    respond: fn(&str) -> (&'static str, String, Vec<u8>),
+) {
+    use std::io::{BufRead, Write};
+
+    let mut reader = std::io::BufReader::new(stream);
+    let mut request_line = String::new();
+    if reader.read_line(&mut request_line).is_err() {
+        return;
+    }
+
+    let mut header = String::new();
+    while reader.read_line(&mut header).is_ok_and(|read| read > 2) {
+        header.clear();
+    }
+
+    let path = request_line.split_whitespace().nth(1).unwrap_or("/");
+    let (status, headers, body) = respond(path);
+    let mut stream = reader.into_inner();
+    let _ = write!(
+        stream,
+        "HTTP/1.1 {status}\r\n{headers}Content-Length: {}\r\nConnection: close\r\n\r\n",
+        body.len()
+    );
+    let _ = stream.write_all(&body);
+    let _ = stream.flush();
 }
 
 fn petstore(path: &str) -> (&'static str, String, Vec<u8>) {
@@ -556,6 +601,38 @@ fn generates_request_bodies_from_a_split_specification_served_over_http() {
     assert_eq!(code, 0, "{printed}");
     let script = fs::read_to_string(directory.join("PostAddPet.ps1")).unwrap();
     assert!(script.contains(r#""name": "doggie""#), "{script}");
+    assert!(script.contains(r#""photoUrls""#), "{script}");
+}
+
+#[test]
+fn rejects_self_signed_certificates_by_default() {
+    let (code, printed) = run(&[
+        &format!("{}/specs/petstore.yaml", serve_https(multi_file_petstore)),
+        "--output",
+        &output_directory("https-verified").to_string_lossy(),
+        "--no-logging",
+    ]);
+
+    assert_eq!(code, 1, "{printed}");
+    assert!(
+        printed.contains("could not download the file at https://127.0.0.1:"),
+        "{printed}"
+    );
+}
+
+#[test]
+fn accepts_self_signed_certificates_for_the_specification_and_its_references_when_insecure() {
+    let directory = output_directory("https-insecure");
+    let (code, printed) = run(&[
+        &format!("{}/specs/petstore.yaml", serve_https(multi_file_petstore)),
+        "--output",
+        &directory.to_string_lossy(),
+        "--insecure",
+        "--no-logging",
+    ]);
+
+    assert_eq!(code, 0, "{printed}");
+    let script = fs::read_to_string(directory.join("PostAddPet.ps1")).unwrap();
     assert!(script.contains(r#""photoUrls""#), "{script}");
 }
 
