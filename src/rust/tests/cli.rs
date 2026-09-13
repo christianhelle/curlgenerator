@@ -158,6 +158,76 @@ fn applies_the_authorization_header_to_every_request() {
     );
 }
 
+/// Reads the counts from the statistics panel in the order they are displayed.
+fn printed_statistics(printed: &str) -> Vec<usize> {
+    [
+        "Path Items",
+        "Operations",
+        "Parameters",
+        "Request Bodies",
+        "Responses",
+        "Links",
+        "Callbacks",
+        "Schemas",
+    ]
+    .iter()
+    .map(|label| {
+        let line = printed
+            .lines()
+            .find(|line| line.contains(label))
+            .unwrap_or_else(|| panic!("the statistics panel should show {label}:\n{printed}"));
+        line.rsplit(label)
+            .next()
+            .unwrap()
+            .split(|character: char| !character.is_ascii_digit())
+            .find(|digits| !digits.is_empty())
+            .unwrap()
+            .parse()
+            .unwrap()
+    })
+    .collect()
+}
+
+#[test]
+fn prints_the_same_statistics_as_the_legacy_tools() {
+    let multi_file =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test/multi-file/petstore.yaml");
+
+    // Expected counts are the OpenApiStats visitor output of the legacy .NET tools.
+    for (name, input, expected) in [
+        (
+            "statistics-v30",
+            specification("v3.0/petstore.json"),
+            [13, 19, 17, 9, 19, 0, 0, 73],
+        ),
+        (
+            "statistics-v20",
+            specification("v2.0/petstore.json"),
+            [14, 20, 14, 9, 20, 0, 0, 67],
+        ),
+        (
+            "statistics-multi-file",
+            multi_file,
+            [13, 19, 17, 9, 19, 0, 0, 64],
+        ),
+    ] {
+        let (code, printed) = run(&[
+            &input.to_string_lossy(),
+            "--output",
+            &output_directory(name).to_string_lossy(),
+            "--no-logging",
+        ]);
+
+        assert_eq!(code, 0, "{printed}");
+        assert_eq!(
+            printed_statistics(&printed),
+            expected,
+            "{}",
+            input.display()
+        );
+    }
+}
+
 #[test]
 fn fails_for_a_missing_specification() {
     let (code, printed) = run(&["./does-not-exist.json", "--no-logging"]);
