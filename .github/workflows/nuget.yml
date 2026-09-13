@@ -1,0 +1,31 @@
+name: Publish legacy .NET tool to NuGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "NuGet package version (e.g. 0.4.2)"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: 📦 Publish CurlGenerator .NET tool
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛒 Checkout repository
+        uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+      - name: 🛠️ Build
+        run: dotnet build -c Release src/dotnet/CurlGenerator.sln -p:UseSourceLink=true -p:PackageVersion="${{ inputs.version }}" -p:Version="${{ inputs.version }}"
+      - name: 🧪 Test
+        run: dotnet test src/dotnet/CurlGenerator.sln -c Release --no-build
+      - name: 🗳️ Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: Packages
+          path: |
+            **/*.nupkg
+            README.md
