@@ -8,6 +8,13 @@ on:
         required: true
         type: string
 
+env:
+  NUGET_REPO_URL: "https://api.nuget.org/v3/index.json"
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   publish:
     name: 📦 Publish CurlGenerator .NET tool
@@ -29,3 +36,10 @@ jobs:
           path: |
             **/*.nupkg
             README.md
+      - name: 🔑 NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: christian.helle
+      - name: 🚀 Push packages to NuGet
+        run: dotnet nuget push "**/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source ${{ env.NUGET_REPO_URL }} --no-symbols
