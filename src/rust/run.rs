@@ -90,7 +90,7 @@ fn execute(
         )
     )?;
 
-    let document = match load_document(&open_api_path) {
+    let document = match load_document(&open_api_path, args.insecure) {
         Ok(document) => document,
         Err(error) => {
             write!(
@@ -170,6 +170,7 @@ fn execute(
         content_type: args.content_type.clone(),
         base_url: args.base_url.clone(),
         generate_bash_scripts: args.bash,
+        accept_invalid_certificates: args.insecure,
     };
 
     telemetry.record_feature_usage(args);

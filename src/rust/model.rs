@@ -16,6 +16,8 @@ pub struct GeneratorSettings {
     pub base_url: Option<String>,
     /// Whether to emit Bash scripts instead of PowerShell scripts.
     pub generate_bash_scripts: bool,
+    /// Whether to skip TLS certificate verification when downloading the specification.
+    pub accept_invalid_certificates: bool,
 }
 
 impl Default for GeneratorSettings {
@@ -26,6 +28,7 @@ impl Default for GeneratorSettings {
             content_type: DEFAULT_CONTENT_TYPE.to_string(),
             base_url: None,
             generate_bash_scripts: false,
+            accept_invalid_certificates: false,
         }
     }
 }
@@ -42,6 +45,7 @@ impl GeneratorSettings {
     ///
     /// assert_eq!(settings.content_type, "application/json");
     /// assert!(!settings.generate_bash_scripts);
+    /// assert!(!settings.accept_invalid_certificates);
     /// ```
     pub fn new(open_api_path: impl Into<String>) -> Self {
         Self {

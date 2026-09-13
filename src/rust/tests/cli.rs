@@ -64,6 +64,7 @@ fn documents_every_option_in_help() {
         "--bash",
         "--no-logging",
         "--skip-validation",
+        "--insecure",
         "--authorization-header",
         "--content-type",
         "--base-url",

@@ -71,6 +71,13 @@ fn options() -> Vec<Option_> {
         },
         Option_ {
             short: None,
+            long: "insecure",
+            value: None,
+            default: None,
+            description: "Skip TLS certificate verification when downloading the OpenAPI Specification file and its external references",
+        },
+        Option_ {
+            short: None,
             long: "authorization-header",
             value: Some("HEADER"),
             default: None,
@@ -285,6 +292,7 @@ mod tests {
             "--bash",
             "--no-logging",
             "--skip-validation",
+            "--insecure",
             "--authorization-header",
             "--content-type",
             "--base-url",

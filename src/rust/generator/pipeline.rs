@@ -12,7 +12,10 @@ use crate::{
 
 /// Loads the configured specification and renders a script per operation.
 pub fn generate(settings: &GeneratorSettings) -> Result<GeneratorResult, ReadError> {
-    let raw = load_document(&settings.open_api_path)?;
+    let raw = load_document(
+        &settings.open_api_path,
+        settings.accept_invalid_certificates,
+    )?;
 
     Ok(generate_from_document(settings, &normalize(&raw)))
 }

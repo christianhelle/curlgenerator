@@ -55,7 +55,8 @@ fn every_specification_generates_scripts() {
 
         // A document that only declares webhooks has no operations to generate requests for.
         let document = normalize(
-            &load_document(&specification.to_string_lossy()).expect("the document should load"),
+            &load_document(&specification.to_string_lossy(), false)
+                .expect("the document should load"),
         );
         let operations: usize = document
             .paths
