@@ -13,7 +13,7 @@ use crate::{
     auth::{self, AzureAuth},
     executor,
     generator::generate_from_document,
-    openapi::{inspect, load_document, normalize},
+    openapi::{load_document, normalize},
     telemetry::Telemetry,
     ui::render::{self, ConfigurationView, color},
     validation,
@@ -132,7 +132,7 @@ fn execute(
         write!(
             writer,
             "{}",
-            render::statistics(&inspect(&document), output.width, output.colors)
+            render::statistics(&document.stats(), output.width, output.colors)
         )?;
     }
 

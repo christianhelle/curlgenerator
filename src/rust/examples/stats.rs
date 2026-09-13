@@ -3,7 +3,7 @@
 fn main() {
     let path = std::env::args().nth(1).expect("usage: stats <spec>");
     let document = curlgenerator::openapi::load_document(&path).expect("load");
-    let stats = curlgenerator::openapi::inspect(&document);
+    let stats = document.stats();
 
     println!(
         "{} {} {} {} {} {} {} {}",
