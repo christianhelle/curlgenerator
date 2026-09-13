@@ -88,10 +88,10 @@ uses `:`. This accounts for the last 6 of the 64 differing files.
 | --- | --- |
 | `CurlGenerator.Core/StringExtensions.cs` | `src/rust/string_extensions.rs` |
 | `CurlGenerator.Core/OperationNameGenerator.cs` | `src/rust/operation_name.rs` |
-| `CurlGenerator.Core/OpenApiDocumentFactory.cs` | `src/rust/openapi/{source,loader}.rs` |
+| `CurlGenerator.Core/OpenApiDocumentFactory.cs` | `src/rust/openapi/loader.rs`, backed by the [oasreader](https://crates.io/crates/oasreader) crate |
 | `CurlGenerator.Core/ScriptFileGenerator.cs` | `src/rust/generator/{pipeline,powershell,bash,sample}.rs` |
 | `CurlGenerator.Core/GeneratorSettings.cs` | `src/rust/model.rs` |
-| `CurlGenerator/Validation/OpenApiStats.cs` | `src/rust/openapi/inspect.rs` |
+| `CurlGenerator/Validation/OpenApiStats.cs` | `oasreader::inspect_value` in the [oasreader](https://crates.io/crates/oasreader) crate |
 | `CurlGenerator/Validation/OpenApiValidator.cs` | `src/rust/validation.rs` |
 | `CurlGenerator/SupportInformation.cs` | `src/rust/support_information.rs` |
 | `CurlGenerator/Settings.cs`, `Program.cs` | `src/rust/{args,help,main}.rs` |
