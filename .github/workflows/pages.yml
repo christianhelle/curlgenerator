@@ -38,10 +38,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
-      - name: Copy images
+      - name: Prepare docs folder
         run: |
           mkdir docs/images
           cp images/* docs/images/
+          cp docs/install.sh docs/install
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
@@ -60,4 +61,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
-
