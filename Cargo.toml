@@ -11,7 +11,8 @@ rust-version = "1.96"
 readme = "README.md"
 keywords = ["openapi", "curl", "generator", "cli", "rest"]
 categories = ["command-line-utilities", "development-tools"]
-include = ["/src/rust/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE"]
+include = ["/src/rust/**/*.rs", "/images/icon.ico", "/Cargo.toml", "/README.md", "/LICENSE"]
+build = "src/rust/build.rs"
 
 [lib]
 name = "curlgenerator"
@@ -41,3 +42,6 @@ ureq = { version = "3.4.1", default-features = false, features = ["rustls"] }
 [dev-dependencies]
 rcgen = { version = "0.14.10", default-features = false, features = ["ring"] }
 rustls = { version = "0.23.44", default-features = false, features = ["ring", "std", "tls12"] }
+
+[build-dependencies]
+winresource = "0.1.31"

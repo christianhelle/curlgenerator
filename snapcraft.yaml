@@ -16,6 +16,7 @@ description: |
   - Skip validation for OpenAPI 3.1 documents when needed
 
 title: cURL Request Generator
+icon: images/icon.png
 contact: https://github.com/christianhelle/curlgenerator/issues
 issues: https://github.com/christianhelle/curlgenerator/issues
 source-code: https://github.com/christianhelle/curlgenerator
